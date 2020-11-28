@@ -567,5 +567,38 @@ test('micromark-extension-mdx-expression', function (t) {
     t.end()
   })
 
+  test('spread (hidden)', function (t) {
+    t.throws(
+      function () {
+        micromark('a {b} c', {
+          extensions: [syntax({acorn: acorn, spread: true})]
+        })
+      },
+      /Unexpected `Property` in code: only spread elements are supported/,
+      'should crash if not a spread'
+    )
+
+    t.throws(
+      function () {
+        micromark('a {...?} c', {
+          extensions: [syntax({acorn: acorn, spread: true})]
+        })
+      },
+      /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+      'should crash on an incorrect spread'
+    )
+
+    t.equal(
+      micromark('a {...b} c', {
+        extensions: [syntax({acorn: acorn, spread: true})],
+        htmlExtensions: [html]
+      }),
+      '<p>a  c</p>',
+      'should support a spread'
+    )
+
+    t.end()
+  })
+
   t.end()
 })
