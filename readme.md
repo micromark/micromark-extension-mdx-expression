@@ -8,14 +8,15 @@
 [![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
 
-**[micromark][]** extension to support [MDX][] or MDX JS expressions.
+**[micromark][]** extension to support MDX (or MDX.js) expressions.
 
 This package provides the low-level modules for integrating with the micromark
 tokenizer but has no handling of compiling to HTML: go to a syntax tree instead.
 
-You should use this with `mdast-util-mdx-expression` (**[mdast][]**).
+You should use this with [`mdast-util-mdx-expression`][util] (**[mdast][]**).
 Alternatively, use `micromark-extension-mdx` with `mdast-util-mdx` or
-`micromark-extension-mdxjs` with `mdast-util-mdxjs` to support all of MDX (JS).
+`micromark-extension-mdxjs` with `mdast-util-mdxjs` to support all of MDX (or
+MDX.js).
 Or, use it through `remark-mdx` or `remark-mdxjs` (**[remark][]**).
 
 ## Install
@@ -28,13 +29,13 @@ npm install micromark-extension-mdx-expression
 
 ## Use
 
-See `mdast-util-mdx-expression` for an example.
+See [`mdast-util-mdx-expression`][util] for an example.
 
 ## API
 
 ### `syntax(options?)`
 
-Support [MDX][] (JS) expressions.
+Support [MDX][] (or MDX.js) expressions.
 
 The export of `syntax` is a function that can be called with options and returns
 an extension for the micromark parser (to tokenize expressions; can be passed in
@@ -54,15 +55,14 @@ All fields except for `locations` can be set.
 
 ###### `options.addResult`
 
-Whether to add an `estree` field to the `mdxFlowExpression` and
-`mdxTextExpression` tokens with the results from acorn (`boolean`, default:
-`false`).
-Note that expressions can be empty or be just comments, in which cases `estree`
+Whether to add an `estree` field to `mdxFlowExpression` and `mdxTextExpression`
+tokens with the results from acorn (`boolean`, default: `false`).
+Note that expressions can be empty or be just comments, in which case `estree`
 will be undefined.
 
 ## Syntax
 
-This extensions support both vanilla MDX and MDX JS.
+This extensions support both MDX and MDX.js.
 The first is agnostic to the programming language (it could contain Rust or
 so), the last is specific to JavaScript.
 To turn on gnostic mode, pass `acorn`.
@@ -170,28 +170,22 @@ They include:
 
 ## Related
 
-*   [`remarkjs/remark`][remark]
-    — markdown processor powered by plugins
 *   [`micromark/micromark`][micromark]
     — the smallest commonmark-compliant markdown parser that exists
 *   `micromark/micromark-extension-mdx`
-    — micromark extension to support all of MDX
+    — micromark extension to support MDX
 *   `micromark/micromark-extension-mdxjs`
-    — micromark extension to support all of MDX JS
-*   `micromark/micromark-extension-mdx-jsx`
-    — micromark extension to support the JSX of MDX
+    — micromark extension to support MDX.js
+*   [`micromark/micromark-extension-mdx-jsx`][mdx-jsx]
+    — micromark extension to support MDX (or MDX.js) JSX
 *   [`micromark/micromark-extension-mdxjs-esm`][mdxjs-esm]
-    — micromark extension to support the import/exports of MDX JS
+    — micromark extension to support MDX.js import/exports
 *   `micromark/micromark-extension-mdx-md`
-    — micromark extension to support the changes to markdown of MDX
+    — micromark extension to support misc MDX changes
 *   `syntax-tree/mdast-util-mdx`
-    — mdast utility to support all of MDX
+    — mdast utility to support MDX
 *   `syntax-tree/mdast-util-mdxjs`
-    — mdast utility to support all of MDX JS
-*   [`syntax-tree/mdast-util-from-markdown`][from-markdown]
-    — mdast parser using `micromark` to create mdast from markdown
-*   [`syntax-tree/mdast-util-to-markdown`][to-markdown]
-    — mdast serializer to create markdown from mdast
+    — mdast utility to support MDX.js
 
 ## Contribute
 
@@ -249,10 +243,6 @@ abide by its terms.
 
 [micromark]: https://github.com/micromark/micromark
 
-[from-markdown]: https://github.com/syntax-tree/mdast-util-from-markdown
-
-[to-markdown]: https://github.com/syntax-tree/mdast-util-to-markdown
-
 [remark]: https://github.com/remarkjs/remark
 
 [mdast]: https://github.com/syntax-tree/mdast
@@ -262,3 +252,7 @@ abide by its terms.
 [acorn]: https://github.com/acornjs/acorn
 
 [mdxjs-esm]: https://github.com/micromark/micromark-extension-mdxjs-esm
+
+[mdx-jsx]: https://github.com/micromark/micromark-extension-mdx-jsx
+
+[util]: https://github.com/syntax-tree/mdast-util-mdx-expression
