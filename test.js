@@ -588,6 +588,26 @@ test('micromark-extension-mdx-expression', function (t) {
       'should crash on an incorrect spread'
     )
 
+    t.throws(
+      function () {
+        micromark('a {} b', {
+          extensions: [syntax({acorn: acorn, spread: true})]
+        })
+      },
+      /Unexpected empty spread expression: expected `\.\.\.`/,
+      'should crash on an empty spread'
+    )
+
+    t.throws(
+      function () {
+        micromark('a {/* b */} c', {
+          extensions: [syntax({acorn: acorn, spread: true})]
+        })
+      },
+      /Unexpected empty spread expression: expected `\.\.\.`/,
+      'should crash on a comment spread'
+    )
+
     t.equal(
       micromark('a {...b} c', {
         extensions: [syntax({acorn: acorn, spread: true})],
