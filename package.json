@@ -68,6 +68,7 @@
     "prettier": true,
     "esnext": false,
     "rules": {
+      "guard-for-in": "off",
       "max-params": "off"
     }
   },

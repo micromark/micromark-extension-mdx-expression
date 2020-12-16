@@ -47,7 +47,7 @@ test('micromark-extension-mdx-expression', function (t) {
     function () {
       micromark('a {<b />} c', {extensions: [syntax({acorn: acorn})]})
     },
-    /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+    /Could not parse expression with acorn: Unexpected token/,
     'should not support JSX by default'
   )
 
@@ -66,7 +66,7 @@ test('micromark-extension-mdx-expression', function (t) {
         extensions: [syntax({acorn: acorn, acornOptions: {ecmaVersion: 5}})]
       })
     },
-    /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+    /Could not parse expression with acorn: Unexpected token/,
     'should support `acornOptions` (1)'
   )
 
@@ -101,9 +101,30 @@ test('micromark-extension-mdx-expression', function (t) {
       'estree' in token,
       '`addResult` should add `estree` to expression tokens'
     )
-    t.equal(
-      token.estree.type,
-      'Identifier',
+    t.deepEqual(
+      JSON.parse(JSON.stringify(token.estree)),
+      {
+        type: 'Program',
+        start: 3,
+        end: 4,
+        body: [
+          {
+            type: 'ExpressionStatement',
+            expression: {
+              type: 'Identifier',
+              start: 3,
+              end: 4,
+              loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+              name: 'b'
+            },
+            start: 3,
+            end: 4,
+            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}}
+          }
+        ],
+        sourceType: 'module',
+        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}}
+      },
       '`addResult` should add an expression'
     )
     return start.call(this, token)
@@ -131,10 +152,18 @@ test('micromark-extension-mdx-expression', function (t) {
       'estree' in token,
       '`addResult` should add `estree` to expression tokens'
     )
-    t.equal(
-      token.estree,
-      undefined,
-      '`estree` should be empty for an empty expression'
+
+    t.deepEqual(
+      JSON.parse(JSON.stringify(token.estree)),
+      {
+        type: 'Program',
+        start: 3,
+        end: 3,
+        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 3}},
+        body: [],
+        sourceType: 'module'
+      },
+      '`estree` should be an empty program for an empty expression'
     )
     return start.call(this, token)
   }
@@ -206,7 +235,7 @@ test('micromark-extension-mdx-expression', function (t) {
     function () {
       micromark('a {//} b', {extensions: [syntax({acorn: acorn})]})
     },
-    /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+    /Could not parse expression with acorn: Unexpected token/,
     'should crash on a line comment (1)'
   )
 
@@ -214,7 +243,7 @@ test('micromark-extension-mdx-expression', function (t) {
     function () {
       micromark('a { // b } c', {extensions: [syntax({acorn: acorn})]})
     },
-    /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+    /Could not parse expression with acorn: Unexpected token/,
     'should crash on a line comment (2)'
   )
 
@@ -276,7 +305,7 @@ test('micromark-extension-mdx-expression', function (t) {
     function () {
       micromark('a {var b = "c"} d', {extensions: [syntax({acorn: acorn})]})
     },
-    /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+    /Could not parse expression with acorn: Unexpected token/,
     'should crash on non-expressions'
   )
 
@@ -293,7 +322,7 @@ test('micromark-extension-mdx-expression', function (t) {
     function () {
       micromark('> a {\n> b<} c', {extensions: [syntax({acorn: acorn})]})
     },
-    /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+    /Could not parse expression with acorn: Unexpected token/,
     'should crash on incorrect expressions in containers (1)'
   )
 
@@ -301,7 +330,7 @@ test('micromark-extension-mdx-expression', function (t) {
     function () {
       micromark('> a {\n> b\n> c} d', {extensions: [syntax({acorn: acorn})]})
     },
-    /Unexpected content after expression, expected `}`/,
+    /Could not parse expression with acorn: Unexpected content after expression/,
     'should crash on incorrect expressions in containers (2)'
   )
 
@@ -369,7 +398,7 @@ test('micromark-extension-mdx-expression', function (t) {
       function () {
         micromark('a {??} b', {extensions: [syntax({acorn: acorn})]})
       },
-      /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+      /Could not parse expression with acorn: Unexpected token/,
       'should crash on an incorrect expression'
     )
 
@@ -394,7 +423,7 @@ test('micromark-extension-mdx-expression', function (t) {
       function () {
         micromark('a {b { c } d', {extensions: [syntax({acorn: acorn})]})
       },
-      /Unexpected content after expression, expected `}`/,
+      /Could not parse expression with acorn: Unexpected content after expression/,
       'should crash if no closing brace is found (2)'
     )
 
@@ -533,7 +562,7 @@ test('micromark-extension-mdx-expression', function (t) {
       function () {
         micromark('{b { c }', {extensions: [syntax({acorn: acorn})]})
       },
-      /Unexpected content after expression, expected `}`/,
+      /Could not parse expression with acorn: Unexpected content after expression/,
       'should crash if no closing brace is found (2)'
     )
 
@@ -584,8 +613,18 @@ test('micromark-extension-mdx-expression', function (t) {
           extensions: [syntax({acorn: acorn, spread: true})]
         })
       },
-      /Could not parse expression with acorn: SyntaxError: Unexpected token/,
+      /Could not parse expression with acorn: Unexpected token/,
       'should crash on an incorrect spread'
+    )
+
+    t.throws(
+      function () {
+        micromark('a {...b,c} d', {
+          extensions: [syntax({acorn: acorn, spread: true})]
+        })
+      },
+      /Unexpected extra content in spread: only a single spread is supported/,
+      'should crash if a spread and other things'
     )
 
     t.throws(
