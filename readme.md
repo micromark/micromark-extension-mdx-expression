@@ -49,9 +49,10 @@ Acorn parser to use ([`Acorn`][acorn], optional).
 
 ###### `options.acornOptions`
 
-Options to pass to acorn (`Object`, default: `{ecmaVersion: 2020, locations:
-true, sourceType: 'module'}`).
-All fields except for `locations` can be set.
+Options to pass to acorn (`Object`, default: `{ecmaVersion: 2020, sourceType:
+'module'}`).
+All fields except can be set.
+Position info (`loc`, `range`) is set on ES nodes regardless of acorn options.
 
 ###### `options.addResult`
 
@@ -135,6 +136,16 @@ For example:
 a { b
 ```
 
+### Could not parse expression with acorn: Unexpected content after expression
+
+This error occurs when there is more content after a JS expression (source:
+`micromark-extension-mdx-expression`, rule id: `acorn`).
+For example:
+
+```markdown
+a {"b" "c"} d
+```
+
 ### Could not parse expression with acorn: $error
 
 This error occurs if acorn crashes (source: `micromark-extension-mdx-expression`,
@@ -143,16 +154,6 @@ For example:
 
 ```markdown
 a {var b = "c"} d
-```
-
-### Unexpected content after expression, expected `}`
-
-This error occurs when there is more content after a JS expression (source:
-`micromark-extension-mdx-expression`, rule id: `unexpected-content`).
-For example:
-
-```markdown
-a {"b" "c"} d
 ```
 
 ## Tokens
