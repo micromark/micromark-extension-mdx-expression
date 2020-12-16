@@ -17,7 +17,7 @@ You should use this with [`mdast-util-mdx-expression`][util] (**[mdast][]**).
 Alternatively, use either [`micromark-extension-mdx`][mdx] or
 [`micromark-extension-mdxjs`][mdxjs] with [`mdast-util-mdx`][mdast-util-mdx] to
 support all of MDX (or MDX.js).
-Or, use it through `remark-mdx` or `remark-mdxjs` (**[remark][]**).
+Or, use it through [`remark-mdx`][remark-mdx] (**[remark][]**).
 
 ## Install
 
@@ -263,3 +263,5 @@ abide by its terms.
 [mdast-util-mdx]: https://github.com/syntax-tree/mdast-util-mdx
 
 [acorn]: https://github.com/acornjs/acorn
+
+[remark-mdx]: https://github.com/mdx-js/mdx/tree/next/packages/remark-mdx
