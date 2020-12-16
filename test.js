@@ -107,6 +107,7 @@ test('micromark-extension-mdx-expression', function (t) {
         type: 'Program',
         start: 3,
         end: 4,
+        range: [3, 4],
         body: [
           {
             type: 'ExpressionStatement',
@@ -115,11 +116,13 @@ test('micromark-extension-mdx-expression', function (t) {
               start: 3,
               end: 4,
               loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+              range: [3, 4],
               name: 'b'
             },
             start: 3,
             end: 4,
-            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}}
+            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+            range: [3, 4]
           }
         ],
         sourceType: 'module',
@@ -160,6 +163,7 @@ test('micromark-extension-mdx-expression', function (t) {
         start: 3,
         end: 3,
         loc: {start: {line: 1, column: 3}, end: {line: 1, column: 3}},
+        range: [3, 3],
         body: [],
         sourceType: 'module'
       },
