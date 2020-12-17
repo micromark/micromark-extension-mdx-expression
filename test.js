@@ -107,7 +107,6 @@ test('micromark-extension-mdx-expression', function (t) {
         type: 'Program',
         start: 3,
         end: 4,
-        range: [3, 4],
         body: [
           {
             type: 'ExpressionStatement',
@@ -115,9 +114,9 @@ test('micromark-extension-mdx-expression', function (t) {
               type: 'Identifier',
               start: 3,
               end: 4,
+              name: 'b',
               loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
-              range: [3, 4],
-              name: 'b'
+              range: [3, 4]
             },
             start: 3,
             end: 4,
@@ -126,7 +125,9 @@ test('micromark-extension-mdx-expression', function (t) {
           }
         ],
         sourceType: 'module',
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}}
+        comments: [],
+        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+        range: [3, 4]
       },
       '`addResult` should add an expression'
     )
@@ -162,10 +163,11 @@ test('micromark-extension-mdx-expression', function (t) {
         type: 'Program',
         start: 3,
         end: 3,
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 3}},
-        range: [3, 3],
         body: [],
-        sourceType: 'module'
+        sourceType: 'module',
+        comments: [],
+        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 3}},
+        range: [3, 3]
       },
       '`estree` should be an empty program for an empty expression'
     )
@@ -240,7 +242,7 @@ test('micromark-extension-mdx-expression', function (t) {
       micromark('a {//} b', {extensions: [syntax({acorn: acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
-    'should crash on a line comment (1)'
+    'should crash on an incorrect line comment (1)'
   )
 
   t.throws(
@@ -248,7 +250,7 @@ test('micromark-extension-mdx-expression', function (t) {
       micromark('a { // b } c', {extensions: [syntax({acorn: acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
-    'should crash on a line comment (2)'
+    'should crash on an incorrect line comment (2)'
   )
 
   t.equal(
@@ -277,6 +279,58 @@ test('micromark-extension-mdx-expression', function (t) {
     '<p>a  d</p>',
     'should support an expression followed by a line comment and a line ending'
   )
+
+  t.equal(
+    micromark('a {/*b*/ // c\n} d', {
+      extensions: [syntax({acorn: acorn, addResult: true})],
+      htmlExtensions: [
+        {
+          enter: {
+            mdxFlowExpression: checkResultComments,
+            mdxTextExpression: checkResultComments
+          },
+          exit: {mdxFlowExpression: end, mdxTextExpression: end}
+        }
+      ]
+    }),
+    '<p>a  d</p>',
+    'should support `addResult` for comments'
+  )
+
+  function checkResultComments(token) {
+    t.deepEqual(
+      JSON.parse(JSON.stringify(token.estree)),
+      {
+        type: 'Program',
+        start: 3,
+        end: 14,
+        body: [],
+        sourceType: 'module',
+        comments: [
+          {
+            type: 'Block',
+            value: 'b',
+            start: 3,
+            end: 8,
+            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 8}},
+            range: [3, 8]
+          },
+          {
+            type: 'Line',
+            value: ' c',
+            start: 9,
+            end: 13,
+            loc: {start: {line: 1, column: 9}, end: {line: 1, column: 13}},
+            range: [9, 13]
+          }
+        ],
+        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 14}},
+        range: [3, 14]
+      },
+      '`estree` should have comments'
+    )
+    return start.call(this, token)
+  }
 
   t.equal(
     micromark('a {b.c} d', {
