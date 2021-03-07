@@ -691,7 +691,7 @@ test('micromark-extension-mdx-expression', function (t) {
           extensions: [syntax({acorn: acorn, spread: true})]
         })
       },
-      /Unexpected empty spread expression: expected `\.\.\.`/,
+      /Unexpected empty expression/,
       'should crash on an empty spread'
     )
 
@@ -701,7 +701,7 @@ test('micromark-extension-mdx-expression', function (t) {
           extensions: [syntax({acorn: acorn, spread: true})]
         })
       },
-      /Unexpected empty spread expression: expected `\.\.\.`/,
+      /Unexpected empty expression/,
       'should crash on a comment spread'
     )
 
