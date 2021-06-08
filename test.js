@@ -2,7 +2,7 @@ var acorn = require('acorn')
 var jsx = require('acorn-jsx')
 var test = require('tape')
 var micromark = require('micromark/lib')
-var syntax = require('.')
+var syntax = require('./index.js')
 
 var html = {
   enter: {mdxFlowExpression: start, mdxTextExpression: start},
