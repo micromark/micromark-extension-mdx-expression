@@ -4,7 +4,7 @@ import test from 'tape'
 import {micromark} from 'micromark'
 import {mdxExpression as syntax} from '../index.js'
 
-var html = {
+const html = {
   enter: {mdxFlowExpression: start, mdxTextExpression: start},
   exit: {mdxFlowExpression: end, mdxTextExpression: end}
 }
@@ -18,9 +18,9 @@ function end() {
   this.setData('slurpOneLineEnding', true)
 }
 
-test('micromark-extension-mdx-expression', function (t) {
+test('micromark-extension-mdx-expression', (t) => {
   t.throws(
-    function () {
+    () => {
       syntax({acorn: true})
     },
     /Expected a proper `acorn` instance passed in as `options\.acorn`/,
@@ -28,7 +28,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       syntax({addResult: true})
     },
     /Expected an `acorn` instance passed in as `options\.acorn`/,
@@ -36,7 +36,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       syntax({acornOptions: {}})
     },
     /Expected an `acorn` instance passed in as `options\.acorn`/,
@@ -44,7 +44,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       micromark('a {<b />} c', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -61,7 +61,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       micromark('a {(() => {})()} c', {
         extensions: [syntax({acorn, acornOptions: {ecmaVersion: 5}})]
       })
@@ -238,7 +238,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       micromark('a {//} b', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -246,7 +246,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       micromark('a { // b } c', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -360,7 +360,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       micromark('a {var b = "c"} d', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -377,7 +377,7 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       micromark('> a {\n> b<} c', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -385,14 +385,14 @@ test('micromark-extension-mdx-expression', function (t) {
   )
 
   t.throws(
-    function () {
+    () => {
       micromark('> a {\n> b\n> c} d', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected content after expression/,
     'should crash on incorrect expressions in containers (2)'
   )
 
-  test('text (agnostic)', function (t) {
+  test('text (agnostic)', (t) => {
     t.equal(
       micromark('a {b} c', {extensions: [syntax()], htmlExtensions: [html]}),
       '<p>a  c</p>',
@@ -406,7 +406,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {b c', {extensions: [syntax()]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
@@ -414,7 +414,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {b { c } d', {extensions: [syntax()]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
@@ -442,7 +442,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.end()
   })
 
-  test('text (gnostic)', function (t) {
+  test('text (gnostic)', (t) => {
     t.equal(
       micromark('a {b} c', {
         extensions: [syntax({acorn})],
@@ -453,7 +453,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {??} b', {extensions: [syntax({acorn})]})
       },
       /Could not parse expression with acorn: Unexpected token/,
@@ -470,7 +470,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {b c', {extensions: [syntax({acorn})]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
@@ -478,7 +478,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {b { c } d', {extensions: [syntax({acorn})]})
       },
       /Could not parse expression with acorn: Unexpected content after expression/,
@@ -533,7 +533,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.end()
   })
 
-  test('flow (agnostic)', function (t) {
+  test('flow (agnostic)', (t) => {
     t.equal(
       micromark('{a}', {extensions: [syntax()], htmlExtensions: [html]}),
       '',
@@ -547,7 +547,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('{a', {extensions: [syntax()]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
@@ -555,7 +555,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('{b { c }', {extensions: [syntax()]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
@@ -589,7 +589,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.end()
   })
 
-  test('flow (gnostic)', function (t) {
+  test('flow (gnostic)', (t) => {
     t.equal(
       micromark('{a}', {
         extensions: [syntax({acorn})],
@@ -609,7 +609,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('{a', {extensions: [syntax({acorn})]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
@@ -617,7 +617,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('{b { c }', {extensions: [syntax({acorn})]})
       },
       /Could not parse expression with acorn: Unexpected content after expression/,
@@ -654,9 +654,9 @@ test('micromark-extension-mdx-expression', function (t) {
     t.end()
   })
 
-  test('spread (hidden)', function (t) {
+  test('spread (hidden)', (t) => {
     t.throws(
-      function () {
+      () => {
         micromark('a {b} c', {
           extensions: [syntax({acorn, spread: true})]
         })
@@ -666,7 +666,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {...?} c', {
           extensions: [syntax({acorn, spread: true})]
         })
@@ -676,7 +676,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {...b,c} d', {
           extensions: [syntax({acorn, spread: true})]
         })
@@ -686,7 +686,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {} b', {
           extensions: [syntax({acorn, spread: true})]
         })
@@ -696,7 +696,7 @@ test('micromark-extension-mdx-expression', function (t) {
     )
 
     t.throws(
-      function () {
+      () => {
         micromark('a {/* b */} c', {
           extensions: [syntax({acorn, spread: true})]
         })
