@@ -1,13 +1,20 @@
-import {markdownLineEnding} from 'micromark-util-character'
+import assert from 'assert'
 import {factorySpace} from 'micromark-factory-space'
+import {markdownLineEnding} from 'micromark-util-character'
+import {codes} from 'micromark-util-symbol/codes.js'
+import {types} from 'micromark-util-symbol/types.js'
 import {factoryExpression} from './factory-expression.js'
 
-export function mdxExpression(options) {
-  const settings = options || {}
-  const addResult = settings.addResult
-  const acorn = settings.acorn
-  let spread
-  let forbidEmpty
+export function mdxExpression(options = {}) {
+  const addResult = options.addResult
+  const acorn = options.acorn
+  // Hidden: `micromark-extension-mdx-jsx` supports expressions in tags,
+  // and one of them is only “spread” elements.
+  // It also has expressions that are not allowed to be empty (`<x y={}/>`).
+  // Instead of duplicating code there, this are two small hidden feature here
+  // to test that behavior.
+  const spread = options.spread
+  const forbidEmpty = options.forbidEmpty
   let acornOptions
 
   if (acorn) {
@@ -21,21 +28,15 @@ export function mdxExpression(options) {
       {ecmaVersion: 2020, sourceType: 'module'},
       options.acornOptions || {}
     )
-
-    // Hidden: `micromark-extension-mdx-jsx` supports expressions in tags,
-    // and one of them is only “spread” elements.
-    // It also has expressions that are not allowed to be empty (`<x y={}/>`).
-    // Instead of duplicating code there, this are two small hidden feature here
-    // to test that behavior.
-    spread = settings.spread
-    forbidEmpty = settings.forbidEmpty
-  } else if (settings.acornOptions || settings.addResult) {
+  } else if (options.acornOptions || options.addResult) {
     throw new Error('Expected an `acorn` instance passed in as `options.acorn`')
   }
 
   return {
-    flow: {123: {tokenize: tokenizeFlowExpression, concrete: true}},
-    text: {123: {tokenize: tokenizeTextExpression}}
+    flow: {
+      [codes.leftCurlyBrace]: {tokenize: tokenizeFlowExpression, concrete: true}
+    },
+    text: {[codes.leftCurlyBrace]: {tokenize: tokenizeTextExpression}}
   }
 
   function tokenizeFlowExpression(effects, ok, nok) {
@@ -44,13 +45,11 @@ export function mdxExpression(options) {
     return start
 
     function start(code) {
-      /* istanbul ignore if - handled by mm */
-      if (code !== 123 /* `{` */) throw new Error('Expected `{`')
-
+      assert(code === codes.leftCurlyBrace, 'expected `{`')
       return factoryExpression.call(
         self,
         effects,
-        factorySpace(effects, after, 'whitespace'),
+        factorySpace(effects, after, types.whitespace),
         nok,
         acorn,
         acornOptions,
@@ -64,7 +63,9 @@ export function mdxExpression(options) {
     }
 
     function after(code) {
-      return code === null || markdownLineEnding(code) ? ok(code) : nok(code)
+      return code === codes.eof || markdownLineEnding(code)
+        ? ok(code)
+        : nok(code)
     }
   }
 
@@ -74,9 +75,7 @@ export function mdxExpression(options) {
     return start
 
     function start(code) {
-      /* istanbul ignore if - handled by mm */
-      if (code !== 123 /* `{` */) throw new Error('Expected `{`')
-
+      assert(code === codes.leftCurlyBrace, 'expected `{`')
       return factoryExpression.call(
         self,
         effects,

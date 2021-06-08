@@ -2,7 +2,7 @@ import * as acorn from 'acorn'
 import jsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
-import {mdxExpression as syntax} from '../index.js'
+import {mdxExpression as syntax} from '../dev/index.js'
 
 const html = {
   enter: {mdxFlowExpression: start, mdxTextExpression: start},

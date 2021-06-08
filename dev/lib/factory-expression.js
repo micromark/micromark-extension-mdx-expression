@@ -1,5 +1,8 @@
-import {markdownLineEnding} from 'micromark-util-character'
+import assert from 'assert'
 import {factoryWhitespace} from 'micromark-factory-whitespace'
+import {markdownLineEnding} from 'micromark-util-character'
+import {codes} from 'micromark-util-symbol/codes.js'
+import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
 import {eventsToAcorn} from './util-events-to-acorn.js'
 
@@ -11,9 +14,9 @@ export function factoryExpression(
   acorn,
   acornOptions,
   addResult,
-  expressionType,
-  expressionMarkerType,
-  expressionChunkType,
+  type,
+  markerType,
+  chunkType,
   spread,
   forbidEmpty
 ) {
@@ -26,17 +29,17 @@ export function factoryExpression(
   return start
 
   function start(code) {
-    // Always a `{`
-    effects.enter(expressionType)
-    effects.enter(expressionMarkerType)
+    assert(code === codes.leftCurlyBrace, 'expected `{`')
+    effects.enter(type)
+    effects.enter(markerType)
     effects.consume(code)
-    effects.exit(expressionMarkerType)
+    effects.exit(markerType)
     startPosition = self.now()
     return atBreak
   }
 
   function atBreak(code) {
-    if (code === null) {
+    if (code === codes.eof) {
       throw (
         lastCrash ||
         new VFileMessage(
@@ -47,7 +50,7 @@ export function factoryExpression(
       )
     }
 
-    if (code === 125) {
+    if (code === codes.rightCurlyBrace) {
       return atClosingBrace(code)
     }
 
@@ -55,17 +58,21 @@ export function factoryExpression(
       return factoryWhitespace(effects, atBreak)(code)
     }
 
-    effects.enter(expressionChunkType)
+    effects.enter(chunkType)
     return inside(code)
   }
 
   function inside(code) {
-    if (code === null || code === 125 || markdownLineEnding(code)) {
-      effects.exit(expressionChunkType)
+    if (
+      code === codes.eof ||
+      code === codes.rightCurlyBrace ||
+      markdownLineEnding(code)
+    ) {
+      effects.exit(chunkType)
       return atBreak(code)
     }
 
-    if (code === 123 && !acorn) {
+    if (code === codes.leftCurlyBrace && !acorn) {
       effects.consume(code)
       balance++
       return inside
@@ -81,15 +88,15 @@ export function factoryExpression(
     // Agnostic mode: count balanced braces.
     if (!acorn) {
       if (balance) {
-        effects.enter(expressionChunkType)
+        effects.enter(chunkType)
         effects.consume(code)
         return inside
       }
 
-      effects.enter(expressionMarkerType)
+      effects.enter(markerType)
       effects.consume(code)
-      effects.exit(expressionMarkerType)
-      effects.exit(expressionType)
+      effects.exit(markerType)
+      effects.exit(type)
       return ok
     }
 
@@ -111,24 +118,25 @@ export function factoryExpression(
     const estree = result.estree
 
     // Get the spread value.
-    if (
-      spread &&
-      estree &&
+    if (spread && estree) {
       // The next checks should always be the case, as we wrap in `d={}`
-      estree.type === 'Program' &&
-      estree.body[0] &&
-      estree.body[0].type === 'ExpressionStatement' &&
-      estree.body[0].expression.type === 'ObjectExpression'
-    ) {
+      assert.strictEqual(estree.type, 'Program', 'expected program')
+      assert(estree.body[0], 'expected body')
+      assert.strictEqual(
+        estree.body[0].type,
+        'ExpressionStatement',
+        'expected expression'
+      )
+      assert.strictEqual(
+        estree.body[0].expression.type,
+        'ObjectExpression',
+        'expected object expression'
+      )
+
       if (estree.body[0].expression.properties[1]) {
         throw new VFileMessage(
           'Unexpected extra content in spread: only a single spread is supported',
-          {
-            line: estree.body[0].expression.properties[1].loc.start.line,
-            column:
-              estree.body[0].expression.properties[1].loc.start.column + 1,
-            offset: estree.body[0].expression.properties[1].start
-          },
+          positionFromEstree(estree.body[0].expression.properties[1]).start,
           'micromark-extension-mdx-expression:spread-extra'
         )
       } else if (
@@ -138,12 +146,7 @@ export function factoryExpression(
           'Unexpected `' +
             estree.body[0].expression.properties[0].type +
             '` in code: only spread elements are supported',
-          {
-            line: estree.body[0].expression.properties[0].loc.start.line,
-            column:
-              estree.body[0].expression.properties[0].loc.start.column + 1,
-            offset: estree.body[0].expression.properties[0].start
-          },
+          positionFromEstree(estree.body[0].expression.properties[0]).start,
           'micromark-extension-mdx-expression:non-spread'
         )
       }
@@ -160,8 +163,8 @@ export function factoryExpression(
         'micromark-extension-mdx-expression:acorn'
       )
 
-      if (code !== null && result.swallow) {
-        effects.enter(expressionChunkType)
+      if (code !== codes.eof && result.swallow) {
+        effects.enter(chunkType)
         effects.consume(code)
         return inside
       }
@@ -169,13 +172,10 @@ export function factoryExpression(
       throw lastCrash
     }
 
-    effects.enter(expressionMarkerType)
+    effects.enter(markerType)
     effects.consume(code)
-    effects.exit(expressionMarkerType)
-    Object.assign(
-      effects.exit(expressionType),
-      addResult ? {estree} : undefined
-    )
+    effects.exit(markerType)
+    Object.assign(effects.exit(type), addResult ? {estree} : undefined)
     return ok
   }
 }

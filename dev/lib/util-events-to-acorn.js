@@ -1,12 +1,12 @@
+import assert from 'assert'
+import {visit} from 'estree-util-visit'
 import {VFileMessage} from 'vfile-message'
 
 const own = {}.hasOwnProperty
 
 // Parse a list of micromark events with acorn.
-// eslint-disable-next-line complexity
 export function eventsToAcorn(acorn, acornOptions, events, config) {
-  const before = config.prefix || ''
-  const after = config.suffix || ''
+  const {prefix = '', suffix = ''} = config
   const comments = []
   const acornConfig = Object.assign({}, acornOptions, {onComment: comments})
   const chunks = []
@@ -17,7 +17,6 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
   let exception
   let mdStartOffset
 
-  /* istanbul ignore else - not passed by `micromark-extension-mdxjs-esm`. */
   if (config.start) {
     mdStartOffset = config.start.offset
     lines[config.start.line] = config.start
@@ -30,8 +29,8 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
     if (events[index][0] === 'exit') {
       chunks.push(events[index][2].sliceSerialize(token))
 
-      /* istanbul ignore if - `micromark-extension-mdxjs-esm` doesn’t pass
-       * `start` */
+      // Not passed by `micromark-extension-mdxjs-esm`
+      /* c8 ignore next 3 */
       if (mdStartOffset === undefined) {
         mdStartOffset = events[index][1].start.offset
       }
@@ -46,7 +45,7 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
   }
 
   const source = chunks.join('')
-  const value = before + source + after
+  const value = prefix + source + suffix
   const isEmptyExpression = config.expression && empty(source)
 
   if (isEmptyExpression && !config.allowEmpty) {
@@ -69,23 +68,23 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
     error.loc = {line: point.line, column: point.column - 1}
     exception = error
     swallow =
-      error.raisedAt >= before.length + source.length ||
+      error.raisedAt >= prefix.length + source.length ||
       // Broken comments are raised at their start, not their end.
       error.message === 'Unterminated comment'
   }
 
   if (estree && config.expression && !isEmptyExpression) {
-    if (empty(value.slice(estree.end, value.length - after.length))) {
+    if (empty(value.slice(estree.end, value.length - suffix.length))) {
       estree = {
         type: 'Program',
         start: 0,
-        end: before.length + source.length,
+        end: prefix.length + source.length,
         body: [
           {
             type: 'ExpressionStatement',
             expression: estree,
             start: 0,
-            end: before.length + source.length
+            end: prefix.length + source.length
           }
         ],
         sourceType: 'module'
@@ -101,77 +100,51 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
 
   if (estree) {
     estree.comments = comments
-    visit(estree)
+    visit(estree, visitor)
   }
 
   return {estree, error: exception, swallow}
 
-  function visit(esnode) {
-    let key
+  function visitor(esnode) {
+    assert('start' in esnode, 'expected `start` in node from acorn')
+    assert('end' in esnode, 'expected `end` in node from acorn')
 
-    // Not a node.
-    if (
-      !(
-        esnode &&
-        typeof esnode === 'object' &&
-        'type' in esnode &&
-        'end' in esnode
-      )
-    ) {
-      return
+    const pointStart = parseOffsetToUnistPoint(esnode.start)
+    const pointEnd = parseOffsetToUnistPoint(esnode.end)
+    esnode.start = pointStart.offset
+    esnode.end = pointEnd.offset
+    esnode.loc = {
+      start: {line: pointStart.line, column: pointStart.column - 1},
+      end: {line: pointEnd.line, column: pointEnd.column - 1}
     }
-
-    /* istanbul ignore else - acorn seems to always nicely add position info,
-     * but make sure we don’t crash if some weird extension doesn’t. */
-    if ('start' in esnode && 'end' in esnode) {
-      const pointStart = parseOffsetToUnistPoint(esnode.start)
-      const pointEnd = parseOffsetToUnistPoint(esnode.end)
-      esnode.start = pointStart.offset
-      esnode.end = pointEnd.offset
-      esnode.loc = {
-        start: {line: pointStart.line, column: pointStart.column - 1},
-        end: {line: pointEnd.line, column: pointEnd.column - 1}
-      }
-      esnode.range = [esnode.start, esnode.end]
-    } else {
-      esnode.start = undefined
-      esnode.end = undefined
-      esnode.loc = undefined
-      esnode.range = undefined
-    }
-
-    for (key in esnode) {
-      if (esnode[key] && typeof esnode[key] === 'object') {
-        if (Array.isArray(esnode[key])) {
-          let index = -1
-
-          while (++index < esnode[key].length) {
-            visit(esnode[key][index])
-          }
-        } else {
-          visit(esnode[key])
-        }
-      }
-    }
+    esnode.range = [esnode.start, esnode.end]
   }
 
   function parseOffsetToUnistPoint(offset) {
-    // First, get the offset in `source` (the string of “markdown”)
-    let srcOffset = offset - before.length
+    let srcOffset = offset - prefix.length
     let line
     let lineStart
 
-    if (srcOffset < 0) srcOffset = 0
-    else if (srcOffset > source.length) srcOffset = source.length
+    if (srcOffset < 0) {
+      srcOffset = 0
+    } else if (srcOffset > source.length) {
+      srcOffset = source.length
+    }
 
     srcOffset += mdStartOffset
 
-    // Then, update it
+    // Then, update it.
     for (line in lines) {
       if (own.call(lines, line)) {
         // First line we find.
-        if (!lineStart) lineStart = lines[line]
-        if (lines[line].offset > offset) break
+        if (!lineStart) {
+          lineStart = lines[line]
+        }
+
+        if (lines[line].offset > offset) {
+          break
+        }
+
         lineStart = lines[line]
       }
     }
