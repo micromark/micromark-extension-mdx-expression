@@ -1,8 +1,8 @@
-var acorn = require('acorn')
-var jsx = require('acorn-jsx')
-var test = require('tape')
-var micromark = require('micromark/lib')
-var syntax = require('./index.js')
+import * as acorn from 'acorn'
+import jsx from 'acorn-jsx'
+import test from 'tape'
+import {micromark} from 'micromark'
+import {mdxExpression as syntax} from '../index.js'
 
 var html = {
   enter: {mdxFlowExpression: start, mdxTextExpression: start},
@@ -45,7 +45,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.throws(
     function () {
-      micromark('a {<b />} c', {extensions: [syntax({acorn: acorn})]})
+      micromark('a {<b />} c', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should not support JSX by default'
@@ -63,7 +63,7 @@ test('micromark-extension-mdx-expression', function (t) {
   t.throws(
     function () {
       micromark('a {(() => {})()} c', {
-        extensions: [syntax({acorn: acorn, acornOptions: {ecmaVersion: 5}})]
+        extensions: [syntax({acorn, acornOptions: {ecmaVersion: 5}})]
       })
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -72,7 +72,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {(() => {})()} c', {
-      extensions: [syntax({acorn: acorn, acornOptions: {ecmaVersion: 6}})],
+      extensions: [syntax({acorn, acornOptions: {ecmaVersion: 6}})],
       htmlExtensions: [html]
     }),
     '<p>a  c</p>',
@@ -81,7 +81,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {b} c', {
-      extensions: [syntax({acorn: acorn, addResult: true})],
+      extensions: [syntax({acorn, addResult: true})],
       htmlExtensions: [
         {
           enter: {
@@ -136,7 +136,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {} c', {
-      extensions: [syntax({acorn: acorn, addResult: true})],
+      extensions: [syntax({acorn, addResult: true})],
       htmlExtensions: [
         {
           enter: {
@@ -176,7 +176,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {} b', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -185,7 +185,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a { \t\r\n} b', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -194,7 +194,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {/**/} b', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -203,7 +203,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {  /*\n*/\t} b', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -212,7 +212,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {/*b*//*c*/} d', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -221,7 +221,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {b/*c*/} d', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -230,7 +230,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {/*b*/c} d', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -239,7 +239,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.throws(
     function () {
-      micromark('a {//} b', {extensions: [syntax({acorn: acorn})]})
+      micromark('a {//} b', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on an incorrect line comment (1)'
@@ -247,7 +247,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.throws(
     function () {
-      micromark('a { // b } c', {extensions: [syntax({acorn: acorn})]})
+      micromark('a { // b } c', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on an incorrect line comment (2)'
@@ -255,7 +255,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {//\n} b', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -264,7 +264,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {// b\nd} d', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -273,7 +273,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {b// c\n} d', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -282,7 +282,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {/*b*/ // c\n} d', {
-      extensions: [syntax({acorn: acorn, addResult: true})],
+      extensions: [syntax({acorn, addResult: true})],
       htmlExtensions: [
         {
           enter: {
@@ -334,7 +334,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {b.c} d', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -343,7 +343,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {1 + 1} b', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -352,7 +352,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('a {function () {}} b', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -361,7 +361,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.throws(
     function () {
-      micromark('a {var b = "c"} d', {extensions: [syntax({acorn: acorn})]})
+      micromark('a {var b = "c"} d', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on non-expressions'
@@ -369,7 +369,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.equal(
     micromark('> a {\n> b} c', {
-      extensions: [syntax({acorn: acorn})],
+      extensions: [syntax({acorn})],
       htmlExtensions: [html]
     }),
     '<blockquote>\n<p>a  c</p>\n</blockquote>',
@@ -378,7 +378,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.throws(
     function () {
-      micromark('> a {\n> b<} c', {extensions: [syntax({acorn: acorn})]})
+      micromark('> a {\n> b<} c', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on incorrect expressions in containers (1)'
@@ -386,7 +386,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
   t.throws(
     function () {
-      micromark('> a {\n> b\n> c} d', {extensions: [syntax({acorn: acorn})]})
+      micromark('> a {\n> b\n> c} d', {extensions: [syntax({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected content after expression/,
     'should crash on incorrect expressions in containers (2)'
@@ -445,7 +445,7 @@ test('micromark-extension-mdx-expression', function (t) {
   test('text (gnostic)', function (t) {
     t.equal(
       micromark('a {b} c', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>a  c</p>',
@@ -454,7 +454,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.throws(
       function () {
-        micromark('a {??} b', {extensions: [syntax({acorn: acorn})]})
+        micromark('a {??} b', {extensions: [syntax({acorn})]})
       },
       /Could not parse expression with acorn: Unexpected token/,
       'should crash on an incorrect expression'
@@ -462,7 +462,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('a {} b', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>a  b</p>',
@@ -471,7 +471,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.throws(
       function () {
-        micromark('a {b c', {extensions: [syntax({acorn: acorn})]})
+        micromark('a {b c', {extensions: [syntax({acorn})]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
       'should crash if no closing brace is found (1)'
@@ -479,7 +479,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.throws(
       function () {
-        micromark('a {b { c } d', {extensions: [syntax({acorn: acorn})]})
+        micromark('a {b { c } d', {extensions: [syntax({acorn})]})
       },
       /Could not parse expression with acorn: Unexpected content after expression/,
       'should crash if no closing brace is found (2)'
@@ -487,7 +487,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('a {\n} b', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>a  b</p>',
@@ -496,7 +496,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('a } b', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>a } b</p>',
@@ -505,7 +505,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('{ a } b', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p> b</p>',
@@ -514,7 +514,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('a { /* { */ } b', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>a  b</p>',
@@ -523,7 +523,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('a { /* } */ } b', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>a  b</p>',
@@ -592,7 +592,7 @@ test('micromark-extension-mdx-expression', function (t) {
   test('flow (gnostic)', function (t) {
     t.equal(
       micromark('{a}', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '',
@@ -601,7 +601,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('{}', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '',
@@ -610,7 +610,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.throws(
       function () {
-        micromark('{a', {extensions: [syntax({acorn: acorn})]})
+        micromark('{a', {extensions: [syntax({acorn})]})
       },
       /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
       'should crash if no closing brace is found (1)'
@@ -618,7 +618,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.throws(
       function () {
-        micromark('{b { c }', {extensions: [syntax({acorn: acorn})]})
+        micromark('{b { c }', {extensions: [syntax({acorn})]})
       },
       /Could not parse expression with acorn: Unexpected content after expression/,
       'should crash if no closing brace is found (2)'
@@ -626,7 +626,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('{\n}\na', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>a</p>',
@@ -635,7 +635,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('{ a } \t\nb', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>b</p>',
@@ -644,7 +644,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('  { a }\nb', {
-        extensions: [syntax({acorn: acorn})],
+        extensions: [syntax({acorn})],
         htmlExtensions: [html]
       }),
       '<p>b</p>',
@@ -658,7 +658,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.throws(
       function () {
         micromark('a {b} c', {
-          extensions: [syntax({acorn: acorn, spread: true})]
+          extensions: [syntax({acorn, spread: true})]
         })
       },
       /Unexpected `Property` in code: only spread elements are supported/,
@@ -668,7 +668,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.throws(
       function () {
         micromark('a {...?} c', {
-          extensions: [syntax({acorn: acorn, spread: true})]
+          extensions: [syntax({acorn, spread: true})]
         })
       },
       /Could not parse expression with acorn: Unexpected token/,
@@ -678,7 +678,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.throws(
       function () {
         micromark('a {...b,c} d', {
-          extensions: [syntax({acorn: acorn, spread: true})]
+          extensions: [syntax({acorn, spread: true})]
         })
       },
       /Unexpected extra content in spread: only a single spread is supported/,
@@ -688,7 +688,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.throws(
       function () {
         micromark('a {} b', {
-          extensions: [syntax({acorn: acorn, spread: true})]
+          extensions: [syntax({acorn, spread: true})]
         })
       },
       /Unexpected empty expression/,
@@ -698,7 +698,7 @@ test('micromark-extension-mdx-expression', function (t) {
     t.throws(
       function () {
         micromark('a {/* b */} c', {
-          extensions: [syntax({acorn: acorn, spread: true})]
+          extensions: [syntax({acorn, spread: true})]
         })
       },
       /Unexpected empty expression/,
@@ -707,7 +707,7 @@ test('micromark-extension-mdx-expression', function (t) {
 
     t.equal(
       micromark('a {...b} c', {
-        extensions: [syntax({acorn: acorn, spread: true})],
+        extensions: [syntax({acorn, spread: true})],
         htmlExtensions: [html]
       }),
       '<p>a  c</p>',

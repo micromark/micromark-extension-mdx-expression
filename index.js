@@ -1,2 +1,1 @@
-'use strict'
-module.exports = require('./lib/index.js')
+export {mdxExpression} from './lib/syntax.js'
