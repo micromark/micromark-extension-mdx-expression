@@ -1,25 +1,62 @@
+/**
+ * @typedef {import('micromark-util-types').Event} Event
+ * @typedef {import('micromark-util-types').Point} Point
+ * @typedef {import('acorn').Options} AcornOptions
+ * @typedef {import('acorn').Comment} Comment
+ * @typedef {import('acorn').Node} Node
+ * @typedef {import('estree').Program} Program
+ */
+
+/**
+ * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt}} Acorn
+ */
+
+/**
+ * @typedef Options
+ * @property {Point} [start]
+ * @property {string} [prefix='']
+ * @property {string} [suffix='']
+ * @property {boolean} [expression=false]
+ * @property {boolean} [allowEmpty=false]
+ * @property {boolean} [expression]
+ */
+
 import assert from 'assert'
 import {visit} from 'estree-util-visit'
 import {VFileMessage} from 'vfile-message'
 
 const own = {}.hasOwnProperty
 
-// Parse a list of micromark events with acorn.
-export function eventsToAcorn(acorn, acornOptions, events, config) {
-  const {prefix = '', suffix = ''} = config
+/**
+ * Parse a list of micromark events with acorn.
+ *
+ * @param {Acorn} acorn
+ * @param {AcornOptions} acornOptions
+ * @param {Event[]} events
+ * @param {Options} options
+ * @returns {{estree: Program|undefined, error: Error|undefined, swallow: boolean}}
+ */
+export function eventsToAcorn(acorn, acornOptions, events, options) {
+  const {prefix = '', suffix = ''} = options
+  /** @type {Array.<Comment>} */
   const comments = []
   const acornConfig = Object.assign({}, acornOptions, {onComment: comments})
+  /** @type {Array.<string>} */
   const chunks = []
+  /** @type {Record<string, Point>} */
   const lines = {}
   let index = -1
   let swallow = false
+  /** @type {Node|undefined} */
   let estree
+  /** @type {Error|undefined} */
   let exception
+  /** @type {number|undefined} */
   let mdStartOffset
 
-  if (config.start) {
-    mdStartOffset = config.start.offset
-    lines[config.start.line] = config.start
+  if (options.start) {
+    mdStartOffset = options.start.offset
+    lines[options.start.line] = options.start
   }
 
   // Assume only void events (and `enter` followed immediately by an `exit`).
@@ -46,9 +83,9 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
 
   const source = chunks.join('')
   const value = prefix + source + suffix
-  const isEmptyExpression = config.expression && empty(source)
+  const isEmptyExpression = options.expression && empty(source)
 
-  if (isEmptyExpression && !config.allowEmpty) {
+  if (isEmptyExpression && !options.allowEmpty) {
     throw new VFileMessage(
       'Unexpected empty expression',
       parseOffsetToUnistPoint(0),
@@ -58,7 +95,7 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
 
   try {
     estree =
-      config.expression && !isEmptyExpression
+      options.expression && !isEmptyExpression
         ? acorn.parseExpressionAt(value, 0, acornConfig)
         : acorn.parse(value, acornConfig)
   } catch (error) {
@@ -73,12 +110,13 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
       error.message === 'Unterminated comment'
   }
 
-  if (estree && config.expression && !isEmptyExpression) {
+  if (estree && options.expression && !isEmptyExpression) {
     if (empty(value.slice(estree.end, value.length - suffix.length))) {
       estree = {
         type: 'Program',
         start: 0,
         end: prefix.length + source.length,
+        // @ts-expect-error: It’s good.
         body: [
           {
             type: 'ExpressionStatement',
@@ -87,42 +125,53 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
             end: prefix.length + source.length
           }
         ],
-        sourceType: 'module'
+        sourceType: 'module',
+        comments: []
       }
     } else {
       const point = parseOffsetToUnistPoint(estree.end)
       exception = new Error('Unexpected content after expression')
+      // @ts-expect-error: acorn exception.
       exception.pos = point.offset
+      // @ts-expect-error: acorn exception.
       exception.loc = {line: point.line, column: point.column - 1}
       estree = undefined
     }
   }
 
   if (estree) {
+    // @ts-expect-error: acorn *does* allow comments
     estree.comments = comments
-    visit(estree, visitor)
+    // @ts-expect-error: acorn and estree are similar enough.
+    visit(estree, (esnode) => {
+      assert('start' in esnode, 'expected `start` in node from acorn')
+      assert('end' in esnode, 'expected `end` in node from acorn')
+      // @ts-expect-error: acorn has positions.
+      const pointStart = parseOffsetToUnistPoint(esnode.start)
+      // @ts-expect-error: acorn has positions.
+      const pointEnd = parseOffsetToUnistPoint(esnode.end)
+      esnode.start = pointStart.offset
+      esnode.end = pointEnd.offset
+      esnode.loc = {
+        start: {line: pointStart.line, column: pointStart.column - 1},
+        end: {line: pointEnd.line, column: pointEnd.column - 1}
+      }
+      esnode.range = [esnode.start, esnode.end]
+    })
   }
 
+  // @ts-expect-error: It’s a program now.
   return {estree, error: exception, swallow}
 
-  function visitor(esnode) {
-    assert('start' in esnode, 'expected `start` in node from acorn')
-    assert('end' in esnode, 'expected `end` in node from acorn')
-
-    const pointStart = parseOffsetToUnistPoint(esnode.start)
-    const pointEnd = parseOffsetToUnistPoint(esnode.end)
-    esnode.start = pointStart.offset
-    esnode.end = pointEnd.offset
-    esnode.loc = {
-      start: {line: pointStart.line, column: pointStart.column - 1},
-      end: {line: pointEnd.line, column: pointEnd.column - 1}
-    }
-    esnode.range = [esnode.start, esnode.end]
-  }
-
+  /**
+   * @param {number} offset
+   * @returs {Point}
+   */
   function parseOffsetToUnistPoint(offset) {
     let srcOffset = offset - prefix.length
+    /** @type {string} */
     let line
+    /** @type {Point|undefined} */
     let lineStart
 
     if (srcOffset < 0) {
@@ -131,6 +180,7 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
       srcOffset = source.length
     }
 
+    assert(mdStartOffset !== undefined, 'expected `mdStartOffset` to be found')
     srcOffset += mdStartOffset
 
     // Then, update it.
@@ -149,6 +199,7 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
       }
     }
 
+    assert(lineStart, 'expected `lineStart` to be defined')
     return {
       line: lineStart.line,
       column: lineStart.column + (srcOffset - lineStart.offset),
@@ -157,6 +208,10 @@ export function eventsToAcorn(acorn, acornOptions, events, config) {
   }
 }
 
+/**
+ * @param {string} value
+ * @returns {boolean}
+ */
 function empty(value) {
   return /^\s*$/.test(
     value

@@ -1,3 +1,20 @@
+/**
+ * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('./util-events-to-acorn.js').Acorn} Acorn
+ * @typedef {import('./util-events-to-acorn.js').AcornOptions} AcornOptions
+ */
+
+/**
+ * @typedef Options
+ * @property {boolean} [addResult=false]
+ * @property {Acorn} [acorn]
+ * @property {AcornOptions} [acornOptions]
+ * @property {boolean} [spread=false]
+ * @property {boolean} [forbidEmpty=false]
+ */
+
 import assert from 'assert'
 import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding} from 'micromark-util-character'
@@ -5,6 +22,10 @@ import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
 import {factoryExpression} from './factory-expression.js'
 
+/**
+ * @param {Options} options
+ * @returns {Extension}
+ */
 export function mdxExpression(options = {}) {
   const addResult = options.addResult
   const acorn = options.acorn
@@ -15,6 +36,7 @@ export function mdxExpression(options = {}) {
   // to test that behavior.
   const spread = options.spread
   const forbidEmpty = options.forbidEmpty
+  /** @type {AcornOptions} */
   let acornOptions
 
   if (acorn) {
@@ -24,9 +46,12 @@ export function mdxExpression(options = {}) {
       )
     }
 
+    /** @type {AcornOptions} */
     acornOptions = Object.assign(
+      /** @type {AcornOptions} */
       {ecmaVersion: 2020, sourceType: 'module'},
-      options.acornOptions || {}
+      /** @type {AcornOptions} */
+      options.acornOptions
     )
   } else if (options.acornOptions || options.addResult) {
     throw new Error('Expected an `acorn` instance passed in as `options.acorn`')
@@ -39,11 +64,13 @@ export function mdxExpression(options = {}) {
     text: {[codes.leftCurlyBrace]: {tokenize: tokenizeTextExpression}}
   }
 
+  /** @type {Tokenizer} */
   function tokenizeFlowExpression(effects, ok, nok) {
     const self = this
 
     return start
 
+    /** @type {State} */
     function start(code) {
       assert(code === codes.leftCurlyBrace, 'expected `{`')
       return factoryExpression.call(
@@ -62,6 +89,7 @@ export function mdxExpression(options = {}) {
       )(code)
     }
 
+    /** @type {State} */
     function after(code) {
       return code === codes.eof || markdownLineEnding(code)
         ? ok(code)
@@ -69,11 +97,13 @@ export function mdxExpression(options = {}) {
     }
   }
 
+  /** @type {Tokenizer} */
   function tokenizeTextExpression(effects, ok, nok) {
     const self = this
 
     return start
 
+    /** @type {State} */
     function start(code) {
       assert(code === codes.leftCurlyBrace, 'expected `{`')
       return factoryExpression.call(

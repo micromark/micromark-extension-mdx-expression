@@ -1,3 +1,12 @@
+/**
+ * @typedef {import('micromark-util-types').Point} Point
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('./util-events-to-acorn.js').Acorn} Acorn
+ * @typedef {import('./util-events-to-acorn.js').AcornOptions} AcornOptions
+ */
+
 import assert from 'assert'
 import {factoryWhitespace} from 'micromark-factory-whitespace'
 import {markdownLineEnding} from 'micromark-util-character'
@@ -6,6 +15,21 @@ import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
 import {eventsToAcorn} from './util-events-to-acorn.js'
 
+/**
+ * @this {TokenizeContext}
+ * @param {Effects} effects
+ * @param {State} ok
+ * @param {State} nok
+ * @param {Acorn|undefined} acorn
+ * @param {AcornOptions} acornOptions
+ * @param {boolean|undefined} addResult
+ * @param {string} type
+ * @param {string} markerType
+ * @param {string} chunkType
+ * @param {boolean} [spread=false]
+ * @param {boolean} [forbidEmpty=false]
+ * @returns {State}
+ */
 // eslint-disable-next-line max-params
 export function factoryExpression(
   effects,
@@ -23,11 +47,14 @@ export function factoryExpression(
   const self = this
   const eventStart = this.events.length + 3 // Add main and marker token
   let balance = 1
+  /** @type {Point} */
   let startPosition
+  /** @type {Error} */
   let lastCrash
 
   return start
 
+  /** @type {State} */
   function start(code) {
     assert(code === codes.leftCurlyBrace, 'expected `{`')
     effects.enter(type)
@@ -38,6 +65,7 @@ export function factoryExpression(
     return atBreak
   }
 
+  /** @type {State} */
   function atBreak(code) {
     if (code === codes.eof) {
       throw (
@@ -62,6 +90,7 @@ export function factoryExpression(
     return inside(code)
   }
 
+  /** @type {State} */
   function inside(code) {
     if (
       code === codes.eof ||
@@ -82,6 +111,7 @@ export function factoryExpression(
     return inside
   }
 
+  /** @type {State} */
   function atClosingBrace(code) {
     balance--
 
@@ -120,33 +150,29 @@ export function factoryExpression(
     // Get the spread value.
     if (spread && estree) {
       // The next checks should always be the case, as we wrap in `d={}`
-      assert.strictEqual(estree.type, 'Program', 'expected program')
-      assert(estree.body[0], 'expected body')
-      assert.strictEqual(
-        estree.body[0].type,
-        'ExpressionStatement',
-        'expected expression'
-      )
-      assert.strictEqual(
-        estree.body[0].expression.type,
-        'ObjectExpression',
+      assert(estree.type === 'Program', 'expected program')
+      const head = estree.body[0]
+      assert(head, 'expected body')
+      assert(head.type === 'ExpressionStatement', 'expected expression')
+      assert(
+        head.expression.type === 'ObjectExpression',
         'expected object expression'
       )
 
-      if (estree.body[0].expression.properties[1]) {
+      if (head.expression.properties[1]) {
         throw new VFileMessage(
           'Unexpected extra content in spread: only a single spread is supported',
-          positionFromEstree(estree.body[0].expression.properties[1]).start,
+          // @ts-expect-error Looks similar enough.
+          positionFromEstree(head.expression.properties[1]).start,
           'micromark-extension-mdx-expression:spread-extra'
         )
-      } else if (
-        estree.body[0].expression.properties[0].type !== 'SpreadElement'
-      ) {
+      } else if (head.expression.properties[0].type !== 'SpreadElement') {
         throw new VFileMessage(
           'Unexpected `' +
-            estree.body[0].expression.properties[0].type +
+            head.expression.properties[0].type +
             '` in code: only spread elements are supported',
-          positionFromEstree(estree.body[0].expression.properties[0]).start,
+          // @ts-expect-error Looks similar enough.
+          positionFromEstree(head.expression.properties[0]).start,
           'micromark-extension-mdx-expression:non-spread'
         )
       }
@@ -156,8 +182,11 @@ export function factoryExpression(
       lastCrash = new VFileMessage(
         'Could not parse expression with acorn: ' + result.error.message,
         {
+          // @ts-expect-error: fine.
           line: result.error.loc.line,
+          // @ts-expect-error: fine.
           column: result.error.loc.column + 1,
+          // @ts-expect-error: fine.
           offset: result.error.pos
         },
         'micromark-extension-mdx-expression:acorn'

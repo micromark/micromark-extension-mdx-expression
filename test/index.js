@@ -1,18 +1,27 @@
+/**
+ * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ * @typedef {import('micromark-util-types').Handle} Handle
+ */
+
 import * as acorn from 'acorn'
+// @ts-expect-error: doesn’t exist.
 import jsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
 import {mdxExpression as syntax} from '../dev/index.js'
 
+/** @type {HtmlExtension} */
 const html = {
   enter: {mdxFlowExpression: start, mdxTextExpression: start},
   exit: {mdxFlowExpression: end, mdxTextExpression: end}
 }
 
+/** @type {Handle} */
 function start() {
   this.buffer()
 }
 
+/** @type {Handle} */
 function end() {
   this.resume()
   this.setData('slurpOneLineEnding', true)
@@ -21,6 +30,7 @@ function end() {
 test('micromark-extension-mdx-expression', (t) => {
   t.throws(
     () => {
+      // @ts-expect-error: runtime.
       syntax({acorn: true})
     },
     /Expected a proper `acorn` instance passed in as `options\.acorn`/,
@@ -37,6 +47,7 @@ test('micromark-extension-mdx-expression', (t) => {
 
   t.throws(
     () => {
+      // @ts-expect-error: runtime.
       syntax({acornOptions: {}})
     },
     /Expected an `acorn` instance passed in as `options\.acorn`/,
@@ -96,12 +107,14 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support `addResult`'
   )
 
+  /** @type {Handle} */
   function checkResultExpression(token) {
     t.ok(
       'estree' in token,
       '`addResult` should add `estree` to expression tokens'
     )
     t.deepEqual(
+      // @ts-expect-error: it does exist.
       JSON.parse(JSON.stringify(token.estree)),
       {
         type: 'Program',
@@ -131,7 +144,7 @@ test('micromark-extension-mdx-expression', (t) => {
       },
       '`addResult` should add an expression'
     )
-    return start.call(this, token)
+    return start.call(this)
   }
 
   t.equal(
@@ -151,6 +164,7 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support `addResult` for an empty expression'
   )
 
+  /** @type {Handle} */
   function checkResultEmpty(token) {
     t.ok(
       'estree' in token,
@@ -158,6 +172,7 @@ test('micromark-extension-mdx-expression', (t) => {
     )
 
     t.deepEqual(
+      // @ts-expect-error: it does exist.
       JSON.parse(JSON.stringify(token.estree)),
       {
         type: 'Program',
@@ -171,7 +186,7 @@ test('micromark-extension-mdx-expression', (t) => {
       },
       '`estree` should be an empty program for an empty expression'
     )
-    return start.call(this, token)
+    return start.call(this)
   }
 
   t.equal(
@@ -297,8 +312,10 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support `addResult` for comments'
   )
 
+  /** @type {Handle} */
   function checkResultComments(token) {
     t.deepEqual(
+      // @ts-expect-error: it does exist.
       JSON.parse(JSON.stringify(token.estree)),
       {
         type: 'Program',
@@ -329,7 +346,7 @@ test('micromark-extension-mdx-expression', (t) => {
       },
       '`estree` should have comments'
     )
-    return start.call(this, token)
+    return start.call(this)
   }
 
   t.equal(
