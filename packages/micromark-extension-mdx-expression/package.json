@@ -38,6 +38,7 @@
   "types": "dev/index.d.ts",
   "files": [
     "dev/",
+    "lib/",
     "index.d.ts",
     "index.js"
   ],
