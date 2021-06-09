@@ -1,7 +1,9 @@
 coverage/
 node_modules/
-/lib/
-/index.js
+packages/micromark-extension-mdx-expression/lib/
+packages/micromark-extension-mdx-expression/index.js
+packages/micromark-factory-mdx-expression/index.js
+packages/micromark-util-events-to-acorn/index.js
 *.d.ts
 *.log
 .DS_Store

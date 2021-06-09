@@ -3,8 +3,8 @@
  * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  * @typedef {import('micromark-util-types').Effects} Effects
  * @typedef {import('micromark-util-types').State} State
- * @typedef {import('./util-events-to-acorn.js').Acorn} Acorn
- * @typedef {import('./util-events-to-acorn.js').AcornOptions} AcornOptions
+ * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
+ * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
  */
 
 import assert from 'assert'
@@ -13,7 +13,7 @@ import {markdownLineEnding} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
-import {eventsToAcorn} from './util-events-to-acorn.js'
+import {eventsToAcorn} from 'micromark-util-events-to-acorn'
 
 /**
  * @this {TokenizeContext}
@@ -30,7 +30,7 @@ import {eventsToAcorn} from './util-events-to-acorn.js'
  * @returns {State}
  */
 // eslint-disable-next-line max-params
-export function factoryExpression(
+export function factoryMdxExpression(
   effects,
   ok,
   type,

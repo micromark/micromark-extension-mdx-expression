@@ -8,7 +8,7 @@ import * as acorn from 'acorn'
 import jsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
-import {mdxExpression as syntax} from '../dev/index.js'
+import {mdxExpression as syntax} from 'micromark-extension-mdx-expression'
 
 /** @type {HtmlExtension} */
 const html = {

@@ -13,11 +13,19 @@
 This package provides the low-level modules for integrating with the micromark
 tokenizer but has no handling of compiling to HTML: go to a syntax tree instead.
 
-You should use this with [`mdast-util-mdx-expression`][util] (**[mdast][]**).
-Alternatively, use either [`micromark-extension-mdx`][mdx] or
-[`micromark-extension-mdxjs`][mdxjs] with [`mdast-util-mdx`][mdast-util-mdx] to
-support all of MDX (or MDX.js).
-Or, use it through [`remark-mdx`][remark-mdx] (**[remark][]**).
+[`micromark-factory-mdx-expression`][factory] and
+[`micromark-util-events-to-acorn`][events-to-acorn] are also maintained here.
+
+## When to use this
+
+This package is already included in [xdm][] and [`mdx-js/mdx` (next)][mdx-js].
+
+You should probably use [`micromark-extension-mdx`][mdx] or
+[`micromark-extension-mdxjs`][mdxjs] instead, which combine this package with
+other MDX features.
+Alternatively, if you’re using [`micromark`][micromark] or
+[`mdast-util-from-markdown`][from-markdown] and you don’t want all of MDX, use
+this package.
 
 ## Install
 
@@ -32,20 +40,58 @@ npm install micromark-extension-mdx-expression
 
 ## Use
 
-See [`mdast-util-mdx-expression`][util] for an example.
+```js
+import * as acorn from 'acorn'
+import {micromark} from 'micromark'
+import {mdxExpression} from 'micromark-extension-mdx-expression'
+
+// Agnostic (balanced braces):
+const output = micromark('a {1 + 1} b', {extensions: [mdxExpression()]})
+
+console.log(output)
+
+// Gnostic (JavaScript):
+micromark('a {!} b', {extensions: [mdxExpression({acorn})]})
+```
+
+Yields:
+
+```html
+<p>a  b</p>
+```
+
+```txt
+[1:5: Could not parse expression with acorn: Unexpected token] {
+  reason: 'Could not parse expression with acorn: Unexpected token',
+  line: 1,
+  column: 5,
+  source: 'micromark-extension-mdx-expression',
+  ruleId: 'acorn',
+  position: {
+    start: { line: 1, column: 5, offset: 4 },
+    end: { line: null, column: null }
+  }
+}
+```
+
+…which is rather useless: go to a syntax tree with
+[`mdast-util-from-markdown`][from-markdown] and
+[`mdast-util-mdx-expression`][util] instead.
 
 ## API
 
 This package exports the following identifiers: `mdxExpression`.
 There is no default export.
 
+The export map supports the endorsed
+[`development` condition](https://nodejs.org/api/packages.html#packages_resolving_user_conditions).
+Run `node --conditions development module.js` to get instrumented dev code.
+Without this condition, production code is loaded.
+
 ### `mdxExpression(options?)`
 
-Support [MDX][mdx-js] (or MDX.js) expressions.
-
-The export of `syntax` is a function that can be called with options and returns
-an extension for the micromark parser (to tokenize expressions; can be passed in
-`extensions`).
+A function that can be called with options that returns an extension for
+micromark to parse expressions (can be passed in `extensions`).
 
 ##### `options`
 
@@ -236,7 +282,7 @@ abide by its terms.
 
 [npm]: https://docs.npmjs.com/cli/install
 
-[license]: license
+[license]: https://github.com/micromark/micromark-extension-mdx-expression/blob/main/license
 
 [author]: https://wooorm.com
 
@@ -248,9 +294,7 @@ abide by its terms.
 
 [micromark]: https://github.com/micromark/micromark
 
-[remark]: https://github.com/remarkjs/remark
-
-[mdast]: https://github.com/syntax-tree/mdast
+[xdm]: https://github.com/wooorm/xdm
 
 [mdx-js]: https://github.com/mdx-js/mdx
 
@@ -268,6 +312,10 @@ abide by its terms.
 
 [mdast-util-mdx]: https://github.com/syntax-tree/mdast-util-mdx
 
+[from-markdown]: https://github.com/syntax-tree/mdast-util-from-markdown
+
 [acorn]: https://github.com/acornjs/acorn
 
-[remark-mdx]: https://github.com/mdx-js/mdx/tree/next/packages/remark-mdx
+[factory]: https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-factory-mdx-expression
+
+[events-to-acorn]: https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-util-events-to-acorn

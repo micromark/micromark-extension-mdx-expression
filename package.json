@@ -1,62 +1,36 @@
 {
-  "name": "micromark-extension-mdx-expression",
-  "version": "0.3.2",
-  "description": "micromark extension to support MDX or MDX JS expressions",
+  "private": true,
+  "name": "micromark-extension-mdx-expression-mono",
+  "version": "0.0.0",
+  "description": "",
   "license": "MIT",
-  "keywords": [
-    "micromark",
-    "micromark-extension",
-    "mdx",
-    "mdxjs",
-    "expression",
-    "js",
-    "javascript",
-    "es",
-    "ecmascript",
-    "markdown",
-    "unified"
-  ],
+  "keywords": [],
   "repository": "micromark/micromark-extension-mdx-expression",
   "bugs": "https://github.com/micromark/micromark-extension-mdx-expression/issues",
-  "funding": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/unified"
-  },
+  "funding": [
+    {
+      "type": "GitHub Sponsors",
+      "url": "https://github.com/sponsors/unifiedjs"
+    },
+    {
+      "type": "OpenCollective",
+      "url": "https://opencollective.com/unified"
+    }
+  ],
   "author": "Titus Wormer <tituswormer@gmail.com> (https://wooorm.com)",
-  "contributors": [
-    "Titus Wormer <tituswormer@gmail.com> (https://wooorm.com)"
-  ],
-  "sideEffects": false,
   "type": "module",
-  "main": "index.js",
-  "types": "index.d.ts",
-  "files": [
-    "dev/",
-    "lib/",
-    "index.d.ts",
-    "index.js"
-  ],
-  "exports": {
-    "development": "./dev/index.js",
-    "default": "./index.js"
-  },
   "dependencies": {
-    "@types/acorn": "^4.0.0",
-    "@types/estree": "^0.0.48",
-    "estree-util-visit": "^1.0.0",
-    "micromark-factory-space": "^1.0.0-alpha.2",
-    "micromark-factory-whitespace": "^1.0.0-alpha.2",
-    "micromark-util-character": "^1.0.0-alpha.2",
-    "micromark-util-symbol": "^1.0.0-alpha.2",
-    "micromark-util-types": "^1.0.0-alpha.2",
-    "unist-util-position-from-estree": "^1.0.0",
-    "vfile-message": "^3.0.0"
+    "micromark-extension-mdx-expression": "file:packages/micromark-extension-mdx-expression",
+    "micromark-factory-mdx-expression": "file:packages/micromark-factory-mdx-expression",
+    "micromark-util-events-to-acorn": "file:packages/micromark-util-events-to-acorn"
   },
   "devDependencies": {
+    "@types/acorn": "^4.0.0",
     "@types/tape": "^4.0.0",
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",
     "c8": "^7.0.0",
+    "lerna": "^4.0.0",
     "micromark": "^3.0.0-alpha.2",
     "micromark-build": "^1.0.0-alpha.2",
     "prettier": "^2.0.0",
@@ -69,7 +43,10 @@
     "xo": "^0.39.0"
   },
   "scripts": {
-    "build": "rimraf \"dev/**/*.d.ts\" \"test/**/*.d.ts\" && tsc && type-coverage && micromark-build",
+    "postinstall": "lerna bootstrap --no-ci",
+    "build-workspace": "lerna run build",
+    "build-monorepo": "rimraf \"test/**/*.d.ts\" && tsc && type-coverage",
+    "build": "npm run build-workspace && npm run build-monorepo",
     "format": "remark . -qfo && prettier . -w --loglevel warn && xo --fix",
     "test-api": "node --conditions development test/index.js",
     "test-coverage": "c8 --check-coverage --branches 100 --functions 100 --lines 100 --statements 100 --reporter lcov node --conditions development test/index.js",

@@ -2,8 +2,8 @@
  * @typedef {import('micromark-util-types').Extension} Extension
  * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
  * @typedef {import('micromark-util-types').State} State
- * @typedef {import('./util-events-to-acorn.js').Acorn} Acorn
- * @typedef {import('./util-events-to-acorn.js').AcornOptions} AcornOptions
+ * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
+ * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
  */
 
 /**
@@ -16,11 +16,11 @@
  */
 
 import assert from 'assert'
+import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
-import {factoryExpression} from './factory-expression.js'
 
 /**
  * @param {Options} options
@@ -70,7 +70,7 @@ export function mdxExpression(options = {}) {
     /** @type {State} */
     function start(code) {
       assert(code === codes.leftCurlyBrace, 'expected `{`')
-      return factoryExpression.call(
+      return factoryMdxExpression.call(
         self,
         effects,
         factorySpace(effects, after, types.whitespace),
@@ -102,7 +102,7 @@ export function mdxExpression(options = {}) {
     /** @type {State} */
     function start(code) {
       assert(code === codes.leftCurlyBrace, 'expected `{`')
-      return factoryExpression.call(
+      return factoryMdxExpression.call(
         self,
         effects,
         ok,

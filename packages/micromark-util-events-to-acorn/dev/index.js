@@ -18,7 +18,6 @@
  * @property {string} [suffix='']
  * @property {boolean} [expression=false]
  * @property {boolean} [allowEmpty=false]
- * @property {boolean} [expression]
  */
 
 import assert from 'assert'
