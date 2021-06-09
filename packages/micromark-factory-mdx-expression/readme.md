@@ -57,7 +57,7 @@ function tokenizeFlowExpression(effects, ok, nok) {
       acornOptions,
       addResult,
       spread,
-      forbidEmpty
+      allowEmpty
     )(code)
   }
 
@@ -88,7 +88,7 @@ Without this condition, production code is loaded.
 *   `acornOptions` ([`AcornOptions`][acorn-options]) — Configuration for acorn
 *   `boolean` (`addResult`, default: `false`) — Add `estree` to token
 *   `boolean` (`spread`, default: `false`) — Support a spread (`{...a}`) only
-*   `boolean` (`forbidEmpty`, default: `false`) — Support an empty expression
+*   `boolean` (`allowEmpty`, default: `false`) — Support an empty expression
 
 ###### Returns
 

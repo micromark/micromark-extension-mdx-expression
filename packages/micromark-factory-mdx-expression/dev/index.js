@@ -26,7 +26,7 @@ import {eventsToAcorn} from 'micromark-util-events-to-acorn'
  * @param {AcornOptions} [acornOptions]
  * @param {boolean} [addResult=false]
  * @param {boolean} [spread=false]
- * @param {boolean} [forbidEmpty=false]
+ * @param {boolean} [allowEmpty=false]
  * @returns {State}
  */
 // eslint-disable-next-line max-params
@@ -40,7 +40,7 @@ export function factoryMdxExpression(
   acornOptions,
   addResult,
   spread,
-  forbidEmpty
+  allowEmpty
 ) {
   const self = this
   const eventStart = this.events.length + 3 // Add main and marker token
@@ -136,7 +136,7 @@ export function factoryMdxExpression(
       {
         start: startPosition,
         expression: true,
-        allowEmpty: !forbidEmpty,
+        allowEmpty,
         prefix: spread ? '({' : '',
         suffix: spread ? '})' : ''
       }

@@ -52,7 +52,7 @@ function factoryMdxExpression(effects, ok, nok) {
       {
         start: startPosition,
         expression: true,
-        allowEmpty: !forbidEmpty,
+        allowEmpty,
         prefix: spread ? '({' : '',
         suffix: spread ? '})' : ''
       }

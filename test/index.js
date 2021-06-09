@@ -714,11 +714,11 @@ test('micromark-extension-mdx-expression', (t) => {
     t.throws(
       () => {
         micromark('a {} b', {
-          extensions: [syntax({acorn, spread: true, forbidEmpty: true})]
+          extensions: [syntax({acorn, spread: true, allowEmpty: false})]
         })
       },
       /Unexpected empty expression/,
-      'should crash on an empty spread w/ `forbidEmpty`'
+      'should crash on an empty spread w/ `allowEmpty: false`'
     )
 
     t.equal(
@@ -733,11 +733,11 @@ test('micromark-extension-mdx-expression', (t) => {
     t.throws(
       () => {
         micromark('a {/* b */} c', {
-          extensions: [syntax({acorn, spread: true, forbidEmpty: true})]
+          extensions: [syntax({acorn, spread: true, allowEmpty: false})]
         })
       },
       /Unexpected empty expression/,
-      'should crash on a comment spread'
+      'should crash on a comment spread w/ `allowEmpty: false`'
     )
 
     t.equal(

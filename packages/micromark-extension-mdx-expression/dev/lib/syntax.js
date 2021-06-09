@@ -12,7 +12,7 @@
  * @property {Acorn} [acorn]
  * @property {AcornOptions} [acornOptions]
  * @property {boolean} [spread=false]
- * @property {boolean} [forbidEmpty=false]
+ * @property {boolean} [allowEmpty=true]
  */
 
 import assert from 'assert'
@@ -35,9 +35,13 @@ export function mdxExpression(options = {}) {
   // Instead of duplicating code there, this are two small hidden feature here
   // to test that behavior.
   const spread = options.spread
-  const forbidEmpty = options.forbidEmpty
+  let allowEmpty = options.allowEmpty
   /** @type {AcornOptions} */
   let acornOptions
+
+  if (allowEmpty === null || allowEmpty === undefined) {
+    allowEmpty = true
+  }
 
   if (acorn) {
     if (!acorn.parseExpressionAt) {
@@ -81,7 +85,7 @@ export function mdxExpression(options = {}) {
         acornOptions,
         addResult,
         spread,
-        forbidEmpty
+        allowEmpty
       )(code)
     }
 
@@ -113,7 +117,7 @@ export function mdxExpression(options = {}) {
         acornOptions,
         addResult,
         spread,
-        forbidEmpty
+        allowEmpty
       )(code)
     }
   }
