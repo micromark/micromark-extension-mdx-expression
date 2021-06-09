@@ -30,13 +30,13 @@ const own = {}.hasOwnProperty
 /**
  * Parse a list of micromark events with acorn.
  *
- * @param {Acorn} acorn
- * @param {AcornOptions} acornOptions
  * @param {Event[]} events
+ * @param {Acorn} acorn
+ * @param {AcornOptions|undefined} acornOptions
  * @param {Options} options
  * @returns {{estree: Program|undefined, error: Error|undefined, swallow: boolean}}
  */
-export function eventsToAcorn(acorn, acornOptions, events, options) {
+export function eventsToAcorn(events, acorn, acornOptions, options = {}) {
   const {prefix = '', suffix = ''} = options
   /** @type {Array.<Comment>} */
   const comments = []

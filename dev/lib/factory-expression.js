@@ -19,13 +19,12 @@ import {eventsToAcorn} from './util-events-to-acorn.js'
  * @this {TokenizeContext}
  * @param {Effects} effects
  * @param {State} ok
- * @param {State} nok
- * @param {Acorn|undefined} acorn
- * @param {AcornOptions} acornOptions
- * @param {boolean|undefined} addResult
  * @param {string} type
  * @param {string} markerType
  * @param {string} chunkType
+ * @param {Acorn} [acorn]
+ * @param {AcornOptions} [acornOptions]
+ * @param {boolean} [addResult=false]
  * @param {boolean} [spread=false]
  * @param {boolean} [forbidEmpty=false]
  * @returns {State}
@@ -34,13 +33,12 @@ import {eventsToAcorn} from './util-events-to-acorn.js'
 export function factoryExpression(
   effects,
   ok,
-  nok,
-  acorn,
-  acornOptions,
-  addResult,
   type,
   markerType,
   chunkType,
+  acorn,
+  acornOptions,
+  addResult,
   spread,
   forbidEmpty
 ) {
@@ -132,9 +130,9 @@ export function factoryExpression(
 
     // Gnostic mode: parse w/ acorn.
     const result = eventsToAcorn(
+      self.events.slice(eventStart),
       acorn,
       acornOptions,
-      self.events.slice(eventStart),
       {
         start: startPosition,
         expression: true,

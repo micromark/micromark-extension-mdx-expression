@@ -77,13 +77,12 @@ export function mdxExpression(options = {}) {
         self,
         effects,
         factorySpace(effects, after, types.whitespace),
-        nok,
-        acorn,
-        acornOptions,
-        addResult,
         'mdxFlowExpression',
         'mdxFlowExpressionMarker',
         'mdxFlowExpressionChunk',
+        acorn,
+        acornOptions,
+        addResult,
         spread,
         forbidEmpty
       )(code)
@@ -98,7 +97,7 @@ export function mdxExpression(options = {}) {
   }
 
   /** @type {Tokenizer} */
-  function tokenizeTextExpression(effects, ok, nok) {
+  function tokenizeTextExpression(effects, ok) {
     const self = this
 
     return start
@@ -110,13 +109,12 @@ export function mdxExpression(options = {}) {
         self,
         effects,
         ok,
-        nok,
-        acorn,
-        acornOptions,
-        addResult,
         'mdxTextExpression',
         'mdxTextExpressionMarker',
         'mdxTextExpressionChunk',
+        acorn,
+        acornOptions,
+        addResult,
         spread,
         forbidEmpty
       )(code)
