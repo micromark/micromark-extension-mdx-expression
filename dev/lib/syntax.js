@@ -46,11 +46,8 @@ export function mdxExpression(options = {}) {
       )
     }
 
-    /** @type {AcornOptions} */
     acornOptions = Object.assign(
-      /** @type {AcornOptions} */
       {ecmaVersion: 2020, sourceType: 'module'},
-      /** @type {AcornOptions} */
       options.acornOptions
     )
   } else if (options.acornOptions || options.addResult) {

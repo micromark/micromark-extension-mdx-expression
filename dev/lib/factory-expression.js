@@ -136,9 +136,7 @@ export function factoryExpression(
       {
         start: startPosition,
         expression: true,
-        // To do next major: remove double meaning of `spread` and only accept
-        // `forbidEmpty` here.
-        allowEmpty: !spread && !forbidEmpty,
+        allowEmpty: !forbidEmpty,
         prefix: spread ? '({' : '',
         suffix: spread ? '})' : ''
       }
@@ -147,7 +145,7 @@ export function factoryExpression(
 
     // Get the spread value.
     if (spread && estree) {
-      // The next checks should always be the case, as we wrap in `d={}`
+      // Should always be the case as we wrap in `d={}`
       assert(estree.type === 'Program', 'expected program')
       const head = estree.body[0]
       assert(head, 'expected body')
@@ -164,7 +162,10 @@ export function factoryExpression(
           positionFromEstree(head.expression.properties[1]).start,
           'micromark-extension-mdx-expression:spread-extra'
         )
-      } else if (head.expression.properties[0].type !== 'SpreadElement') {
+      } else if (
+        head.expression.properties[0] &&
+        head.expression.properties[0].type !== 'SpreadElement'
+      ) {
         throw new VFileMessage(
           'Unexpected `' +
             head.expression.properties[0].type +
