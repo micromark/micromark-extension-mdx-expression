@@ -15,7 +15,7 @@ micromark utility to try and parse events w/ acorn.
 *   [Install](#install)
 *   [Use](#use)
 *   [API](#api)
-    *   [`eventsToAcorn(events, acorn, acornOptions, options)`](#eventstoacornevents-acorn-acornoptions-options)
+    *   [`eventsToAcorn(events, options)`](#eventstoacornevents-options)
 *   [Security](#security)
 *   [Contribute](#contribute)
 *   [License](#license)
@@ -75,13 +75,15 @@ The export map supports the endorsed
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
-### `eventsToAcorn(events, acorn, acornOptions, options)`
+### `eventsToAcorn(events, options)`
 
 ###### Parameters
 
 *   `events` (`Array.<Event>`) — Events
-*   `acorn` (`Acorn`) — Object with `acorn.parse` and `acorn.parseExpressionAt`
-*   `acornOptions` ([`AcornOptions`][acorn-options]) — Configuration for acorn
+*   `options.acorn` (`Acorn`, required) — Object with `acorn.parse` and
+    `acorn.parseExpressionAt`
+*   `options.acornOptions` ([`AcornOptions`][acorn-options]) — Configuration for
+    acorn
 *   `options.start` (`Point`, optional) — Place where events start
 *   `options.prefix` (`string`, default: `''`) — Text to place before events
 *   `options.suffix` (`string`, default: `''`) — Text to place after events

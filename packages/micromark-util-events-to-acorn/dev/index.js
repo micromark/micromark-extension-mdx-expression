@@ -13,6 +13,8 @@
 
 /**
  * @typedef Options
+ * @property {Acorn} acorn
+ * @property {AcornOptions} [acornOptions]
  * @property {Point} [start]
  * @property {string} [prefix='']
  * @property {string} [suffix='']
@@ -30,16 +32,16 @@ const own = {}.hasOwnProperty
  * Parse a list of micromark events with acorn.
  *
  * @param {Event[]} events
- * @param {Acorn} acorn
- * @param {AcornOptions|undefined} acornOptions
  * @param {Options} options
  * @returns {{estree: Program|undefined, error: Error|undefined, swallow: boolean}}
  */
-export function eventsToAcorn(events, acorn, acornOptions, options = {}) {
+export function eventsToAcorn(events, options) {
   const {prefix = '', suffix = ''} = options
   /** @type {Array.<Comment>} */
   const comments = []
-  const acornConfig = Object.assign({}, acornOptions, {onComment: comments})
+  const acornConfig = Object.assign({}, options.acornOptions, {
+    onComment: comments
+  })
   /** @type {Array.<string>} */
   const chunks = []
   /** @type {Record<string, Point>} */
@@ -95,8 +97,8 @@ export function eventsToAcorn(events, acorn, acornOptions, options = {}) {
   try {
     estree =
       options.expression && !isEmptyExpression
-        ? acorn.parseExpressionAt(value, 0, acornConfig)
-        : acorn.parse(value, acornConfig)
+        ? options.acorn.parseExpressionAt(value, 0, acornConfig)
+        : options.acorn.parse(value, acornConfig)
   } catch (error) {
     const point = parseOffsetToUnistPoint(error.pos)
     error.message = String(error.message).replace(/ \(\d+:\d+\)$/, '')

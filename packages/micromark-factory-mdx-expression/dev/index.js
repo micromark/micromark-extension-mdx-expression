@@ -129,18 +129,15 @@ export function factoryMdxExpression(
     }
 
     // Gnostic mode: parse w/ acorn.
-    const result = eventsToAcorn(
-      self.events.slice(eventStart),
+    const result = eventsToAcorn(self.events.slice(eventStart), {
       acorn,
       acornOptions,
-      {
-        start: startPosition,
-        expression: true,
-        allowEmpty,
-        prefix: spread ? '({' : '',
-        suffix: spread ? '})' : ''
-      }
-    )
+      start: startPosition,
+      expression: true,
+      allowEmpty,
+      prefix: spread ? '({' : '',
+      suffix: spread ? '})' : ''
+    })
     const estree = result.estree
 
     // Get the spread value.
