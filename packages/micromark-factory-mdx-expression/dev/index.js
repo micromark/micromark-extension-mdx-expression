@@ -27,6 +27,7 @@ import {eventsToAcorn} from 'micromark-util-events-to-acorn'
  * @param {boolean} [addResult=false]
  * @param {boolean} [spread=false]
  * @param {boolean} [allowEmpty=false]
+ * @param {boolean} [allowLazy=false]
  * @returns {State}
  */
 // eslint-disable-next-line max-params
@@ -40,7 +41,8 @@ export function factoryMdxExpression(
   acornOptions,
   addResult,
   spread,
-  allowEmpty
+  allowEmpty,
+  allowLazy
 ) {
   const self = this
   const eventStart = this.events.length + 3 // Add main and marker token
@@ -82,6 +84,20 @@ export function factoryMdxExpression(
 
     if (markdownLineEnding(code)) {
       return factoryWhitespace(effects, atBreak)(code)
+    }
+
+    const now = self.now()
+
+    if (
+      now.line !== startPosition.line &&
+      !allowLazy &&
+      self.parser.lazy[now.line]
+    ) {
+      throw new VFileMessage(
+        'Unexpected end of file in expression, expected a corresponding closing brace for `{`',
+        self.now(),
+        'micromark-extension-mdx-expression:unexpected-eof'
+      )
     }
 
     effects.enter(chunkType)

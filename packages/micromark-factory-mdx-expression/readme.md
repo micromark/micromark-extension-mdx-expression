@@ -89,6 +89,8 @@ Without this condition, production code is loaded.
 *   `boolean` (`addResult`, default: `false`) — Add `estree` to token
 *   `boolean` (`spread`, default: `false`) — Support a spread (`{...a}`) only
 *   `boolean` (`allowEmpty`, default: `false`) — Support an empty expression
+*   `boolean` (`allowLazy`, default: `false`) — Support lazy continuation of an
+    expression
 
 ###### Returns
 

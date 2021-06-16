@@ -603,6 +603,40 @@ test('micromark-extension-mdx-expression', (t) => {
       'should support expressions preceded by spaces'
     )
 
+    t.throws(
+      () => {
+        micromark('> {a\nb}', {extensions: [syntax()]})
+      },
+      /Unexpected end of file in expression/,
+      'should not support lazyness (1)'
+    )
+
+    t.equal(
+      micromark('> a\n{b}', {
+        extensions: [syntax()],
+        htmlExtensions: [html]
+      }),
+      '<blockquote>\n<p>a</p>\n</blockquote>\n',
+      'should not support lazyness (2)'
+    )
+
+    t.equal(
+      micromark('> {a}\nb', {
+        extensions: [syntax()],
+        htmlExtensions: [html]
+      }),
+      '<blockquote>\n</blockquote>\n<p>b</p>',
+      'should not support lazyness (3)'
+    )
+
+    t.throws(
+      () => {
+        micromark('> {\n> a\nb}', {extensions: [syntax()]})
+      },
+      /Unexpected end of file in expression/,
+      'should not support lazyness (4)'
+    )
+
     t.end()
   })
 

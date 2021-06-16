@@ -117,7 +117,8 @@ export function mdxExpression(options = {}) {
         acornOptions,
         addResult,
         spread,
-        allowEmpty
+        allowEmpty,
+        true
       )(code)
     }
   }
