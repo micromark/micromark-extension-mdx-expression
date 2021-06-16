@@ -48,11 +48,11 @@
   },
   "dependencies": {
     "micromark-factory-mdx-expression": "^1.0.0-alpha.1",
-    "micromark-factory-space": "^1.0.0-alpha.2",
-    "micromark-util-character": "^1.0.0-alpha.2",
+    "micromark-factory-space": "^1.0.0-alpha.3",
+    "micromark-util-character": "^1.0.0-alpha.3",
     "micromark-util-events-to-acorn": "^1.0.0-alpha.1",
-    "micromark-util-symbol": "^1.0.0-alpha.2",
-    "micromark-util-types": "^1.0.0-alpha.2"
+    "micromark-util-symbol": "^1.0.0-alpha.3",
+    "micromark-util-types": "^1.0.0-alpha.3"
   },
   "scripts": {
     "build": "rimraf \"*.d.ts\" \"{dev/,lib/}**/*.d.ts\" && tsc && micromark-build && type-coverage"

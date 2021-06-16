@@ -42,7 +42,7 @@
     "@types/acorn": "^4.0.0",
     "@types/estree": "^0.0.48",
     "estree-util-visit": "^1.0.0",
-    "micromark-util-types": "^1.0.0-alpha.2",
+    "micromark-util-types": "^1.0.0-alpha.3",
     "vfile-message": "^3.0.0"
   },
   "scripts": {
