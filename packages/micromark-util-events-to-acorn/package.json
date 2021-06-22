@@ -1,6 +1,6 @@
 {
   "name": "micromark-util-events-to-acorn",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0",
   "description": "micromark utility to try and parse events w/ acorn",
   "license": "MIT",
   "keywords": [
@@ -42,7 +42,7 @@
     "@types/acorn": "^4.0.0",
     "@types/estree": "^0.0.48",
     "estree-util-visit": "^1.0.0",
-    "micromark-util-types": "^1.0.0-alpha.3",
+    "micromark-util-types": "^1.0.0",
     "vfile-message": "^3.0.0"
   },
   "scripts": {

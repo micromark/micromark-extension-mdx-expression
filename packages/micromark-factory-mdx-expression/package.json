@@ -1,6 +1,6 @@
 {
   "name": "micromark-factory-mdx-expression",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0",
   "description": "micromark factory to parse MDX expressions (found in JSX attributes, flow, text)",
   "license": "MIT",
   "keywords": [
@@ -39,11 +39,11 @@
     "default": "./index.js"
   },
   "dependencies": {
-    "micromark-factory-whitespace": "^1.0.0-alpha.3",
-    "micromark-util-character": "^1.0.0-alpha.3",
-    "micromark-util-events-to-acorn": "^1.0.0-alpha.1",
-    "micromark-util-symbol": "^1.0.0-alpha.3",
-    "micromark-util-types": "1.0.0-alpha.3",
+    "micromark-factory-whitespace": "^1.0.0",
+    "micromark-util-character": "^1.0.0",
+    "micromark-util-events-to-acorn": "^1.0.0",
+    "micromark-util-symbol": "^1.0.0",
+    "micromark-util-types": "^1.0.0",
     "unist-util-position-from-estree": "^1.0.0",
     "vfile-message": "^3.0.0"
   },
