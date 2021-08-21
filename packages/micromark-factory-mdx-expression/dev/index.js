@@ -7,7 +7,7 @@
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
  */
 
-import assert from 'assert'
+import assert from 'node:assert'
 import {factoryWhitespace} from 'micromark-factory-whitespace'
 import {markdownLineEnding} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
@@ -171,7 +171,6 @@ export function factoryMdxExpression(
       if (head.expression.properties[1]) {
         throw new VFileMessage(
           'Unexpected extra content in spread: only a single spread is supported',
-          // @ts-expect-error Looks similar enough.
           positionFromEstree(head.expression.properties[1]).start,
           'micromark-extension-mdx-expression:spread-extra'
         )
@@ -183,7 +182,6 @@ export function factoryMdxExpression(
           'Unexpected `' +
             head.expression.properties[0].type +
             '` in code: only spread elements are supported',
-          // @ts-expect-error Looks similar enough.
           positionFromEstree(head.expression.properties[0]).start,
           'micromark-extension-mdx-expression:non-spread'
         )

@@ -22,7 +22,7 @@
  * @property {boolean} [allowEmpty=false]
  */
 
-import assert from 'assert'
+import assert from 'node:assert'
 import {visit} from 'estree-util-visit'
 import {VFileMessage} from 'vfile-message'
 
@@ -143,7 +143,7 @@ export function eventsToAcorn(events, options) {
   if (estree) {
     // @ts-expect-error: acorn *does* allow comments
     estree.comments = comments
-    // @ts-expect-error: acorn and estree are similar enough.
+
     visit(estree, (esnode) => {
       assert('start' in esnode, 'expected `start` in node from acorn')
       assert('end' in esnode, 'expected `end` in node from acorn')
@@ -151,12 +151,16 @@ export function eventsToAcorn(events, options) {
       const pointStart = parseOffsetToUnistPoint(esnode.start)
       // @ts-expect-error: acorn has positions.
       const pointEnd = parseOffsetToUnistPoint(esnode.end)
+      // @ts-expect-error: acorn has positions.
       esnode.start = pointStart.offset
+      // @ts-expect-error: acorn has positions.
       esnode.end = pointEnd.offset
+      // @ts-expect-error: acorn has positions.
       esnode.loc = {
         start: {line: pointStart.line, column: pointStart.column - 1},
         end: {line: pointEnd.line, column: pointEnd.column - 1}
       }
+      // @ts-expect-error: acorn has positions.
       esnode.range = [esnode.start, esnode.end]
     })
   }
