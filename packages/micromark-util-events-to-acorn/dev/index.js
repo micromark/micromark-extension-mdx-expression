@@ -40,7 +40,8 @@ export function eventsToAcorn(events, options) {
   /** @type {Array.<Comment>} */
   const comments = []
   const acornConfig = Object.assign({}, options.acornOptions, {
-    onComment: comments
+    onComment: comments,
+    preserveParens: true
   })
   /** @type {Array.<string>} */
   const chunks = []
@@ -144,7 +145,24 @@ export function eventsToAcorn(events, options) {
     // @ts-expect-error: acorn *does* allow comments
     estree.comments = comments
 
-    visit(estree, (esnode) => {
+    visit(estree, (esnode, field, index, parents) => {
+      let context = /** @type {Node|Node[]} */ (parents[parents.length - 1])
+      /** @type {string|number|null} */
+      let prop = field
+
+      // Remove non-standard `ParenthesizedExpression`.
+      if (esnode.type === 'ParenthesizedExpression' && context && prop) {
+        /* c8 ignore next 5 */
+        if (typeof index === 'number') {
+          // @ts-expect-error: indexable.
+          context = context[prop]
+          prop = index
+        }
+
+        // @ts-expect-error: indexable.
+        context[prop] = esnode.expression
+      }
+
       assert('start' in esnode, 'expected `start` in node from acorn')
       assert('end' in esnode, 'expected `end` in node from acorn')
       // @ts-expect-error: acorn has positions.

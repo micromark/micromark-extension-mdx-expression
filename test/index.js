@@ -701,6 +701,24 @@ test('micromark-extension-mdx-expression', (t) => {
       'should support expressions preceded by spaces'
     )
 
+    t.equal(
+      micromark('a{(b)}c', {
+        extensions: [syntax({acorn})],
+        htmlExtensions: [html]
+      }),
+      '<p>ac</p>',
+      'should support expressions padded w/ parens'
+    )
+
+    t.equal(
+      micromark('a{/* b */ ( (c) /* d */ + (e) )}f', {
+        extensions: [syntax({acorn})],
+        htmlExtensions: [html]
+      }),
+      '<p>af</p>',
+      'should support expressions padded w/ parens and comments'
+    )
+
     t.end()
   })
 
