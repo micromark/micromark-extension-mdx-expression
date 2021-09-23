@@ -9,6 +9,8 @@
 
 /**
  * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt}} Acorn
+ *
+ * @typedef {Error & {raisedAt: number, pos: number, loc: {line: number, column: number}}} AcornError
  */
 
 /**
@@ -100,7 +102,8 @@ export function eventsToAcorn(events, options) {
       options.expression && !isEmptyExpression
         ? options.acorn.parseExpressionAt(value, 0, acornConfig)
         : options.acorn.parse(value, acornConfig)
-  } catch (error) {
+  } catch (error_) {
+    const error = /** @type {AcornError} */ (error_)
     const point = parseOffsetToUnistPoint(error.pos)
     error.message = String(error.message).replace(/ \(\d+:\d+\)$/, '')
     error.pos = point.offset
