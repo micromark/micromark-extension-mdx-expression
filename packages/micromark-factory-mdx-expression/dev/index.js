@@ -8,9 +8,9 @@
  */
 
 import assert from 'node:assert'
-import {factoryWhitespace} from 'micromark-factory-whitespace'
 import {markdownLineEnding} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
+import {types} from 'micromark-util-symbol/types.js'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
@@ -83,7 +83,10 @@ export function factoryMdxExpression(
     }
 
     if (markdownLineEnding(code)) {
-      return factoryWhitespace(effects, atBreak)(code)
+      effects.enter(types.lineEnding)
+      effects.consume(code)
+      effects.exit(types.lineEnding)
+      return atBreak
     }
 
     const now = self.now()
