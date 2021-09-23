@@ -39,6 +39,7 @@
     "default": "./index.js"
   },
   "dependencies": {
+    "micromark-factory-space": "^1.0.0",
     "micromark-util-character": "^1.0.0",
     "micromark-util-events-to-acorn": "^1.0.0",
     "micromark-util-symbol": "^1.0.0",

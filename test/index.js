@@ -702,6 +702,15 @@ test('micromark-extension-mdx-expression', (t) => {
     )
 
     t.equal(
+      micromark('  {`\n    a\n  `}', {
+        extensions: [syntax({acorn})],
+        htmlExtensions: [html]
+      }),
+      '',
+      'should support indented expressions'
+    )
+
+    t.equal(
       micromark('a{(b)}c', {
         extensions: [syntax({acorn})],
         htmlExtensions: [html]

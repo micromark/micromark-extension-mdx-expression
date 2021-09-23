@@ -11,6 +11,7 @@ import assert from 'node:assert'
 import {markdownLineEnding} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
+import {factorySpace} from 'micromark-factory-space'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
@@ -46,6 +47,11 @@ export function factoryMdxExpression(
 ) {
   const self = this
   const eventStart = this.events.length + 3 // Add main and marker token
+  const tail = this.events[this.events.length - 1]
+  const initialPrefix =
+    tail && tail[1].type === types.linePrefix
+      ? tail[2].sliceSerialize(tail[1], true).length
+      : 0
   let balance = 1
   /** @type {Point} */
   let startPosition
@@ -86,7 +92,10 @@ export function factoryMdxExpression(
       effects.enter(types.lineEnding)
       effects.consume(code)
       effects.exit(types.lineEnding)
-      return atBreak
+      // Return atBreak
+      return initialPrefix
+        ? factorySpace(effects, atBreak, types.linePrefix, initialPrefix + 1)
+        : atBreak
     }
 
     const now = self.now()
