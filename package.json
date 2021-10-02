@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@types/acorn": "^4.0.0",
+    "@types/power-assert": "^1.0.0",
     "@types/tape": "^4.0.0",
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",

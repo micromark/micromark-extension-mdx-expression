@@ -15,7 +15,7 @@
  * @property {boolean} [allowEmpty=true]
  */
 
-import assert from 'node:assert'
+import assert from 'power-assert'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding} from 'micromark-util-character'

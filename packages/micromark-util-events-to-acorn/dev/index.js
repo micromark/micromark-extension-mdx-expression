@@ -24,7 +24,7 @@
  * @property {boolean} [allowEmpty=false]
  */
 
-import assert from 'node:assert'
+import assert from 'power-assert'
 import {visit} from 'estree-util-visit'
 import {VFileMessage} from 'vfile-message'
 

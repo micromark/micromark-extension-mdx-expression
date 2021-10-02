@@ -7,7 +7,7 @@
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
  */
 
-import assert from 'node:assert'
+import assert from 'power-assert'
 import {markdownLineEnding} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
