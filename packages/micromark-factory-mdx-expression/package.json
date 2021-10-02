@@ -1,6 +1,6 @@
 {
   "name": "micromark-factory-mdx-expression",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "micromark factory to parse MDX expressions (found in JSX attributes, flow, text)",
   "license": "MIT",
   "keywords": [
