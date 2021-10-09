@@ -40,10 +40,10 @@
   },
   "dependencies": {
     "@types/acorn": "^4.0.0",
-    "@types/estree": "^0.0.48",
+    "@types/estree": "^0.0.50",
     "estree-util-visit": "^1.0.0",
     "micromark-util-types": "^1.0.0",
-    "power-assert": "^1.0.0",
+    "uvu": "^0.5.0",
     "vfile-message": "^3.0.0"
   },
   "scripts": {

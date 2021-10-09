@@ -32,7 +32,7 @@ npm install micromark-factory-mdx-expression
 ## Use
 
 ```js
-import assert from 'power-assert'
+import {ok as assert} from 'uvu/assert'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {codes} from 'micromark-util-symbol/codes'
 

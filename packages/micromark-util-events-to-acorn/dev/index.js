@@ -24,7 +24,7 @@
  * @property {boolean} [allowEmpty=false]
  */
 
-import assert from 'power-assert'
+import {ok as assert} from 'uvu/assert'
 import {visit} from 'estree-util-visit'
 import {VFileMessage} from 'vfile-message'
 

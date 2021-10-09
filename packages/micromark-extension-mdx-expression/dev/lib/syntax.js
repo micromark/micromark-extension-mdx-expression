@@ -15,7 +15,7 @@
  * @property {boolean} [allowEmpty=true]
  */
 
-import assert from 'power-assert'
+import {ok as assert} from 'uvu/assert'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding} from 'micromark-util-character'
