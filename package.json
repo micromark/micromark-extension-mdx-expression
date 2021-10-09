@@ -19,18 +19,17 @@
   ],
   "author": "Titus Wormer <tituswormer@gmail.com> (https://wooorm.com)",
   "type": "module",
-  "dependencies": {
-    "micromark-extension-mdx-expression": "file:packages/micromark-extension-mdx-expression",
-    "micromark-factory-mdx-expression": "file:packages/micromark-factory-mdx-expression",
-    "micromark-util-events-to-acorn": "file:packages/micromark-util-events-to-acorn"
-  },
+  "workspaces": [
+    "packages/micromark-util-events-to-acorn",
+    "packages/micromark-factory-mdx-expression",
+    "packages/micromark-extension-mdx-expression"
+  ],
   "devDependencies": {
     "@types/acorn": "^4.0.0",
     "@types/tape": "^4.0.0",
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",
     "c8": "^7.0.0",
-    "lerna": "^4.0.0",
     "micromark": "^3.0.0",
     "micromark-build": "^1.0.0",
     "prettier": "^2.0.0",
@@ -43,8 +42,7 @@
     "xo": "^0.45.0"
   },
   "scripts": {
-    "postinstall": "lerna bootstrap --no-ci",
-    "build-workspace": "lerna run build",
+    "build-workspace": "npm run build --workspaces",
     "build-monorepo": "rimraf \"test/**/*.d.ts\" && tsc && type-coverage",
     "build": "npm run build-workspace && npm run build-monorepo",
     "format": "remark . -qfo && prettier . -w --loglevel warn && xo --fix",
