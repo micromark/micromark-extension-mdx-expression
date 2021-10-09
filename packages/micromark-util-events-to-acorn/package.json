@@ -1,6 +1,6 @@
 {
   "name": "micromark-util-events-to-acorn",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "micromark utility to try and parse events w/ acorn",
   "license": "MIT",
   "keywords": [
