@@ -1,6 +1,6 @@
 {
   "name": "micromark-extension-mdx-expression",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "micromark extension to support MDX or MDX JS expressions",
   "license": "MIT",
   "keywords": [
