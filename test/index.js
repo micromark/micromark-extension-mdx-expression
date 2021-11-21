@@ -783,6 +783,16 @@ test('micromark-extension-mdx-expression', (t) => {
       'should crash on an empty spread w/ `allowEmpty: false`'
     )
 
+    t.throws(
+      () => {
+        micromark('{a=b}', {
+          extensions: [syntax({acorn, spread: true, allowEmpty: false})]
+        })
+      },
+      /Could not parse expression with acorn: Shorthand property assignments are valid only in destructuring patterns/,
+      'should crash if not a spread w/ `allowEmpty`'
+    )
+
     t.equal(
       micromark('a {/* b */} c', {
         extensions: [syntax({acorn, spread: true})],

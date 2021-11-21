@@ -174,13 +174,21 @@ export function factoryMdxExpression(
       assert(estree.type === 'Program', 'expected program')
       const head = estree.body[0]
       assert(head, 'expected body')
-      assert(head.type === 'ExpressionStatement', 'expected expression')
-      assert(
-        head.expression.type === 'ObjectExpression',
-        'expected object expression'
-      )
 
-      if (head.expression.properties[1]) {
+      // Can occur in some complex attributes.
+      /* c8 ignore next 11 */
+      if (
+        head.type !== 'ExpressionStatement' ||
+        head.expression.type !== 'ObjectExpression'
+      ) {
+        throw new VFileMessage(
+          'Unexpected `' +
+            head.type +
+            '` in code: expected an object spread (`{...spread}`)',
+          positionFromEstree(head).start,
+          'micromark-extension-mdx-expression:non-spread'
+        )
+      } else if (head.expression.properties[1]) {
         throw new VFileMessage(
           'Unexpected extra content in spread: only a single spread is supported',
           positionFromEstree(head.expression.properties[1]).start,
