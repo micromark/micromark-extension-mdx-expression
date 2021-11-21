@@ -3,11 +3,13 @@
  * @typedef {import('micromark-util-types').Handle} Handle
  */
 
-import * as acorn from 'acorn'
-import jsx from 'acorn-jsx'
+import {Parser} from 'acorn'
+import acornJsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
 import {mdxExpression as syntax} from 'micromark-extension-mdx-expression'
+
+const acorn = Parser.extend(acornJsx())
 
 /** @type {HtmlExtension} */
 const html = {
@@ -55,7 +57,7 @@ test('micromark-extension-mdx-expression', (t) => {
 
   t.throws(
     () => {
-      micromark('a {<b />} c', {extensions: [syntax({acorn})]})
+      micromark('a {<b />} c', {extensions: [syntax({acorn: Parser})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should not support JSX by default'
@@ -63,7 +65,7 @@ test('micromark-extension-mdx-expression', (t) => {
 
   t.equal(
     micromark('a {<b />} c', {
-      extensions: [syntax({acorn: acorn.Parser.extend(jsx())})],
+      extensions: [syntax({acorn: Parser.extend(acornJsx())})],
       htmlExtensions: [html]
     }),
     '<p>a  c</p>',
