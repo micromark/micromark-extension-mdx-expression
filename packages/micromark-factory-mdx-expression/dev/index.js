@@ -11,6 +11,7 @@ import {ok as assert} from 'uvu/assert'
 import {markdownLineEnding} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
+import {constants} from 'micromark-util-symbol/constants.js'
 import {factorySpace} from 'micromark-factory-space'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
@@ -29,6 +30,7 @@ import {eventsToAcorn} from 'micromark-util-events-to-acorn'
  * @param {boolean} [spread=false]
  * @param {boolean} [allowEmpty=false]
  * @param {boolean} [allowLazy=false]
+ * @param {number} [startColumn=0]
  * @returns {State}
  */
 // eslint-disable-next-line max-params
@@ -43,7 +45,8 @@ export function factoryMdxExpression(
   addResult,
   spread,
   allowEmpty,
-  allowLazy
+  allowLazy,
+  startColumn
 ) {
   const self = this
   const eventStart = this.events.length + 3 // Add main and marker token
@@ -52,6 +55,7 @@ export function factoryMdxExpression(
     tail && tail[1].type === types.linePrefix
       ? tail[2].sliceSerialize(tail[1], true).length
       : 0
+  const prefixExpressionIndent = initialPrefix ? initialPrefix + 1 : 0
   let balance = 1
   /** @type {Point} */
   let startPosition
@@ -92,9 +96,19 @@ export function factoryMdxExpression(
       effects.enter(types.lineEnding)
       effects.consume(code)
       effects.exit(types.lineEnding)
-      // Return atBreak
-      return initialPrefix
-        ? factorySpace(effects, atBreak, types.linePrefix, initialPrefix + 1)
+      // `startColumn` is used by the JSX extensions that also wraps this
+      // factory.
+      // JSX can be indented arbitrarily, but expressions can’t exdent
+      // arbitrarily, due to that they might contain template strings
+      // (backticked strings).
+      // We’ll eat up to where that tag starts (`startColumn`), and a tab size.
+      /* c8 ignore next 3 */
+      const prefixTagIndent = startColumn
+        ? startColumn + constants.tabSize - self.now().column
+        : 0
+      const indent = Math.max(prefixExpressionIndent, prefixTagIndent)
+      return indent
+        ? factorySpace(effects, atBreak, types.linePrefix, indent)
         : atBreak
     }
 

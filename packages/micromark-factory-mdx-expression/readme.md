@@ -91,6 +91,8 @@ Without this condition, production code is loaded.
 *   `boolean` (`allowEmpty`, default: `false`) — Support an empty expression
 *   `boolean` (`allowLazy`, default: `false`) — Support lazy continuation of an
     expression
+*   `number` (`startColumn`, default: `0`) — Treat whitespace up to this number
+    and a tab size as indent
 
 ###### Returns
 
