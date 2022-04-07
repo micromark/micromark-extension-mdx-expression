@@ -146,7 +146,28 @@ export function eventsToAcorn(events, options) {
 
   if (estree) {
     // @ts-expect-error: acorn *does* allow comments
-    estree.comments = comments
+    estree.comments = comments.map((comment) => {
+      assert('start' in comment, 'expected `start` in comment from acorn')
+      assert('end' in comment, 'expected `end` in comment from acorn')
+
+      const pointStart = parseOffsetToUnistPoint(comment.start)
+      const pointEnd = parseOffsetToUnistPoint(comment.end)
+      comment.start = pointStart.offset
+      comment.end = pointEnd.offset
+      comment.loc = {
+        start: {
+          line: pointStart.line,
+          column: pointStart.column - 1,
+          offset: pointStart.offset
+        },
+        end: {
+          line: pointEnd.line,
+          column: pointEnd.column - 1,
+          offset: pointEnd.offset
+        }
+      }
+      return comment
+    })
 
     visit(estree, (esnode, field, index, parents) => {
       let context = /** @type {Node|Node[]} */ (parents[parents.length - 1])
@@ -178,8 +199,16 @@ export function eventsToAcorn(events, options) {
       esnode.end = pointEnd.offset
       // @ts-expect-error: acorn has positions.
       esnode.loc = {
-        start: {line: pointStart.line, column: pointStart.column - 1},
-        end: {line: pointEnd.line, column: pointEnd.column - 1}
+        start: {
+          line: pointStart.line,
+          column: pointStart.column - 1,
+          offset: pointStart.offset
+        },
+        end: {
+          line: pointEnd.line,
+          column: pointEnd.column - 1,
+          offset: pointEnd.offset
+        }
       }
       // @ts-expect-error: acorn has positions.
       esnode.range = [esnode.start, esnode.end]
@@ -191,7 +220,7 @@ export function eventsToAcorn(events, options) {
 
   /**
    * @param {number} offset
-   * @returs {Point}
+   * @returns {Point}
    */
   function parseOffsetToUnistPoint(offset) {
     let srcOffset = offset - prefix.length
@@ -226,11 +255,11 @@ export function eventsToAcorn(events, options) {
     }
 
     assert(lineStart, 'expected `lineStart` to be defined')
-    return {
+    return /** @type {Point} */ ({
       line: lineStart.line,
       column: lineStart.column + (srcOffset - lineStart.offset),
       offset: srcOffset
-    }
+    })
   }
 }
 

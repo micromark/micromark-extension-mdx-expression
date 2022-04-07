@@ -129,18 +129,27 @@ test('micromark-extension-mdx-expression', (t) => {
               start: 3,
               end: 4,
               name: 'b',
-              loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+              loc: {
+                start: {line: 1, column: 3, offset: 3},
+                end: {line: 1, column: 4, offset: 4}
+              },
               range: [3, 4]
             },
             start: 3,
             end: 4,
-            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+            loc: {
+              start: {line: 1, column: 3, offset: 3},
+              end: {line: 1, column: 4, offset: 4}
+            },
             range: [3, 4]
           }
         ],
         sourceType: 'module',
         comments: [],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+        loc: {
+          start: {line: 1, column: 3, offset: 3},
+          end: {line: 1, column: 4, offset: 4}
+        },
         range: [3, 4]
       },
       '`addResult` should add an expression'
@@ -182,7 +191,10 @@ test('micromark-extension-mdx-expression', (t) => {
         body: [],
         sourceType: 'module',
         comments: [],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 3}},
+        loc: {
+          start: {line: 1, column: 3, offset: 3},
+          end: {line: 1, column: 3, offset: 3}
+        },
         range: [3, 3]
       },
       '`estree` should be an empty program for an empty expression'
@@ -328,21 +340,30 @@ test('micromark-extension-mdx-expression', (t) => {
           {
             type: 'Block',
             value: 'b',
-            start: 3,
-            end: 8,
-            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 8}},
-            range: [3, 8]
+            start: 6,
+            end: 11,
+            loc: {
+              start: {line: 1, column: 6, offset: 6},
+              end: {line: 1, column: 11, offset: 11}
+            },
+            range: [6, 11]
           },
           {
             type: 'Line',
             value: ' c',
-            start: 9,
-            end: 13,
-            loc: {start: {line: 1, column: 9}, end: {line: 1, column: 13}},
-            range: [9, 13]
+            start: 12,
+            end: 14,
+            loc: {
+              start: {line: 1, column: 12, offset: 12},
+              end: {line: 1, column: 14, offset: 14}
+            },
+            range: [12, 14]
           }
         ],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 14}},
+        loc: {
+          start: {line: 1, column: 3, offset: 3},
+          end: {line: 1, column: 14, offset: 14}
+        },
         range: [3, 14]
       },
       '`estree` should have comments'
