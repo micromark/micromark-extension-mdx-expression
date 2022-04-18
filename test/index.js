@@ -342,7 +342,7 @@ test('micromark-extension-mdx-expression', (t) => {
             range: [9, 13]
           }
         ],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 14}},
+        loc: {start: {line: 1, column: 3}, end: {line: 2, column: 0}},
         range: [3, 14]
       },
       '`estree` should have comments'

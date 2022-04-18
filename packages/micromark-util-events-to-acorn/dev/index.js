@@ -27,8 +27,7 @@
 import {ok as assert} from 'uvu/assert'
 import {visit} from 'estree-util-visit'
 import {VFileMessage} from 'vfile-message'
-
-const own = {}.hasOwnProperty
+import {location} from 'vfile-location'
 
 /**
  * Parse a list of micromark events with acorn.
@@ -55,39 +54,30 @@ export function eventsToAcorn(events, options) {
   let estree
   /** @type {Error|undefined} */
   let exception
-  /** @type {number|undefined} */
-  let mdStartOffset
+  let startLine = 1
 
+  // We use `events` to detect everything, however, it could be empty.
+  // In that case, we need `options.start` to make sense of positional info.
   if (options.start) {
-    mdStartOffset = options.start.offset
-    lines[options.start.line] = options.start
+    startLine = options.start.line
+    lines[startLine] = options.start
   }
 
-  // Assume only void events (and `enter` followed immediately by an `exit`).
   while (++index < events.length) {
-    const token = events[index][1]
+    const [kind, token, context] = events[index]
 
-    if (events[index][0] === 'exit') {
-      chunks.push(events[index][2].sliceSerialize(token))
-
-      // Not passed by `micromark-extension-mdxjs-esm`
-      /* c8 ignore next 3 */
-      if (mdStartOffset === undefined) {
-        mdStartOffset = events[index][1].start.offset
-      }
-
-      if (
-        !(token.start.line in lines) ||
-        lines[token.start.line].offset > token.start.offset
-      ) {
-        lines[token.start.line] = token.start
-      }
+    // Assume only void events (and `enter` followed immediately by an `exit`).
+    if (kind === 'exit') {
+      chunks.push(context.sliceSerialize(token))
+      setPoint(token.start)
+      setPoint(token.end)
     }
   }
 
   const source = chunks.join('')
   const value = prefix + source + suffix
   const isEmptyExpression = options.expression && empty(source)
+  const place = location(source)
 
   if (isEmptyExpression && !options.allowEmpty) {
     throw new VFileMessage(
@@ -190,46 +180,35 @@ export function eventsToAcorn(events, options) {
   return {estree, error: exception, swallow}
 
   /**
-   * @param {number} offset
+   * @param {number} acornOffset
    * @returs {Point}
    */
-  function parseOffsetToUnistPoint(offset) {
-    let srcOffset = offset - prefix.length
-    /** @type {string} */
-    let line
-    /** @type {Point|undefined} */
-    let lineStart
+  function parseOffsetToUnistPoint(acornOffset) {
+    let sourceOffset = acornOffset - prefix.length
 
-    if (srcOffset < 0) {
-      srcOffset = 0
-    } else if (srcOffset > source.length) {
-      srcOffset = source.length
+    if (sourceOffset < 0) {
+      sourceOffset = 0
+    } else if (sourceOffset > source.length) {
+      sourceOffset = source.length
     }
 
-    assert(mdStartOffset !== undefined, 'expected `mdStartOffset` to be found')
-    srcOffset += mdStartOffset
+    const pointInSource = place.toPoint(sourceOffset)
+    const line = startLine + (pointInSource.line - 1)
+    const column = lines[line].column + (pointInSource.column - 1)
+    const offset = lines[line].offset + (pointInSource.column - 1)
+    return {line, column, offset}
+  }
 
-    // Then, update it.
-    for (line in lines) {
-      if (own.call(lines, line)) {
-        // First line we find.
-        if (!lineStart) {
-          lineStart = lines[line]
-        }
-
-        if (lines[line].offset > offset) {
-          break
-        }
-
-        lineStart = lines[line]
-      }
+  /** @param {Point} point */
+  function setPoint(point) {
+    // Not passed by `micromark-extension-mdxjs-esm`
+    /* c8 ignore next 3 */
+    if (point.line < startLine) {
+      startLine = point.line
     }
 
-    assert(lineStart, 'expected `lineStart` to be defined')
-    return {
-      line: lineStart.line,
-      column: lineStart.column + (srcOffset - lineStart.offset),
-      offset: srcOffset
+    if (!(point.line in lines) || lines[point.line].offset > point.offset) {
+      lines[point.line] = point
     }
   }
 }

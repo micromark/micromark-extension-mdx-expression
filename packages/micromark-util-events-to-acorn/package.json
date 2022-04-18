@@ -44,6 +44,7 @@
     "estree-util-visit": "^1.0.0",
     "micromark-util-types": "^1.0.0",
     "uvu": "^0.5.0",
+    "vfile-location": "^4.0.0",
     "vfile-message": "^3.0.0"
   },
   "scripts": {
