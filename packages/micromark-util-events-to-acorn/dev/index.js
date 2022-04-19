@@ -54,7 +54,8 @@ export function eventsToAcorn(events, options) {
   let estree
   /** @type {Error|undefined} */
   let exception
-  let startLine = 1
+  /** @type {number} */
+  let startLine
 
   // We use `events` to detect everything, however, it could be empty.
   // In that case, we need `options.start` to make sense of positional info.
@@ -193,7 +194,12 @@ export function eventsToAcorn(events, options) {
     }
 
     const pointInSource = place.toPoint(sourceOffset)
+    assert(
+      typeof startLine === 'number',
+      'expected `startLine` to be found or given '
+    )
     const line = startLine + (pointInSource.line - 1)
+    assert(line in lines, 'expected line to be defined')
     const column = lines[line].column + (pointInSource.column - 1)
     const offset = lines[line].offset + (pointInSource.column - 1)
     return {line, column, offset}
@@ -203,7 +209,7 @@ export function eventsToAcorn(events, options) {
   function setPoint(point) {
     // Not passed by `micromark-extension-mdxjs-esm`
     /* c8 ignore next 3 */
-    if (point.line < startLine) {
+    if (!startLine || point.line < startLine) {
       startLine = point.line
     }
 
