@@ -1,4 +1,5 @@
 /**
+ * @typedef {import('acorn').Comment} Comment
  * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
  * @typedef {import('micromark-util-types').Handle} Handle
  */
@@ -296,9 +297,21 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support an expression followed by a line comment and a line ending'
   )
 
+  /** @type {Array.<Comment>} */
+  const comments = []
+
   t.equal(
     micromark('a {/*b*/ // c\n} d', {
-      extensions: [syntax({acorn, addResult: true})],
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {
+            ecmaVersion: 6,
+            onComment: comments
+          },
+          addResult: true
+        })
+      ],
       htmlExtensions: [
         {
           enter: {
@@ -312,6 +325,25 @@ test('micromark-extension-mdx-expression', (t) => {
     '<p>a  d</p>',
     'should support `addResult` for comments'
   )
+
+  t.deepEqual(comments, [
+    {
+      type: 'Block',
+      value: 'b',
+      start: 3,
+      end: 8,
+      loc: {start: {line: 1, column: 3}, end: {line: 1, column: 8}},
+      range: [3, 8]
+    },
+    {
+      type: 'Line',
+      value: ' c',
+      start: 9,
+      end: 13,
+      loc: {start: {line: 1, column: 9}, end: {line: 1, column: 13}},
+      range: [9, 13]
+    }
+  ])
 
   /** @type {Handle} */
   function checkResultComments(token) {

@@ -38,8 +38,11 @@ import {location} from 'vfile-location'
  */
 export function eventsToAcorn(events, options) {
   const {prefix = '', suffix = ''} = options
+  const acornOptions = /** @type {AcornOptions} */ (options.acornOptions)
   /** @type {Array.<Comment>} */
-  const comments = []
+  const comments = Array.isArray(acornOptions.onComment)
+    ? acornOptions.onComment
+    : []
   const acornConfig = Object.assign({}, options.acornOptions, {
     onComment: comments,
     preserveParens: true
