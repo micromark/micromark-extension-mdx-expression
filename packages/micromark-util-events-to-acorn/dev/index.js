@@ -38,12 +38,10 @@ import {location} from 'vfile-location'
  */
 export function eventsToAcorn(events, options) {
   const {prefix = '', suffix = ''} = options
-  const acornOptions = /** @type {AcornOptions} */ (options.acornOptions)
+  const acornOptions = options.acornOptions
   /** @type {Array.<Comment>} */
-  const comments = Array.isArray(acornOptions.onComment)
-    ? acornOptions.onComment
-    : []
-  const acornConfig = Object.assign({}, options.acornOptions, {
+  const comments = []
+  const acornConfig = Object.assign({}, acornOptions, {
     onComment: comments,
     preserveParens: true
   })
@@ -178,6 +176,10 @@ export function eventsToAcorn(events, options) {
       // @ts-expect-error: acorn has positions.
       esnode.range = [esnode.start, esnode.end]
     })
+
+    if (acornOptions && Array.isArray(acornOptions.onComment)) {
+      acornOptions.onComment.push(...comments)
+    }
   }
 
   // @ts-expect-error: It’s a program now.
