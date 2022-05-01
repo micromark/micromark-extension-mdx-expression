@@ -3,6 +3,8 @@
  * @typedef {import('micromark-util-types').Point} Point
  * @typedef {import('acorn').Options} AcornOptions
  * @typedef {import('acorn').Comment} Comment
+ * @typedef {import('acorn').Token} Token
+ * @typedef {import('acorn').TokenType} TokenType
  * @typedef {import('acorn').Node} Node
  * @typedef {import('estree').Program} Program
  */
@@ -30,6 +32,41 @@ import {VFileMessage} from 'vfile-message'
 import {location} from 'vfile-location'
 
 /**
+ *
+ * @param {AcornOptions} [acornOptions]
+ * @returns {((comment: Comment) => void) | void}
+ */
+function getCommentHandler(acornOptions) {
+  const onComment = acornOptions && acornOptions.onComment
+  /**
+   * @type {((comment: Comment) => void) | void}
+   */
+  return Array.isArray(onComment)
+    ? (comment) => onComment.push(comment)
+    : typeof onComment === 'function'
+    ? ({type, value, start, end, loc}) =>
+        onComment(
+          type === 'Block',
+          value,
+          start,
+          end,
+          loc && loc.start,
+          loc && loc.end
+        )
+    : onComment
+}
+
+/**
+ *
+ * @param {AcornOptions} [acornOptions]
+ * @returns {((token: Token) => void) | void}
+ */
+function getTokenHandler(acornOptions) {
+  const onToken = acornOptions && acornOptions.onToken
+  return Array.isArray(onToken) ? (token) => onToken.push(token) : onToken
+}
+
+/**
  * Parse a list of micromark events with acorn.
  *
  * @param {Event[]} events
@@ -41,8 +78,13 @@ export function eventsToAcorn(events, options) {
   const acornOptions = options.acornOptions
   /** @type {Array.<Comment>} */
   const comments = []
+  /** @type {Array.<Token>} */
+  const tokens = []
+  const commentHandler = getCommentHandler(acornOptions)
+  const tokenHandler = getTokenHandler(acornOptions)
   const acornConfig = Object.assign({}, acornOptions, {
     onComment: comments,
+    onToken: tokenHandler && tokens,
     preserveParens: true
   })
   /** @type {Array.<string>} */
@@ -140,6 +182,15 @@ export function eventsToAcorn(events, options) {
     // @ts-expect-error: acorn *does* allow comments
     estree.comments = comments
 
+    if (tokenHandler) {
+      // @ts-expect-error - will be deleted later, it's for getting correct loc for `tokens` by reusing the following `visitor` as `nodes`
+      estree._tokens = tokens.map((token) => ({
+        ...token,
+        type: 'fake', // `string` required for `estree-util-visit`
+        _type: token.type
+      }))
+    }
+
     visit(estree, (esnode, field, index, parents) => {
       let context = /** @type {Node|Node[]} */ (parents[parents.length - 1])
       /** @type {string|number|null} */
@@ -177,9 +228,29 @@ export function eventsToAcorn(events, options) {
       esnode.range = [esnode.start, esnode.end]
     })
 
-    if (acornOptions && Array.isArray(acornOptions.onComment)) {
-      acornOptions.onComment.push(...comments)
+    if (commentHandler) {
+      for (const comment of comments) {
+        commentHandler(comment)
+      }
     }
+
+    if (tokenHandler) {
+      for (const {
+        _type,
+        ...token
+      } of /** @type {Array.<Token & {_type: TokenType}>} */ (
+        // @ts-expect-error
+        estree._tokens
+      )) {
+        tokenHandler({
+          ...token,
+          type: _type
+        })
+      }
+    }
+
+    // @ts-expect-error
+    delete estree._tokens
   }
 
   // @ts-expect-error: It’s a program now.
@@ -187,7 +258,7 @@ export function eventsToAcorn(events, options) {
 
   /**
    * @param {number} acornOffset
-   * @returs {Point}
+   * @returns {Point}
    */
   function parseOffsetToUnistPoint(acornOffset) {
     let sourceOffset = acornOffset - prefix.length
@@ -207,7 +278,7 @@ export function eventsToAcorn(events, options) {
     assert(line in lines, 'expected line to be defined')
     const column = lines[line].column + (pointInSource.column - 1)
     const offset = lines[line].offset + (pointInSource.column - 1)
-    return {line, column, offset}
+    return /** @type {Point} */ ({line, column, offset})
   }
 
   /** @param {Point} point */

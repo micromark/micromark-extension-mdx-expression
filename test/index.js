@@ -1,5 +1,6 @@
 /**
  * @typedef {import('acorn').Comment} Comment
+ * @typedef {import('acorn').Token} Token
  * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
  * @typedef {import('micromark-util-types').Handle} Handle
  */
@@ -381,6 +382,173 @@ test('micromark-extension-mdx-expression', (t) => {
     )
     return start.call(this)
   }
+
+  /**
+   * @type {Array.<Comment>}
+   */
+  const comments2 = []
+
+  t.equal(
+    micromark('a {/*b*/ // c\n} d', {
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {
+            ecmaVersion: 6,
+            // eslint-disable-next-line max-params
+            onComment: (isBlock, text, start, end, startLoc, endLoc) =>
+              comments2.push({
+                type: isBlock ? 'Block' : 'Line',
+                value: text,
+                start,
+                end,
+                loc: startLoc &&
+                  endLoc && {
+                    start: startLoc,
+                    end: endLoc
+                  },
+                range: [start, end]
+              })
+          }
+        })
+      ],
+      htmlExtensions: [html]
+    }),
+    '<p>a  d</p>',
+    'should support Function type `onComment`'
+  )
+
+  t.deepEqual(comments, comments2)
+
+  /**
+   * @type {Array.<Token>}
+   */
+  const tokens = []
+
+  t.equal(
+    micromark('a {b.c} d', {
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {
+            ecmaVersion: 6,
+            onToken: tokens
+          }
+        })
+      ],
+      htmlExtensions: [html]
+    }),
+    '<p>a  d</p>',
+    'should support Array type `onToken`'
+  )
+
+  t.equal(
+    JSON.stringify(tokens),
+    JSON.stringify([
+      {
+        type: {
+          label: 'name',
+          beforeExpr: false,
+          startsExpr: true,
+          isLoop: false,
+          isAssign: false,
+          prefix: false,
+          postfix: false,
+          binop: null
+        },
+        value: 'b',
+        start: 3,
+        end: 4,
+        loc: {
+          start: {
+            line: 1,
+            column: 3
+          },
+          end: {
+            line: 1,
+            column: 4
+          }
+        },
+        range: [3, 4]
+      },
+      {
+        type: {
+          label: '.',
+          beforeExpr: false,
+          startsExpr: false,
+          isLoop: false,
+          isAssign: false,
+          prefix: false,
+          postfix: false,
+          binop: null,
+          updateContext: null
+        },
+        start: 4,
+        end: 5,
+        loc: {
+          start: {
+            line: 1,
+            column: 4
+          },
+          end: {
+            line: 1,
+            column: 5
+          }
+        },
+        range: [4, 5]
+      },
+      {
+        type: {
+          label: 'name',
+          beforeExpr: false,
+          startsExpr: true,
+          isLoop: false,
+          isAssign: false,
+          prefix: false,
+          postfix: false,
+          binop: null
+        },
+        value: 'c',
+        start: 5,
+        end: 6,
+        loc: {
+          start: {
+            line: 1,
+            column: 5
+          },
+          end: {
+            line: 1,
+            column: 6
+          }
+        },
+        range: [5, 6]
+      }
+    ])
+  )
+
+  /**
+   * @type {Array.<Token>}
+   */
+  const tokens2 = []
+
+  t.equal(
+    micromark('a {b.c} d', {
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {
+            ecmaVersion: 6,
+            onToken: (token) => tokens2.push(token)
+          }
+        })
+      ],
+      htmlExtensions: [html]
+    }),
+    '<p>a  d</p>',
+    'should support Function type `onToken`'
+  )
+
+  t.deepEqual(tokens, tokens2)
 
   t.equal(
     micromark('a {b.c} d', {
