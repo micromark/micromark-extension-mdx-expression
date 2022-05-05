@@ -4,7 +4,6 @@
  * @typedef {import('acorn').Options} AcornOptions
  * @typedef {import('acorn').Comment} Comment
  * @typedef {import('acorn').Token} Token
- * @typedef {import('acorn').TokenType} TokenType
  * @typedef {import('acorn').Node} Node
  * @typedef {import('estree').Program} Program
  */
@@ -33,37 +32,27 @@ import {location} from 'vfile-location'
 
 /**
  *
- * @param {AcornOptions} [acornOptions]
- * @returns {((comment: Comment) => void) | void}
+ * @param {(acornOffset: number) => Point} parseOffsetToUnistPoint
+ * @returns {(nodeOrToken: Node | Token) => void}
  */
-function getCommentHandler(acornOptions) {
-  const onComment = acornOptions && acornOptions.onComment
-  /**
-   * @type {((comment: Comment) => void) | void}
-   */
-  return Array.isArray(onComment)
-    ? (comment) => onComment.push(comment)
-    : typeof onComment === 'function'
-    ? ({type, value, start, end, loc}) =>
-        onComment(
-          type === 'Block',
-          value,
-          start,
-          end,
-          loc && loc.start,
-          loc && loc.end
-        )
-    : onComment
-}
-
-/**
- *
- * @param {AcornOptions} [acornOptions]
- * @returns {((token: Token) => void) | void}
- */
-function getTokenHandler(acornOptions) {
-  const onToken = acornOptions && acornOptions.onToken
-  return Array.isArray(onToken) ? (token) => onToken.push(token) : onToken
+const getPositionFixer = (parseOffsetToUnistPoint) => (nodeOrToken) => {
+  assert('start' in nodeOrToken, 'expected `start` in node or token from acorn')
+  assert('end' in nodeOrToken, 'expected `end` in node or token from acorn')
+  const pointStart = parseOffsetToUnistPoint(nodeOrToken.start)
+  const pointEnd = parseOffsetToUnistPoint(nodeOrToken.end)
+  nodeOrToken.loc = {
+    start: {
+      line: pointStart.line,
+      column: pointStart.column - 1,
+      offset: (nodeOrToken.start = pointStart.offset)
+    },
+    end: {
+      line: pointEnd.line,
+      column: pointEnd.column - 1,
+      offset: (nodeOrToken.end = pointEnd.offset)
+    }
+  }
+  nodeOrToken.range = [nodeOrToken.start, nodeOrToken.end]
 }
 
 /**
@@ -73,6 +62,7 @@ function getTokenHandler(acornOptions) {
  * @param {Options} options
  * @returns {{estree: Program|undefined, error: Error|undefined, swallow: boolean}}
  */
+// eslint-disable-next-line complexity
 export function eventsToAcorn(events, options) {
   const {prefix = '', suffix = ''} = options
   const acornOptions = options.acornOptions
@@ -80,11 +70,11 @@ export function eventsToAcorn(events, options) {
   const comments = []
   /** @type {Array.<Token>} */
   const tokens = []
-  const commentHandler = getCommentHandler(acornOptions)
-  const tokenHandler = getTokenHandler(acornOptions)
+  const onComment = acornOptions && acornOptions.onComment
+  const onToken = acornOptions && acornOptions.onToken
   const acornConfig = Object.assign({}, acornOptions, {
     onComment: comments,
-    onToken: tokenHandler && tokens,
+    onToken: onToken && tokens,
     preserveParens: true
   })
   /** @type {Array.<string>} */
@@ -182,14 +172,7 @@ export function eventsToAcorn(events, options) {
     // @ts-expect-error: acorn *does* allow comments
     estree.comments = comments
 
-    if (tokenHandler) {
-      // @ts-expect-error - will be deleted later, it's for getting correct loc for `tokens` by reusing the following `visitor` as `nodes`
-      estree._tokens = tokens.map((token) => ({
-        ...token,
-        type: 'fake', // `string` required for `estree-util-visit`
-        _type: token.type
-      }))
-    }
+    const fixPosition = getPositionFixer(parseOffsetToUnistPoint)
 
     visit(estree, (esnode, field, index, parents) => {
       let context = /** @type {Node|Node[]} */ (parents[parents.length - 1])
@@ -209,48 +192,36 @@ export function eventsToAcorn(events, options) {
         context[prop] = esnode.expression
       }
 
-      assert('start' in esnode, 'expected `start` in node from acorn')
-      assert('end' in esnode, 'expected `end` in node from acorn')
-      // @ts-expect-error: acorn has positions.
-      const pointStart = parseOffsetToUnistPoint(esnode.start)
-      // @ts-expect-error: acorn has positions.
-      const pointEnd = parseOffsetToUnistPoint(esnode.end)
-      // @ts-expect-error: acorn has positions.
-      esnode.start = pointStart.offset
-      // @ts-expect-error: acorn has positions.
-      esnode.end = pointEnd.offset
-      // @ts-expect-error: acorn has positions.
-      esnode.loc = {
-        start: {line: pointStart.line, column: pointStart.column - 1},
-        end: {line: pointEnd.line, column: pointEnd.column - 1}
-      }
-      // @ts-expect-error: acorn has positions.
-      esnode.range = [esnode.start, esnode.end]
+      fixPosition(/** @type {Node} */ (esnode))
     })
 
-    if (commentHandler) {
-      for (const comment of comments) {
-        commentHandler(comment)
+    if (Array.isArray(onComment)) {
+      onComment.push(...comments)
+    } else if (typeof onComment === 'function') {
+      for (const {type, value, start, end, loc} of comments) {
+        onComment(
+          type === 'Block',
+          value,
+          start,
+          end,
+          loc && loc.start,
+          loc && loc.end
+        )
       }
     }
 
-    if (tokenHandler) {
-      for (const {
-        _type,
-        ...token
-      } of /** @type {Array.<Token & {_type: TokenType}>} */ (
-        // @ts-expect-error
-        estree._tokens
-      )) {
-        tokenHandler({
-          ...token,
-          type: _type
-        })
+    for (const token of tokens) {
+      fixPosition(token)
+
+      if (Array.isArray(onToken)) {
+        onToken.push(token)
+      } else {
+        // No need to check whether `onToken` is a `function`
+        // because it’s already ensured by above and `tokens` is not empty
+        // prettier-ignore
+        /** @type {(token: Token) => void} */ (onToken)(token)
       }
     }
-
-    // @ts-expect-error
-    delete estree._tokens
   }
 
   // @ts-expect-error: It’s a program now.

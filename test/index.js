@@ -131,18 +131,51 @@ test('micromark-extension-mdx-expression', (t) => {
               start: 3,
               end: 4,
               name: 'b',
-              loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+              loc: {
+                start: {
+                  line: 1,
+                  column: 3,
+                  offset: 3
+                },
+                end: {
+                  line: 1,
+                  column: 4,
+                  offset: 4
+                }
+              },
               range: [3, 4]
             },
             start: 3,
             end: 4,
-            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+            loc: {
+              start: {
+                line: 1,
+                column: 3,
+                offset: 3
+              },
+              end: {
+                line: 1,
+                column: 4,
+                offset: 4
+              }
+            },
             range: [3, 4]
           }
         ],
         sourceType: 'module',
         comments: [],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+        loc: {
+          start: {
+            line: 1,
+            column: 3,
+            offset: 3
+          },
+          end: {
+            line: 1,
+            column: 4,
+            offset: 4
+          }
+        },
         range: [3, 4]
       },
       '`addResult` should add an expression'
@@ -184,7 +217,18 @@ test('micromark-extension-mdx-expression', (t) => {
         body: [],
         sourceType: 'module',
         comments: [],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 3}},
+        loc: {
+          start: {
+            line: 1,
+            column: 3,
+            offset: 3
+          },
+          end: {
+            line: 1,
+            column: 3,
+            offset: 3
+          }
+        },
         range: [3, 3]
       },
       '`estree` should be an empty program for an empty expression'
@@ -333,7 +377,18 @@ test('micromark-extension-mdx-expression', (t) => {
       value: 'b',
       start: 3,
       end: 8,
-      loc: {start: {line: 1, column: 3}, end: {line: 1, column: 8}},
+      loc: {
+        start: {
+          line: 1,
+          column: 3,
+          offset: 3
+        },
+        end: {
+          line: 1,
+          column: 8,
+          offset: 8
+        }
+      },
       range: [3, 8]
     },
     {
@@ -341,7 +396,18 @@ test('micromark-extension-mdx-expression', (t) => {
       value: ' c',
       start: 9,
       end: 13,
-      loc: {start: {line: 1, column: 9}, end: {line: 1, column: 13}},
+      loc: {
+        start: {
+          line: 1,
+          column: 9,
+          offset: 9
+        },
+        end: {
+          line: 1,
+          column: 13,
+          offset: 13
+        }
+      },
       range: [9, 13]
     }
   ])
@@ -363,7 +429,18 @@ test('micromark-extension-mdx-expression', (t) => {
             value: 'b',
             start: 3,
             end: 8,
-            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 8}},
+            loc: {
+              start: {
+                line: 1,
+                column: 3,
+                offset: 3
+              },
+              end: {
+                line: 1,
+                column: 8,
+                offset: 8
+              }
+            },
             range: [3, 8]
           },
           {
@@ -371,11 +448,33 @@ test('micromark-extension-mdx-expression', (t) => {
             value: ' c',
             start: 9,
             end: 13,
-            loc: {start: {line: 1, column: 9}, end: {line: 1, column: 13}},
+            loc: {
+              start: {
+                line: 1,
+                column: 9,
+                offset: 9
+              },
+              end: {
+                line: 1,
+                column: 13,
+                offset: 13
+              }
+            },
             range: [9, 13]
           }
         ],
-        loc: {start: {line: 1, column: 3}, end: {line: 2, column: 0}},
+        loc: {
+          start: {
+            line: 1,
+            column: 3,
+            offset: 3
+          },
+          end: {
+            line: 2,
+            column: 0,
+            offset: 14
+          }
+        },
         range: [3, 14]
       },
       '`estree` should have comments'
@@ -462,11 +561,13 @@ test('micromark-extension-mdx-expression', (t) => {
         loc: {
           start: {
             line: 1,
-            column: 3
+            column: 3,
+            offset: 3
           },
           end: {
             line: 1,
-            column: 4
+            column: 4,
+            offset: 4
           }
         },
         range: [3, 4]
@@ -488,11 +589,13 @@ test('micromark-extension-mdx-expression', (t) => {
         loc: {
           start: {
             line: 1,
-            column: 4
+            column: 4,
+            offset: 4
           },
           end: {
             line: 1,
-            column: 5
+            column: 5,
+            offset: 5
           }
         },
         range: [4, 5]
@@ -514,11 +617,13 @@ test('micromark-extension-mdx-expression', (t) => {
         loc: {
           start: {
             line: 1,
-            column: 5
+            column: 5,
+            offset: 5
           },
           end: {
             line: 1,
-            column: 6
+            column: 6,
+            offset: 6
           }
         },
         range: [5, 6]
