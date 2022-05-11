@@ -1,4 +1,7 @@
 /**
+ * @typedef {import('acorn').Comment} Comment
+ * @typedef {import('acorn').Token} Token
+ * @typedef {import('acorn').Position} AcornPosition
  * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
  * @typedef {import('micromark-util-types').Handle} Handle
  */
@@ -129,18 +132,51 @@ test('micromark-extension-mdx-expression', (t) => {
               start: 3,
               end: 4,
               name: 'b',
-              loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+              loc: {
+                start: {
+                  line: 1,
+                  column: 3,
+                  offset: 3
+                },
+                end: {
+                  line: 1,
+                  column: 4,
+                  offset: 4
+                }
+              },
               range: [3, 4]
             },
             start: 3,
             end: 4,
-            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+            loc: {
+              start: {
+                line: 1,
+                column: 3,
+                offset: 3
+              },
+              end: {
+                line: 1,
+                column: 4,
+                offset: 4
+              }
+            },
             range: [3, 4]
           }
         ],
         sourceType: 'module',
         comments: [],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 4}},
+        loc: {
+          start: {
+            line: 1,
+            column: 3,
+            offset: 3
+          },
+          end: {
+            line: 1,
+            column: 4,
+            offset: 4
+          }
+        },
         range: [3, 4]
       },
       '`addResult` should add an expression'
@@ -182,7 +218,18 @@ test('micromark-extension-mdx-expression', (t) => {
         body: [],
         sourceType: 'module',
         comments: [],
-        loc: {start: {line: 1, column: 3}, end: {line: 1, column: 3}},
+        loc: {
+          start: {
+            line: 1,
+            column: 3,
+            offset: 3
+          },
+          end: {
+            line: 1,
+            column: 3,
+            offset: 3
+          }
+        },
         range: [3, 3]
       },
       '`estree` should be an empty program for an empty expression'
@@ -296,9 +343,18 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support an expression followed by a line comment and a line ending'
   )
 
+  /** @type {Array.<Comment>} */
+  const comments = []
+
   t.equal(
     micromark('a {/*b*/ // c\n} d', {
-      extensions: [syntax({acorn, addResult: true})],
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {ecmaVersion: 6, onComment: comments},
+          addResult: true
+        })
+      ],
       htmlExtensions: [
         {
           enter: {
@@ -310,7 +366,36 @@ test('micromark-extension-mdx-expression', (t) => {
       ]
     }),
     '<p>a  d</p>',
-    'should support `addResult` for comments'
+    'should support comments (1)'
+  )
+
+  t.deepEqual(
+    comments,
+    [
+      {
+        type: 'Block',
+        value: 'b',
+        start: 3,
+        end: 8,
+        loc: {
+          start: {line: 1, column: 3, offset: 3},
+          end: {line: 1, column: 8, offset: 8}
+        },
+        range: [3, 8]
+      },
+      {
+        type: 'Line',
+        value: ' c',
+        start: 9,
+        end: 13,
+        loc: {
+          start: {line: 1, column: 9, offset: 9},
+          end: {line: 1, column: 13, offset: 13}
+        },
+        range: [9, 13]
+      }
+    ],
+    'should support comments (2)'
   )
 
   /** @type {Handle} */
@@ -330,7 +415,10 @@ test('micromark-extension-mdx-expression', (t) => {
             value: 'b',
             start: 3,
             end: 8,
-            loc: {start: {line: 1, column: 3}, end: {line: 1, column: 8}},
+            loc: {
+              start: {line: 1, column: 3, offset: 3},
+              end: {line: 1, column: 8, offset: 8}
+            },
             range: [3, 8]
           },
           {
@@ -338,17 +426,171 @@ test('micromark-extension-mdx-expression', (t) => {
             value: ' c',
             start: 9,
             end: 13,
-            loc: {start: {line: 1, column: 9}, end: {line: 1, column: 13}},
+            loc: {
+              start: {line: 1, column: 9, offset: 9},
+              end: {line: 1, column: 13, offset: 13}
+            },
             range: [9, 13]
           }
         ],
-        loc: {start: {line: 1, column: 3}, end: {line: 2, column: 0}},
+        loc: {
+          start: {line: 1, column: 3, offset: 3},
+          end: {line: 2, column: 0, offset: 14}
+        },
         range: [3, 14]
       },
       '`estree` should have comments'
     )
     return start.call(this)
   }
+
+  /** @type {Array<Array<unknown>>} */
+  const listOfArguments = []
+
+  t.equal(
+    micromark('a {/*b*/ // c\n} d', {
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {
+            ecmaVersion: 6,
+            onComment() {
+              listOfArguments.push([...arguments])
+            }
+          }
+        })
+      ],
+      htmlExtensions: [html]
+    }),
+    '<p>a  d</p>',
+    'should support `onComment` as a function'
+  )
+
+  t.deepEqual(listOfArguments, [
+    [
+      true,
+      'b',
+      3,
+      8,
+      {line: 1, column: 3, offset: 3},
+      {line: 1, column: 8, offset: 8}
+    ],
+    [
+      false,
+      ' c',
+      9,
+      13,
+      {line: 1, column: 9, offset: 9},
+      {line: 1, column: 13, offset: 13}
+    ]
+  ])
+
+  /** @type {Array.<Token>} */
+  const tokens = []
+
+  t.equal(
+    micromark('a {b.c} d', {
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {ecmaVersion: 6, onToken: tokens}
+        })
+      ],
+      htmlExtensions: [html]
+    }),
+    '<p>a  d</p>',
+    'should support `onToken` (array-form)'
+  )
+
+  t.equal(
+    JSON.stringify(tokens),
+    JSON.stringify([
+      {
+        type: {
+          label: 'name',
+          beforeExpr: false,
+          startsExpr: true,
+          isLoop: false,
+          isAssign: false,
+          prefix: false,
+          postfix: false,
+          binop: null
+        },
+        value: 'b',
+        start: 3,
+        end: 4,
+        loc: {
+          start: {line: 1, column: 3, offset: 3},
+          end: {line: 1, column: 4, offset: 4}
+        },
+        range: [3, 4]
+      },
+      {
+        type: {
+          label: '.',
+          beforeExpr: false,
+          startsExpr: false,
+          isLoop: false,
+          isAssign: false,
+          prefix: false,
+          postfix: false,
+          binop: null,
+          updateContext: null
+        },
+        start: 4,
+        end: 5,
+        loc: {
+          start: {line: 1, column: 4, offset: 4},
+          end: {line: 1, column: 5, offset: 5}
+        },
+        range: [4, 5]
+      },
+      {
+        type: {
+          label: 'name',
+          beforeExpr: false,
+          startsExpr: true,
+          isLoop: false,
+          isAssign: false,
+          prefix: false,
+          postfix: false,
+          binop: null
+        },
+        value: 'c',
+        start: 5,
+        end: 6,
+        loc: {
+          start: {line: 1, column: 5, offset: 5},
+          end: {line: 1, column: 6, offset: 6}
+        },
+        range: [5, 6]
+      }
+    ])
+  )
+
+  /** @type {Array.<Token>} */
+  const tokens2 = []
+
+  t.equal(
+    micromark('a {b.c} d', {
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {
+            ecmaVersion: 6,
+            onToken(token) {
+              tokens2.push(token)
+            }
+          }
+        })
+      ],
+      htmlExtensions: [html]
+    }),
+    '<p>a  d</p>',
+    'should support `onToken` (function-form, 1)'
+  )
+
+  t.deepEqual(tokens, tokens2, 'should support `onToken` (function-form, 2)')
 
   t.equal(
     micromark('a {b.c} d', {
