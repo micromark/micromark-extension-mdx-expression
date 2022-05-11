@@ -4,9 +4,7 @@
  * @typedef {import('micromark-util-types').State} State
  * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
- */
-
-/**
+ *
  * @typedef Options
  * @property {boolean} [addResult=false]
  * @property {Acorn} [acorn]

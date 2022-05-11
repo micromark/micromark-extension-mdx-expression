@@ -343,7 +343,7 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support an expression followed by a line comment and a line ending'
   )
 
-  /** @type {Array.<Comment>} */
+  /** @type {Array<Comment>} */
   const comments = []
 
   t.equal(
@@ -485,7 +485,7 @@ test('micromark-extension-mdx-expression', (t) => {
     ]
   ])
 
-  /** @type {Array.<Token>} */
+  /** @type {Array<Token>} */
   const tokens = []
 
   t.equal(
@@ -568,7 +568,7 @@ test('micromark-extension-mdx-expression', (t) => {
     ])
   )
 
-  /** @type {Array.<Token>} */
+  /** @type {Array<Token>} */
   const tokens2 = []
 
   t.equal(

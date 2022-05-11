@@ -79,7 +79,7 @@ Without this condition, production code is loaded.
 
 ###### Parameters
 
-*   `events` (`Array.<Event>`) — Events
+*   `events` (`Array<Event>`) — Events
 *   `options.acorn` (`Acorn`, required) — Object with `acorn.parse` and
     `acorn.parseExpressionAt`
 *   `options.acornOptions` ([`AcornOptions`][acorn-options]) — Configuration for

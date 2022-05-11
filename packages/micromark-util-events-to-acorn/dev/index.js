@@ -7,15 +7,10 @@
  * @typedef {import('acorn').Node} AcornNode
  * @typedef {import('estree').Program} Program
  * @typedef {import('estree-util-visit').Node} EstreeNode
- */
-
-/**
- * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt}} Acorn
  *
+ * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt}} Acorn
  * @typedef {Error & {raisedAt: number, pos: number, loc: {line: number, column: number}}} AcornError
- */
-
-/**
+ *
  * @typedef Options
  * @property {Acorn} acorn
  * @property {AcornOptions} [acornOptions]
@@ -34,7 +29,7 @@ import {location} from 'vfile-location'
 /**
  * Parse a list of micromark events with acorn.
  *
- * @param {Event[]} events
+ * @param {Array<Event>} events
  * @param {Options} options
  * @returns {{estree: Program|undefined, error: Error|undefined, swallow: boolean}}
  */
@@ -42,9 +37,9 @@ import {location} from 'vfile-location'
 export function eventsToAcorn(events, options) {
   const {prefix = '', suffix = ''} = options
   const acornOptions = Object.assign({}, options.acornOptions)
-  /** @type {Array.<Comment>} */
+  /** @type {Array<Comment>} */
   const comments = []
-  /** @type {Array.<Token>} */
+  /** @type {Array<Token>} */
   const tokens = []
   const onComment = acornOptions.onComment
   const onToken = acornOptions.onToken
@@ -53,7 +48,7 @@ export function eventsToAcorn(events, options) {
     onToken: onToken ? tokens : undefined,
     preserveParens: true
   })
-  /** @type {Array.<string>} */
+  /** @type {Array<string>} */
   const chunks = []
   /** @type {Record<string, Point>} */
   const lines = {}
@@ -149,7 +144,7 @@ export function eventsToAcorn(events, options) {
     estree.comments = comments
 
     visit(estree, (esnode, field, index, parents) => {
-      let context = /** @type {AcornNode|AcornNode[]} */ (
+      let context = /** @type {AcornNode|Array<AcornNode>} */ (
         parents[parents.length - 1]
       )
       /** @type {string|number|null} */
