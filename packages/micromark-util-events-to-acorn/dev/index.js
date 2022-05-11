@@ -4,8 +4,9 @@
  * @typedef {import('acorn').Options} AcornOptions
  * @typedef {import('acorn').Comment} Comment
  * @typedef {import('acorn').Token} Token
- * @typedef {import('acorn').Node} Node
+ * @typedef {import('acorn').Node} AcornNode
  * @typedef {import('estree').Program} Program
+ * @typedef {import('estree-util-visit').Node} EstreeNode
  */
 
 /**
@@ -31,31 +32,6 @@ import {VFileMessage} from 'vfile-message'
 import {location} from 'vfile-location'
 
 /**
- *
- * @param {(acornOffset: number) => Point} parseOffsetToUnistPoint
- * @returns {(nodeOrToken: Node | Token) => void}
- */
-const getPositionFixer = (parseOffsetToUnistPoint) => (nodeOrToken) => {
-  assert('start' in nodeOrToken, 'expected `start` in node or token from acorn')
-  assert('end' in nodeOrToken, 'expected `end` in node or token from acorn')
-  const pointStart = parseOffsetToUnistPoint(nodeOrToken.start)
-  const pointEnd = parseOffsetToUnistPoint(nodeOrToken.end)
-  nodeOrToken.loc = {
-    start: {
-      line: pointStart.line,
-      column: pointStart.column - 1,
-      offset: (nodeOrToken.start = pointStart.offset)
-    },
-    end: {
-      line: pointEnd.line,
-      column: pointEnd.column - 1,
-      offset: (nodeOrToken.end = pointEnd.offset)
-    }
-  }
-  nodeOrToken.range = [nodeOrToken.start, nodeOrToken.end]
-}
-
-/**
  * Parse a list of micromark events with acorn.
  *
  * @param {Event[]} events
@@ -65,16 +41,16 @@ const getPositionFixer = (parseOffsetToUnistPoint) => (nodeOrToken) => {
 // eslint-disable-next-line complexity
 export function eventsToAcorn(events, options) {
   const {prefix = '', suffix = ''} = options
-  const acornOptions = options.acornOptions
+  const acornOptions = Object.assign({}, options.acornOptions)
   /** @type {Array.<Comment>} */
   const comments = []
   /** @type {Array.<Token>} */
   const tokens = []
-  const onComment = acornOptions && acornOptions.onComment
-  const onToken = acornOptions && acornOptions.onToken
+  const onComment = acornOptions.onComment
+  const onToken = acornOptions.onToken
   const acornConfig = Object.assign({}, acornOptions, {
     onComment: comments,
-    onToken: onToken && tokens,
+    onToken: onToken ? tokens : undefined,
     preserveParens: true
   })
   /** @type {Array.<string>} */
@@ -83,7 +59,7 @@ export function eventsToAcorn(events, options) {
   const lines = {}
   let index = -1
   let swallow = false
-  /** @type {Node|undefined} */
+  /** @type {AcornNode|undefined} */
   let estree
   /** @type {Error|undefined} */
   let exception
@@ -172,10 +148,10 @@ export function eventsToAcorn(events, options) {
     // @ts-expect-error: acorn *does* allow comments
     estree.comments = comments
 
-    const fixPosition = getPositionFixer(parseOffsetToUnistPoint)
-
     visit(estree, (esnode, field, index, parents) => {
-      let context = /** @type {Node|Node[]} */ (parents[parents.length - 1])
+      let context = /** @type {AcornNode|AcornNode[]} */ (
+        parents[parents.length - 1]
+      )
       /** @type {string|number|null} */
       let prop = field
 
@@ -192,20 +168,22 @@ export function eventsToAcorn(events, options) {
         context[prop] = esnode.expression
       }
 
-      fixPosition(/** @type {Node} */ (esnode))
+      fixPosition(esnode)
     })
 
+    // Comment positions are fixed by `visit` because they’re in the tree.
     if (Array.isArray(onComment)) {
       onComment.push(...comments)
     } else if (typeof onComment === 'function') {
-      for (const {type, value, start, end, loc} of comments) {
+      for (const comment of comments) {
+        assert(comment.loc, 'expected `loc` on comment')
         onComment(
-          type === 'Block',
-          value,
-          start,
-          end,
-          loc && loc.start,
-          loc && loc.end
+          comment.type === 'Block',
+          comment.value,
+          comment.start,
+          comment.end,
+          comment.loc.start,
+          comment.loc.end
         )
       }
     }
@@ -216,10 +194,10 @@ export function eventsToAcorn(events, options) {
       if (Array.isArray(onToken)) {
         onToken.push(token)
       } else {
-        // No need to check whether `onToken` is a `function`
-        // because it’s already ensured by above and `tokens` is not empty
-        // prettier-ignore
-        /** @type {(token: Token) => void} */ (onToken)(token)
+        // `tokens` are not added if `onToken` is not defined, so it must be a
+        // function.
+        assert(typeof onToken === 'function', 'expected function')
+        onToken(token)
       }
     }
   }
@@ -228,6 +206,40 @@ export function eventsToAcorn(events, options) {
   return {estree, error: exception, swallow}
 
   /**
+   * Update the position of a node.
+   *
+   * @param {AcornNode|EstreeNode|Token} nodeOrToken
+   * @returns {void}
+   */
+  function fixPosition(nodeOrToken) {
+    assert(
+      'start' in nodeOrToken,
+      'expected `start` in node or token from acorn'
+    )
+    assert('end' in nodeOrToken, 'expected `end` in node or token from acorn')
+    const pointStart = parseOffsetToUnistPoint(nodeOrToken.start)
+    const pointEnd = parseOffsetToUnistPoint(nodeOrToken.end)
+    nodeOrToken.start = pointStart.offset
+    nodeOrToken.end = pointEnd.offset
+    nodeOrToken.loc = {
+      start: {
+        line: pointStart.line,
+        column: pointStart.column - 1,
+        offset: pointStart.offset
+      },
+      end: {
+        line: pointEnd.line,
+        column: pointEnd.column - 1,
+        offset: pointEnd.offset
+      }
+    }
+    nodeOrToken.range = [nodeOrToken.start, nodeOrToken.end]
+  }
+
+  /**
+   * Turn an arbitrary offset into the parsed value, into a point in the source
+   * value.
+   *
    * @param {number} acornOffset
    * @returns {Point}
    */
