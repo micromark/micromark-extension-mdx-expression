@@ -8,7 +8,7 @@
  * @typedef {import('estree').Program} Program
  * @typedef {import('estree-util-visit').Node} EstreeNode
  *
- * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt}} Acorn
+ * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt, acorn: typeof import('acorn')}} Acorn
  * @typedef {Error & {raisedAt: number, pos: number, loc: {line: number, column: number}}} AcornError
  *
  * @typedef Options
@@ -183,8 +183,21 @@ export function eventsToAcorn(events, options) {
       }
     }
 
+    const tt = options.acorn.acorn.tokTypes
+
     for (const token of tokens) {
       fixPosition(token)
+
+      // Prefix and suffix should be ignored
+      if (
+        token.start === token.end &&
+        (token.type === tt.braceL ||
+          token.type === tt.braceR ||
+          token.type === tt.parenL ||
+          token.type === tt.parenR)
+      ) {
+        continue
+      }
 
       if (Array.isArray(onToken)) {
         onToken.push(token)

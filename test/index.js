@@ -592,6 +592,50 @@ test('micromark-extension-mdx-expression', (t) => {
 
   t.deepEqual(tokens, tokens2, 'should support `onToken` (function-form, 2)')
 
+  /** @type {Array<Token>} */
+  const tokens3 = []
+
+  t.equal(
+    micromark('...{}', {
+      extensions: [
+        syntax({
+          acorn,
+          acornOptions: {ecmaVersion: 6, onToken: tokens3},
+          spread: true
+        })
+      ],
+      htmlExtensions: [html]
+    }),
+    '<p>...</p>',
+    'should filter out `prefix` and `suffix` for `onToken`'
+  )
+
+  t.equal(
+    JSON.stringify(tokens3),
+    JSON.stringify([
+      {
+        type: {
+          label: 'eof',
+          beforeExpr: false,
+          startsExpr: false,
+          isLoop: false,
+          isAssign: false,
+          prefix: false,
+          postfix: false,
+          binop: null,
+          updateContext: null
+        },
+        start: 4,
+        end: 4,
+        loc: {
+          start: {line: 1, column: 4, offset: 4},
+          end: {line: 1, column: 4, offset: 4}
+        },
+        range: [4, 4]
+      }
+    ])
+  )
+
   t.equal(
     micromark('a {b.c} d', {
       extensions: [syntax({acorn})],
