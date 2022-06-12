@@ -42,7 +42,7 @@
     "xo": "^0.50.0"
   },
   "scripts": {
-    "build-workspace": "npm run build --workspaces",
+    "build-workspace": "npm run build --workspaces && cp readme.md packages/micromark-extension-mdx-expression/readme.md",
     "build-monorepo": "rimraf \"test/**/*.d.ts\" && tsc && type-coverage",
     "build": "npm run build-workspace && npm run build-monorepo",
     "format": "remark . -qfo && prettier . -w --loglevel warn && xo --fix",
