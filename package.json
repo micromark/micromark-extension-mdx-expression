@@ -39,7 +39,7 @@
     "tape": "^5.0.0",
     "type-coverage": "^2.0.0",
     "typescript": "^4.0.0",
-    "xo": "^0.48.0"
+    "xo": "^0.50.0"
   },
   "scripts": {
     "build-workspace": "npm run build --workspaces",
@@ -61,7 +61,7 @@
   "xo": {
     "prettier": true,
     "rules": {
-      "node/file-extension-in-import": "off",
+      "n/file-extension-in-import": "off",
       "unicorn/no-this-assignment": "off"
     }
   },
