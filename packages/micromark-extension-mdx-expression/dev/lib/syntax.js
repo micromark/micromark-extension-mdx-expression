@@ -6,11 +6,22 @@
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
  *
  * @typedef Options
- * @property {boolean} [addResult=false]
+ *   Configuration (optional).
  * @property {Acorn} [acorn]
+ *   Acorn parser to use (optional).
  * @property {AcornOptions} [acornOptions]
+ *   Options to pass to acorn (default: `{ecmaVersion: 2020, locations: true,
+ *   sourceType: 'module'}`).
+ *   All fields (except for `locations`) can be set.
+ * @property {boolean} [addResult=false]
+ *   Whether to add an `estree` field to `mdxFlowExpression` and
+ *   `mdxTextExpression` tokens with results from acorn.
  * @property {boolean} [spread=false]
+ *   Undocumented option to parse only a spread (used by
+ *   `micromark-extension-mdx-jsx` to parse spread attributes).
  * @property {boolean} [allowEmpty=true]
+ *   Undocumented option to disallow empty attributes (used by
+ *   `micromark-extension-mdx-jsx` to prohobit empty attribute values).
  */
 
 import {ok as assert} from 'uvu/assert'
@@ -21,8 +32,14 @@ import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
 
 /**
+ * Add support for MDX expressions.
+ *
+ * Function called with options to get a syntax extension for micromark.
+ *
  * @param {Options} options
+ *   Configuration (optional).
  * @returns {Extension}
+ *   Syntax extension for micromark (passed in `extensions`).
  */
 export function mdxExpression(options = {}) {
   const addResult = options.addResult

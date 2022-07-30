@@ -101,8 +101,8 @@ Acorn parser to use ([`Acorn`][acorn], optional).
 
 ###### `options.acornOptions`
 
-Options to pass to acorn (`Object`, default: `{ecmaVersion: 2020, sourceType:
-'module'}`).
+Options to pass to acorn (`Object`, default: `{ecmaVersion: 2020, locations:
+true, sourceType: 'module'}`).
 All fields can be set.
 Positional info (`loc`, `range`) is set on ES nodes regardless of acorn options.
 
