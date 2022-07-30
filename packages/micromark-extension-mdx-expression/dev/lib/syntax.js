@@ -34,7 +34,8 @@ import {types} from 'micromark-util-symbol/types.js'
 /**
  * Add support for MDX expressions.
  *
- * Function called with options to get a syntax extension for micromark.
+ * Function called optionally with options to get a syntax extension for
+ * micromark.
  *
  * @param {Options} options
  *   Configuration (optional).

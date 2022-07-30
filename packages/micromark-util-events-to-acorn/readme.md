@@ -16,16 +16,32 @@ micromark utility to try and parse events w/ acorn.
 *   [Use](#use)
 *   [API](#api)
     *   [`eventsToAcorn(events, options)`](#eventstoacornevents-options)
+*   [Types](#types)
 *   [Security](#security)
 *   [Contribute](#contribute)
 *   [License](#license)
 
 ## Install
 
-[npm][]:
+This package is [ESM only][esm].
+In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
 
 ```sh
 npm install micromark-util-events-to-acorn
+```
+
+In Deno with [`esm.sh`][esmsh]:
+
+```js
+import {mdxExpression} from 'https://esm.sh/micromark-util-events-to-acorn@1'
+```
+
+In browsers with [`esm.sh`][esmsh]:
+
+```html
+<script type="module">
+  import {mdxExpression} from 'https://esm.sh/micromark-util-events-to-acorn@1?bundle'
+</script>
 ```
 
 ## Use
@@ -67,11 +83,10 @@ function factoryMdxExpression(effects, ok, nok) {
 
 ## API
 
-This module exports the following identifiers: `eventsToAcorn`.
+This module exports the identifier `eventsToAcorn`.
 There is no default export.
 
-The export map supports the endorsed
-[`development` condition](https://nodejs.org/api/packages.html#packages_resolving_user_conditions).
+The export map supports the endorsed [`development` condition][condition].
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
@@ -79,25 +94,40 @@ Without this condition, production code is loaded.
 
 ###### Parameters
 
-*   `events` (`Array<Event>`) — Events
-*   `options.acorn` (`Acorn`, required) — Object with `acorn.parse` and
+*   `events` (`Array<Event>`)
+    — events
+*   `options.acorn` (`Acorn`, required)
+    — object with `acorn.parse` and
     `acorn.parseExpressionAt`
-*   `options.acornOptions` ([`AcornOptions`][acorn-options]) — Configuration for
-    acorn
-*   `options.start` (`Point`, optional) — Place where events start
-*   `options.prefix` (`string`, default: `''`) — Text to place before events
-*   `options.suffix` (`string`, default: `''`) — Text to place after events
-*   `options.expression` (`boolean`, default: `false`) — Whether this is a
-    program or expression
-*   `options.allowEmpty` (`boolean`, default: `false`) — Whether an empty
-    expression is allowed (programs are always allowed to be empty).
+*   `options.acornOptions` ([`AcornOptions`][acorn-options])
+    — configuration for acorn
+*   `options.start` (`Point`, optional)
+    — place where events start
+*   `options.prefix` (`string`, default: `''`)
+    — text to place before events
+*   `options.suffix` (`string`, default: `''`)
+    — text to place after events
+*   `options.expression` (`boolean`, default: `false`)
+    — whether this is a program or expression
+*   `options.allowEmpty` (`boolean`, default: `false`)
+    — whether an empty expression is allowed (programs are always allowed to
+    be empty)
 
 ###### Returns
 
-*   `estree` ([`Program?`][program]) — Estree node
-*   `error` (`Error?`) — Error if unparseable
-*   `swallow` (`boolean`) — Whether the error, if there is one, can be swallowed
-    and more JavaScript could be valid.
+*   `estree` ([`Program?`][program])
+    — estree node
+*   `error` (`Error?`)
+    — error if unparseable
+*   `swallow` (`boolean`)
+    — whether the error, if there is one, can be swallowed and more JavaScript
+    could be valid
+
+## Types
+
+This package is fully typed with [TypeScript][].
+It exports the additional types `Acorn`, `AcornOptions`, `Options`, `Point`,
+and `Program`.
 
 ## Security
 
@@ -144,6 +174,8 @@ abide by its terms.
 
 [npm]: https://docs.npmjs.com/cli/install
 
+[esmsh]: https://esm.sh
+
 [chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
 
 [chat]: https://github.com/micromark/micromark/discussions
@@ -161,6 +193,12 @@ abide by its terms.
 [support]: https://github.com/micromark/.github/blob/HEAD/support.md
 
 [coc]: https://github.com/micromark/.github/blob/HEAD/code-of-conduct.md
+
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[typescript]: https://www.typescriptlang.org
+
+[condition]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
 
 [program]: https://github.com/estree/estree/blob/master/es2015.md#programs
 

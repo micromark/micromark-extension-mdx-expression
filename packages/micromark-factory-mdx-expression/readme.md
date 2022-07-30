@@ -17,16 +17,32 @@ text).
 *   [Use](#use)
 *   [API](#api)
     *   [`factoryMdxExpression(…)`](#factorymdxexpression)
+*   [Types](#types)
 *   [Security](#security)
 *   [Contribute](#contribute)
 *   [License](#license)
 
 ## Install
 
-[npm][]:
+This package is [ESM only][esm].
+In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
 
 ```sh
 npm install micromark-factory-mdx-expression
+```
+
+In Deno with [`esm.sh`][esmsh]:
+
+```js
+import {mdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1'
+```
+
+In browsers with [`esm.sh`][esmsh]:
+
+```html
+<script type="module">
+  import {mdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1?bundle'
+</script>
 ```
 
 ## Use
@@ -67,11 +83,10 @@ function tokenizeFlowExpression(effects, ok, nok) {
 
 ## API
 
-This module exports the following identifiers: `factoryMdxExpression`.
+This module exports the identifiers `factoryMdxExpression`.
 There is no default export.
 
-The export map supports the endorsed
-[`development` condition](https://nodejs.org/api/packages.html#packages_resolving_user_conditions).
+The export map supports the endorsed [`development` condition][condition].
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
@@ -101,6 +116,11 @@ Without this condition, production code is loaded.
 ###### Examples
 
 See [`micromark-extension-mdx-expression`][extension]
+
+## Types
+
+This package is fully typed with [TypeScript][].
+It exports the additional types `Acorn` and `AcornOptions`.
 
 ## Security
 
@@ -147,6 +167,8 @@ abide by its terms.
 
 [npm]: https://docs.npmjs.com/cli/install
 
+[esmsh]: https://esm.sh
+
 [chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
 
 [chat]: https://github.com/micromark/micromark/discussions
@@ -165,6 +187,12 @@ abide by its terms.
 
 [coc]: https://github.com/micromark/.github/blob/HEAD/code-of-conduct.md
 
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[typescript]: https://www.typescriptlang.org
+
+[condition]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+
 [acorn-options]: https://github.com/acornjs/acorn/tree/master/acorn#interface
 
-[extension]: https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression
+[extension]: https://github.com/micromark/micromark-extension-mdx-expression
