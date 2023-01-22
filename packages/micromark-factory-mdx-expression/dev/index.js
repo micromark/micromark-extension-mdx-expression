@@ -24,13 +24,13 @@ import {eventsToAcorn} from 'micromark-util-events-to-acorn'
  * @param {string} type
  * @param {string} markerType
  * @param {string} chunkType
- * @param {Acorn} [acorn]
- * @param {AcornOptions} [acornOptions]
- * @param {boolean} [addResult=false]
- * @param {boolean} [spread=false]
- * @param {boolean} [allowEmpty=false]
- * @param {boolean} [allowLazy=false]
- * @param {number} [startColumn=0]
+ * @param {Acorn | null | undefined} [acorn]
+ * @param {AcornOptions | null | undefined} [acornOptions]
+ * @param {boolean | null | undefined} [addResult=false]
+ * @param {boolean | null | undefined} [spread=false]
+ * @param {boolean | null | undefined} [allowEmpty=false]
+ * @param {boolean | null | undefined} [allowLazy=false]
+ * @param {number | null | undefined} [startColumn=0]
  * @returns {State}
  */
 // eslint-disable-next-line max-params

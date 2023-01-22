@@ -8,19 +8,19 @@
  *
  * @typedef Options
  *   Configuration (optional).
- * @property {Acorn} [acorn]
+ * @property {Acorn | null | undefined} [acorn]
  *   Acorn parser to use (optional).
- * @property {AcornOptions} [acornOptions]
+ * @property {AcornOptions | null | undefined} [acornOptions]
  *   Options to pass to acorn (default: `{ecmaVersion: 2020, locations: true,
  *   sourceType: 'module'}`).
  *   All fields (except for `locations`) can be set.
- * @property {boolean} [addResult=false]
+ * @property {boolean | null | undefined} [addResult=false]
  *   Whether to add an `estree` field to `mdxFlowExpression` and
  *   `mdxTextExpression` tokens with results from acorn.
- * @property {boolean} [spread=false]
+ * @property {boolean | null | undefined} [spread=false]
  *   Undocumented option to parse only a spread (used by
  *   `micromark-extension-mdx-jsx` to parse spread attributes).
- * @property {boolean} [allowEmpty=true]
+ * @property {boolean | null | undefined} [allowEmpty=true]
  *   Undocumented option to disallow empty attributes (used by
  *   `micromark-extension-mdx-jsx` to prohobit empty attribute values).
  */
@@ -38,21 +38,22 @@ import {types} from 'micromark-util-symbol/types.js'
  * Function called optionally with options to get a syntax extension for
  * micromark.
  *
- * @param {Options} options
+ * @param {Options | null | undefined} [options]
  *   Configuration (optional).
  * @returns {Extension}
  *   Syntax extension for micromark (passed in `extensions`).
  */
-export function mdxExpression(options = {}) {
-  const addResult = options.addResult
-  const acorn = options.acorn
+export function mdxExpression(options) {
+  const options_ = options || {}
+  const addResult = options_.addResult
+  const acorn = options_.acorn
   // Hidden: `micromark-extension-mdx-jsx` supports expressions in tags,
   // and one of them is only “spread” elements.
   // It also has expressions that are not allowed to be empty (`<x y={}/>`).
   // Instead of duplicating code there, this are two small hidden feature here
   // to test that behavior.
-  const spread = options.spread
-  let allowEmpty = options.allowEmpty
+  const spread = options_.spread
+  let allowEmpty = options_.allowEmpty
   /** @type {AcornOptions} */
   let acornOptions
 
@@ -69,9 +70,9 @@ export function mdxExpression(options = {}) {
 
     acornOptions = Object.assign(
       {ecmaVersion: 2020, sourceType: 'module'},
-      options.acornOptions
+      options_.acornOptions
     )
-  } else if (options.acornOptions || options.addResult) {
+  } else if (options_.acornOptions || options_.addResult) {
     throw new Error('Expected an `acorn` instance passed in as `options.acorn`')
   }
 

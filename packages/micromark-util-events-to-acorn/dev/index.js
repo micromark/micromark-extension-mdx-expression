@@ -13,12 +13,12 @@
  *
  * @typedef Options
  * @property {Acorn} acorn
- * @property {AcornOptions} [acornOptions]
- * @property {Point} [start]
- * @property {string} [prefix='']
- * @property {string} [suffix='']
- * @property {boolean} [expression=false]
- * @property {boolean} [allowEmpty=false]
+ * @property {AcornOptions | null | undefined} [acornOptions]
+ * @property {Point | null | undefined} [start]
+ * @property {string | null | undefined} [prefix='']
+ * @property {string | null | undefined} [suffix='']
+ * @property {boolean | null | undefined} [expression=false]
+ * @property {boolean | null | undefined} [allowEmpty=false]
  */
 
 import {ok as assert} from 'uvu/assert'
@@ -31,11 +31,12 @@ import {location} from 'vfile-location'
  *
  * @param {Array<Event>} events
  * @param {Options} options
- * @returns {{estree: Program|undefined, error: Error|undefined, swallow: boolean}}
+ * @returns {{estree: Program | undefined, error: Error | undefined, swallow: boolean}}
  */
 // eslint-disable-next-line complexity
 export function eventsToAcorn(events, options) {
-  const {prefix = '', suffix = ''} = options
+  const prefix = options.prefix || ''
+  const suffix = options.suffix || ''
   const acornOptions = Object.assign({}, options.acornOptions)
   /** @type {Array<Comment>} */
   const comments = []
@@ -49,9 +50,9 @@ export function eventsToAcorn(events, options) {
   const lines = {}
   let index = -1
   let swallow = false
-  /** @type {AcornNode|undefined} */
+  /** @type {AcornNode | undefined} */
   let estree
-  /** @type {Error|undefined} */
+  /** @type {Error | undefined} */
   let exception
   /** @type {number} */
   let startLine
@@ -149,10 +150,10 @@ export function eventsToAcorn(events, options) {
 
     // @ts-expect-error: acorn looks enough like estree.
     visit(estree, (esnode, field, index, parents) => {
-      let context = /** @type {AcornNode|Array<AcornNode>} */ (
+      let context = /** @type {AcornNode | Array<AcornNode>} */ (
         parents[parents.length - 1]
       )
-      /** @type {string|number|null} */
+      /** @type {string | number | null} */
       let prop = field
 
       // Remove non-standard `ParenthesizedExpression`.
@@ -209,7 +210,7 @@ export function eventsToAcorn(events, options) {
   /**
    * Update the position of a node.
    *
-   * @param {AcornNode|EstreeNode|Token} nodeOrToken
+   * @param {AcornNode | EstreeNode | Token} nodeOrToken
    * @returns {void}
    */
   function fixPosition(nodeOrToken) {
