@@ -43,11 +43,6 @@ export function eventsToAcorn(events, options) {
   const tokens = []
   const onComment = acornOptions.onComment
   const onToken = acornOptions.onToken
-  const acornConfig = Object.assign({}, acornOptions, {
-    onComment: comments,
-    onToken: onToken ? tokens : undefined,
-    preserveParens: true
-  })
   /** @type {Array<string>} */
   const chunks = []
   /** @type {Record<string, Point>} */
@@ -60,6 +55,15 @@ export function eventsToAcorn(events, options) {
   let exception
   /** @type {number} */
   let startLine
+  /** @type {AcornOptions} */
+  const acornConfig = Object.assign({}, acornOptions, {
+    onComment: comments,
+    preserveParens: true
+  })
+
+  if (onToken) {
+    acornConfig.onToken = tokens
+  }
 
   // We use `events` to detect everything, however, it could be empty.
   // In that case, we need `options.start` to make sense of positional info.

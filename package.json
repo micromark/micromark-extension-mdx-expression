@@ -42,13 +42,12 @@
     "xo": "^0.53.0"
   },
   "scripts": {
-    "build-workspace": "npm run build --workspaces && cp readme.md packages/micromark-extension-mdx-expression/readme.md",
-    "build-monorepo": "rimraf \"test/**/*.d.ts\" && tsc && type-coverage",
-    "build": "npm run build-workspace && npm run build-monorepo",
+    "build": "tsc --build --clean && tsc && type-coverage && npm run build --workspaces",
+    "generate": "cp readme.md packages/micromark-extension-mdx-expression/readme.md",
     "format": "remark . -qfo && prettier . -w --loglevel warn && xo --fix",
     "test-api": "node --conditions development test/index.js",
-    "test-coverage": "c8 --check-coverage --branches 100 --functions 100 --lines 100 --statements 100 --reporter lcov node --conditions development test/index.js",
-    "test": "npm run build && npm run format && npm run test-coverage"
+    "test-coverage": "c8 --check-coverage --100 --reporter lcov npm run test-api",
+    "test": "npm run build && npm run format && npm run generate && npm run test-coverage"
   },
   "prettier": {
     "tabWidth": 2,
