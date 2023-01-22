@@ -2,6 +2,7 @@
  * @typedef {import('micromark-util-types').Extension} Extension
  * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
  * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
  *
@@ -81,7 +82,10 @@ export function mdxExpression(options = {}) {
     text: {[codes.leftCurlyBrace]: {tokenize: tokenizeTextExpression}}
   }
 
-  /** @type {Tokenizer} */
+  /**
+   * @this {TokenizeContext}
+   * @type {Tokenizer}
+   */
   function tokenizeFlowExpression(effects, ok, nok) {
     const self = this
 
@@ -113,7 +117,10 @@ export function mdxExpression(options = {}) {
     }
   }
 
-  /** @type {Tokenizer} */
+  /**
+   * @this {TokenizeContext}
+   * @type {Tokenizer}
+   */
   function tokenizeTextExpression(effects, ok) {
     const self = this
 

@@ -6,7 +6,7 @@
  * @typedef {import('acorn').Token} Token
  * @typedef {import('acorn').Node} AcornNode
  * @typedef {import('estree').Program} Program
- * @typedef {import('estree-util-visit').Node} EstreeNode
+ * @typedef {import('estree').Node} EstreeNode
  *
  * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt}} Acorn
  * @typedef {Error & {raisedAt: number, pos: number, loc: {line: number, column: number}}} AcornError
@@ -143,6 +143,7 @@ export function eventsToAcorn(events, options) {
     // @ts-expect-error: acorn *does* allow comments
     estree.comments = comments
 
+    // @ts-expect-error: acorn looks enough like estree.
     visit(estree, (esnode, field, index, parents) => {
       let context = /** @type {AcornNode|Array<AcornNode>} */ (
         parents[parents.length - 1]
@@ -151,6 +152,7 @@ export function eventsToAcorn(events, options) {
       let prop = field
 
       // Remove non-standard `ParenthesizedExpression`.
+      // @ts-expect-error: included in acorn.
       if (esnode.type === 'ParenthesizedExpression' && context && prop) {
         /* c8 ignore next 5 */
         if (typeof index === 'number') {

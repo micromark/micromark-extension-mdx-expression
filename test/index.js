@@ -3,6 +3,7 @@
  * @typedef {import('acorn').Token} Token
  * @typedef {import('acorn').Position} AcornPosition
  * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ * @typedef {import('micromark-util-types').CompileContext} CompileContext
  * @typedef {import('micromark-util-types').Handle} Handle
  */
 
@@ -20,12 +21,18 @@ const html = {
   exit: {mdxFlowExpression: end, mdxTextExpression: end}
 }
 
-/** @type {Handle} */
+/**
+ * @this {CompileContext}
+ * @type {Handle}
+ */
 function start() {
   this.buffer()
 }
 
-/** @type {Handle} */
+/**
+ * @this {CompileContext}
+ * @type {Handle}
+ */
 function end() {
   this.resume()
   this.setData('slurpOneLineEnding', true)
@@ -111,7 +118,10 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support `addResult`'
   )
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function checkResultExpression(token) {
     t.ok(
       'estree' in token,
@@ -181,7 +191,7 @@ test('micromark-extension-mdx-expression', (t) => {
       },
       '`addResult` should add an expression'
     )
-    return start.call(this)
+    return start.call(this, token)
   }
 
   t.equal(
@@ -201,7 +211,10 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support `addResult` for an empty expression'
   )
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function checkResultEmpty(token) {
     t.ok(
       'estree' in token,
@@ -234,7 +247,7 @@ test('micromark-extension-mdx-expression', (t) => {
       },
       '`estree` should be an empty program for an empty expression'
     )
-    return start.call(this)
+    return start.call(this, token)
   }
 
   t.equal(
@@ -398,7 +411,10 @@ test('micromark-extension-mdx-expression', (t) => {
     'should support comments (2)'
   )
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function checkResultComments(token) {
     t.deepEqual(
       // @ts-expect-error: it does exist.
@@ -441,7 +457,7 @@ test('micromark-extension-mdx-expression', (t) => {
       },
       '`estree` should have comments'
     )
-    return start.call(this)
+    return start.call(this, token)
   }
 
   /** @type {Array<Array<unknown>>} */
