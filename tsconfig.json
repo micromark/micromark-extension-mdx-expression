@@ -1,13 +1,6 @@
 {
-  "include": ["**/**.js"],
-  "exclude": [
-    "coverage/",
-    "node_modules/",
-    "packages/micromark-extension-mdx-expression/lib/",
-    "packages/micromark-extension-mdx-expression/index.js",
-    "packages/micromark-factory-mdx-expression/index.js",
-    "packages/micromark-util-events-to-acorn/index.js"
-  ],
+  "include": ["test/**/*.js"],
+  "exclude": ["coverage/", "node_modules/", "packages/"],
   "compilerOptions": {
     "checkJs": true,
     "declaration": true,
