@@ -11,7 +11,7 @@ import test from 'node:test'
 import {Parser} from 'acorn'
 import acornJsx from 'acorn-jsx'
 import {micromark} from 'micromark'
-import {mdxExpression as syntax} from 'micromark-extension-mdx-expression'
+import {mdxExpression} from 'micromark-extension-mdx-expression'
 
 const acorn = Parser.extend(acornJsx())
 
@@ -38,36 +38,56 @@ function end() {
   this.setData('slurpOneLineEnding', true)
 }
 
-test('micromark-extension-mdx-expression', () => {
+test('api', async function () {
+  assert.deepEqual(
+    Object.keys(await import('micromark-extension-mdx-expression')).sort(),
+    ['mdxExpression'],
+    'should expose the public api'
+  )
+
+  assert.deepEqual(
+    Object.keys(await import('micromark-factory-mdx-expression')).sort(),
+    ['factoryMdxExpression'],
+    'should expose the public api'
+  )
+
+  assert.deepEqual(
+    Object.keys(await import('micromark-util-events-to-acorn')).sort(),
+    ['eventsToAcorn'],
+    'should expose the public api'
+  )
+})
+
+test('mdxExpression', function () {
   assert.throws(
-    () => {
+    function () {
       // @ts-expect-error: runtime.
-      syntax({acorn: true})
+      mdxExpression({acorn: true})
     },
     /Expected a proper `acorn` instance passed in as `options\.acorn`/,
     'should throw if `acorn` is passed but it has no `parse`'
   )
 
   assert.throws(
-    () => {
-      syntax({addResult: true})
+    function () {
+      mdxExpression({addResult: true})
     },
     /Expected an `acorn` instance passed in as `options\.acorn`/,
     'should throw if `addResult` is passed w/o `acorn`'
   )
 
   assert.throws(
-    () => {
+    function () {
       // @ts-expect-error: runtime.
-      syntax({acornOptions: {}})
+      mdxExpression({acornOptions: {}})
     },
     /Expected an `acorn` instance passed in as `options\.acorn`/,
     'should throw if `acornOptions` is passed w/o `acorn`'
   )
 
   assert.throws(
-    () => {
-      micromark('a {<b />} c', {extensions: [syntax({acorn: Parser})]})
+    function () {
+      micromark('a {<b />} c', {extensions: [mdxExpression({acorn: Parser})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should not support JSX by default'
@@ -75,7 +95,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {<b />} c', {
-      extensions: [syntax({acorn: Parser.extend(acornJsx())})],
+      extensions: [mdxExpression({acorn: Parser.extend(acornJsx())})],
       htmlExtensions: [html]
     }),
     '<p>a  c</p>',
@@ -83,9 +103,9 @@ test('micromark-extension-mdx-expression', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('a {(() => {})()} c', {
-        extensions: [syntax({acorn, acornOptions: {ecmaVersion: 5}})]
+        extensions: [mdxExpression({acorn, acornOptions: {ecmaVersion: 5}})]
       })
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -93,8 +113,8 @@ test('micromark-extension-mdx-expression', () => {
   )
 
   assert.equal(
-    micromark('a {(() => {})()} c', {
-      extensions: [syntax({acorn, acornOptions: {ecmaVersion: 6}})],
+    micromark('a {(function () {})()} c', {
+      extensions: [mdxExpression({acorn, acornOptions: {ecmaVersion: 6}})],
       htmlExtensions: [html]
     }),
     '<p>a  c</p>',
@@ -103,7 +123,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {b} c', {
-      extensions: [syntax({acorn, addResult: true})],
+      extensions: [mdxExpression({acorn, addResult: true})],
       htmlExtensions: [
         {
           enter: {
@@ -195,7 +215,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {} c', {
-      extensions: [syntax({acorn, addResult: true})],
+      extensions: [mdxExpression({acorn, addResult: true})],
       htmlExtensions: [
         {
           enter: {
@@ -250,7 +270,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -259,7 +279,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a { \t\r\n} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -268,7 +288,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {/**/} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -277,7 +297,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {  /*\n*/\t} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -286,7 +306,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {/*b*//*c*/} d', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -295,7 +315,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {b/*c*/} d', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -304,7 +324,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {/*b*/c} d', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -312,16 +332,16 @@ test('micromark-extension-mdx-expression', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('a {//} b', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('a {//} b', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on an incorrect line comment (1)'
   )
 
   assert.throws(
-    () => {
-      micromark('a { // b } c', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('a { // b } c', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on an incorrect line comment (2)'
@@ -329,7 +349,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {//\n} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -338,7 +358,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {// b\nd} d', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -347,7 +367,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {b// c\n} d', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -360,7 +380,7 @@ test('micromark-extension-mdx-expression', () => {
   assert.equal(
     micromark('a {/*b*/ // c\n} d', {
       extensions: [
-        syntax({
+        mdxExpression({
           acorn,
           acornOptions: {ecmaVersion: 6, onComment: comments},
           addResult: true
@@ -464,7 +484,7 @@ test('micromark-extension-mdx-expression', () => {
   assert.equal(
     micromark('a {/*b*/ // c\n} d', {
       extensions: [
-        syntax({
+        mdxExpression({
           acorn,
           acornOptions: {
             ecmaVersion: 6,
@@ -505,7 +525,7 @@ test('micromark-extension-mdx-expression', () => {
   assert.equal(
     micromark('a {b.c} d', {
       extensions: [
-        syntax({
+        mdxExpression({
           acorn,
           acornOptions: {ecmaVersion: 6, onToken: tokens}
         })
@@ -588,7 +608,7 @@ test('micromark-extension-mdx-expression', () => {
   assert.equal(
     micromark('a {b.c} d', {
       extensions: [
-        syntax({
+        mdxExpression({
           acorn,
           acornOptions: {
             ecmaVersion: 6,
@@ -612,7 +632,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {b.c} d', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  d</p>',
@@ -621,7 +641,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {1 + 1} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -630,7 +650,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('a {function () {}} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -638,8 +658,8 @@ test('micromark-extension-mdx-expression', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('a {var b = "c"} d', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('a {var b = "c"} d', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on non-expressions'
@@ -647,7 +667,7 @@ test('micromark-extension-mdx-expression', () => {
 
   assert.equal(
     micromark('> a {\n> b} c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<blockquote>\n<p>a  c</p>\n</blockquote>',
@@ -655,74 +675,86 @@ test('micromark-extension-mdx-expression', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('> a {\n> b<} c', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('> a {\n> b<} c', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on incorrect expressions in containers (1)'
   )
 
   assert.throws(
-    () => {
-      micromark('> a {\n> b\n> c} d', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('> a {\n> b\n> c} d', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected content after expression/,
     'should crash on incorrect expressions in containers (2)'
   )
 })
 
-test('text (agnostic)', () => {
+test('text (agnostic)', function () {
   assert.equal(
-    micromark('a {b} c', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('a {b} c', {
+      extensions: [mdxExpression()],
+      htmlExtensions: [html]
+    }),
     '<p>a  c</p>',
     'should support an expression'
   )
 
   assert.equal(
-    micromark('a {} b', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('a {} b', {
+      extensions: [mdxExpression()],
+      htmlExtensions: [html]
+    }),
     '<p>a  b</p>',
     'should support an empty expression'
   )
 
   assert.throws(
-    () => {
-      micromark('a {b c', {extensions: [syntax()]})
+    function () {
+      micromark('a {b c', {extensions: [mdxExpression()]})
     },
     /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
     'should crash if no closing brace is found (1)'
   )
 
   assert.throws(
-    () => {
-      micromark('a {b { c } d', {extensions: [syntax()]})
+    function () {
+      micromark('a {b { c } d', {extensions: [mdxExpression()]})
     },
     /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
     'should crash if no closing brace is found (2)'
   )
 
   assert.equal(
-    micromark('a {\n} b', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('a {\n} b', {
+      extensions: [mdxExpression()],
+      htmlExtensions: [html]
+    }),
     '<p>a  b</p>',
     'should support a line ending in an expression'
   )
 
   assert.equal(
-    micromark('a } b', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('a } b', {extensions: [mdxExpression()], htmlExtensions: [html]}),
     '<p>a } b</p>',
     'should support just a closing brace'
   )
 
   assert.equal(
-    micromark('{ a } b', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('{ a } b', {
+      extensions: [mdxExpression()],
+      htmlExtensions: [html]
+    }),
     '<p> b</p>',
     'should support expressions as the first thing when following by other things'
   )
 })
 
-test('text (gnostic)', () => {
+test('text (gnostic)', function () {
   assert.equal(
     micromark('a {b} c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  c</p>',
@@ -730,8 +762,8 @@ test('text (gnostic)', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('a {??} b', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('a {??} b', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected token/,
     'should crash on an incorrect expression'
@@ -739,7 +771,7 @@ test('text (gnostic)', () => {
 
   assert.equal(
     micromark('a {} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -747,16 +779,16 @@ test('text (gnostic)', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('a {b c', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('a {b c', {extensions: [mdxExpression({acorn})]})
     },
     /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
     'should crash if no closing brace is found (1)'
   )
 
   assert.throws(
-    () => {
-      micromark('a {b { c } d', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('a {b { c } d', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected content after expression/,
     'should crash if no closing brace is found (2)'
@@ -764,7 +796,7 @@ test('text (gnostic)', () => {
 
   assert.equal(
     micromark('a {\n} b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -773,7 +805,7 @@ test('text (gnostic)', () => {
 
   assert.equal(
     micromark('a } b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a } b</p>',
@@ -782,7 +814,7 @@ test('text (gnostic)', () => {
 
   assert.equal(
     micromark('{ a } b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p> b</p>',
@@ -791,7 +823,7 @@ test('text (gnostic)', () => {
 
   assert.equal(
     micromark('a { /* { */ } b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -800,7 +832,7 @@ test('text (gnostic)', () => {
 
   assert.equal(
     micromark('a { /* } */ } b', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -808,44 +840,47 @@ test('text (gnostic)', () => {
   )
 })
 
-test('flow (agnostic)', () => {
+test('flow (agnostic)', function () {
   assert.equal(
-    micromark('{a}', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('{a}', {extensions: [mdxExpression()], htmlExtensions: [html]}),
     '',
     'should support an expression'
   )
 
   assert.equal(
-    micromark('{}', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('{}', {extensions: [mdxExpression()], htmlExtensions: [html]}),
     '',
     'should support an empty expression'
   )
 
   assert.throws(
-    () => {
-      micromark('{a', {extensions: [syntax()]})
+    function () {
+      micromark('{a', {extensions: [mdxExpression()]})
     },
     /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
     'should crash if no closing brace is found (1)'
   )
 
   assert.throws(
-    () => {
-      micromark('{b { c }', {extensions: [syntax()]})
+    function () {
+      micromark('{b { c }', {extensions: [mdxExpression()]})
     },
     /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
     'should crash if no closing brace is found (2)'
   )
 
   assert.equal(
-    micromark('{\n}\na', {extensions: [syntax()], htmlExtensions: [html]}),
+    micromark('{\n}\na', {
+      extensions: [mdxExpression()],
+      htmlExtensions: [html]
+    }),
     '<p>a</p>',
     'should support a line ending in an expression'
   )
 
   assert.equal(
     micromark('{ a } \t\nb', {
-      extensions: [syntax()],
+      extensions: [mdxExpression()],
       htmlExtensions: [html]
     }),
     '<p>b</p>',
@@ -854,7 +889,7 @@ test('flow (agnostic)', () => {
 
   assert.equal(
     micromark('  { a }\nb', {
-      extensions: [syntax()],
+      extensions: [mdxExpression()],
       htmlExtensions: [html]
     }),
     '<p>b</p>',
@@ -862,8 +897,8 @@ test('flow (agnostic)', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('> {a\nb}', {extensions: [syntax()]})
+    function () {
+      micromark('> {a\nb}', {extensions: [mdxExpression()]})
     },
     /Unexpected end of file in expression/,
     'should not support lazyness (1)'
@@ -871,7 +906,7 @@ test('flow (agnostic)', () => {
 
   assert.equal(
     micromark('> a\n{b}', {
-      extensions: [syntax()],
+      extensions: [mdxExpression()],
       htmlExtensions: [html]
     }),
     '<blockquote>\n<p>a</p>\n</blockquote>\n',
@@ -880,7 +915,7 @@ test('flow (agnostic)', () => {
 
   assert.equal(
     micromark('> {a}\nb', {
-      extensions: [syntax()],
+      extensions: [mdxExpression()],
       htmlExtensions: [html]
     }),
     '<blockquote>\n</blockquote>\n<p>b</p>',
@@ -888,18 +923,18 @@ test('flow (agnostic)', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('> {\n> a\nb}', {extensions: [syntax()]})
+    function () {
+      micromark('> {\n> a\nb}', {extensions: [mdxExpression()]})
     },
     /Unexpected end of file in expression/,
     'should not support lazyness (4)'
   )
 })
 
-test('flow (gnostic)', () => {
+test('flow (gnostic)', function () {
   assert.equal(
     micromark('{a}', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '',
@@ -908,7 +943,7 @@ test('flow (gnostic)', () => {
 
   assert.equal(
     micromark('{}', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '',
@@ -916,16 +951,16 @@ test('flow (gnostic)', () => {
   )
 
   assert.throws(
-    () => {
-      micromark('{a', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('{a', {extensions: [mdxExpression({acorn})]})
     },
     /Unexpected end of file in expression, expected a corresponding closing brace for `{`/,
     'should crash if no closing brace is found (1)'
   )
 
   assert.throws(
-    () => {
-      micromark('{b { c }', {extensions: [syntax({acorn})]})
+    function () {
+      micromark('{b { c }', {extensions: [mdxExpression({acorn})]})
     },
     /Could not parse expression with acorn: Unexpected content after expression/,
     'should crash if no closing brace is found (2)'
@@ -933,7 +968,7 @@ test('flow (gnostic)', () => {
 
   assert.equal(
     micromark('{\n}\na', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a</p>',
@@ -942,7 +977,7 @@ test('flow (gnostic)', () => {
 
   assert.equal(
     micromark('{ a } \t\nb', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>b</p>',
@@ -951,7 +986,7 @@ test('flow (gnostic)', () => {
 
   assert.equal(
     micromark('  { a }\nb', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>b</p>',
@@ -960,7 +995,7 @@ test('flow (gnostic)', () => {
 
   assert.equal(
     micromark('  {`\n    a\n  `}', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '',
@@ -969,7 +1004,7 @@ test('flow (gnostic)', () => {
 
   assert.equal(
     micromark('a{(b)}c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>ac</p>',
@@ -978,18 +1013,18 @@ test('flow (gnostic)', () => {
 
   assert.equal(
     micromark('a{/* b */ ( (c) /* d */ + (e) )}f', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxExpression({acorn})],
       htmlExtensions: [html]
     }),
     '<p>af</p>',
     'should support expressions padded w/ parens and comments'
   )
 })
-test('spread (hidden)', () => {
+test('spread (hidden)', function () {
   assert.throws(
-    () => {
+    function () {
       micromark('a {b} c', {
-        extensions: [syntax({acorn, spread: true})]
+        extensions: [mdxExpression({acorn, spread: true})]
       })
     },
     /Unexpected `Property` in code: only spread elements are supported/,
@@ -997,9 +1032,9 @@ test('spread (hidden)', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('a {...?} c', {
-        extensions: [syntax({acorn, spread: true})]
+        extensions: [mdxExpression({acorn, spread: true})]
       })
     },
     /Could not parse expression with acorn: Unexpected token/,
@@ -1007,9 +1042,9 @@ test('spread (hidden)', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('a {...b,c} d', {
-        extensions: [syntax({acorn, spread: true})]
+        extensions: [mdxExpression({acorn, spread: true})]
       })
     },
     /Unexpected extra content in spread: only a single spread is supported/,
@@ -1018,7 +1053,7 @@ test('spread (hidden)', () => {
 
   assert.equal(
     micromark('a {} b', {
-      extensions: [syntax({acorn, spread: true})],
+      extensions: [mdxExpression({acorn, spread: true})],
       htmlExtensions: [html]
     }),
     '<p>a  b</p>',
@@ -1026,9 +1061,9 @@ test('spread (hidden)', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('a {} b', {
-        extensions: [syntax({acorn, spread: true, allowEmpty: false})]
+        extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
       })
     },
     /Unexpected empty expression/,
@@ -1036,9 +1071,9 @@ test('spread (hidden)', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('{a=b}', {
-        extensions: [syntax({acorn, spread: true, allowEmpty: false})]
+        extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
       })
     },
     /Could not parse expression with acorn: Shorthand property assignments are valid only in destructuring patterns/,
@@ -1047,7 +1082,7 @@ test('spread (hidden)', () => {
 
   assert.equal(
     micromark('a {/* b */} c', {
-      extensions: [syntax({acorn, spread: true})],
+      extensions: [mdxExpression({acorn, spread: true})],
       htmlExtensions: [html]
     }),
     '<p>a  c</p>',
@@ -1055,9 +1090,9 @@ test('spread (hidden)', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('a {/* b */} c', {
-        extensions: [syntax({acorn, spread: true, allowEmpty: false})]
+        extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
       })
     },
     /Unexpected empty expression/,
@@ -1066,7 +1101,7 @@ test('spread (hidden)', () => {
 
   assert.equal(
     micromark('a {...b} c', {
-      extensions: [syntax({acorn, spread: true})],
+      extensions: [mdxExpression({acorn, spread: true})],
       htmlExtensions: [html]
     }),
     '<p>a  c</p>',
