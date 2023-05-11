@@ -1,5 +1,7 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["**/*.js"],
-  "exclude": ["coverage/", "lib/", "node_modules/", "index.js"]
+  "references": [
+    {"path": "../micromark-util-events-to-acorn"},
+    {"path": "../micromark-factory-mdx-expression"}
+  ]
 }

@@ -40,9 +40,10 @@
     "xo": "^0.54.0"
   },
   "scripts": {
-    "build": "npm run build --workspaces && tsc --build --clean && tsc && type-coverage",
-    "generate": "cp readme.md packages/micromark-extension-mdx-expression/readme.md",
+    "prepack": "npm run build && npm run format",
+    "build": "tsc --build --clean && tsc --build && type-coverage && npm run build --workspaces",
     "format": "remark . -qfo && prettier . -w --loglevel warn && xo --fix",
+    "generate": "cp readme.md packages/micromark-extension-mdx-expression/readme.md",
     "test-api": "node --conditions development test/index.js",
     "test-coverage": "c8 --check-coverage --100 --reporter lcov npm run test-api",
     "test": "npm run build && npm run format && npm run generate && npm run test-coverage"

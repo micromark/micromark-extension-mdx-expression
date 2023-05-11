@@ -1,7 +1,13 @@
 {
-  "include": ["test/**/*.js"],
-  "exclude": ["coverage/", "node_modules/", "packages/"],
+  "include": ["**/*.js"],
+  "exclude": [
+    "**/coverage/",
+    "**/node_modules/",
+    "packages/*/lib/",
+    "packages/*/index.js"
+  ],
   "compilerOptions": {
+    "customConditions": ["development"],
     "checkJs": true,
     "declaration": true,
     "emitDeclarationOnly": true,
@@ -10,7 +16,6 @@
     "lib": ["es2020"],
     "module": "node16",
     "newLine": "lf",
-    "skipLibCheck": true,
     "strict": true,
     "target": "es2020"
   }

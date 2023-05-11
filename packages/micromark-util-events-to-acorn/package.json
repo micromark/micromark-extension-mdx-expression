@@ -48,7 +48,7 @@
     "vfile-message": "^3.0.0"
   },
   "scripts": {
-    "build": "tsc --build --clean && tsc && type-coverage && micromark-build"
+    "build": "micromark-build"
   },
   "xo": false,
   "typeCoverage": {
