@@ -30,7 +30,7 @@
 import {ok as assert} from 'uvu/assert'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {factorySpace} from 'micromark-factory-space'
-import {markdownLineEnding} from 'micromark-util-character'
+import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
 
@@ -43,7 +43,8 @@ import {types} from 'micromark-util-symbol/types.js'
  * @param {Options | null | undefined} [options]
  *   Configuration (optional).
  * @returns {Extension}
- *   Syntax extension for micromark (passed in `extensions`).
+ *   Extension for `micromark` that can be passed in `extensions` to enable MDX
+ *   expression syntax.
  */
 export function mdxExpression(options) {
   const options_ = options || {}
@@ -86,6 +87,13 @@ export function mdxExpression(options) {
   }
 
   /**
+   * MDX expression (flow).
+   *
+   * ```markdown
+   * > | {Math.PI}
+   *     ^^^^^^^^^
+   * ```
+   *
    * @this {TokenizeContext}
    * @type {Tokenizer}
    */
@@ -94,13 +102,37 @@ export function mdxExpression(options) {
 
     return start
 
-    /** @type {State} */
+    /**
+     * Start of an MDX expression (flow).
+     *
+     * ```markdown
+     * > | {Math.PI}
+     *     ^
+     * ```
+     *
+     * @type {State}
+     */
     function start(code) {
+      // To do: in `markdown-rs`, constructs need to parse the indent themselves.
       assert(code === codes.leftCurlyBrace, 'expected `{`')
+      return before(code)
+    }
+
+    /**
+     * After optional whitespace, before expression.
+     *
+     * ```markdown
+     * > | {Math.PI}
+     *     ^
+     * ```
+     *
+     * @type {State}
+     */
+    function before(code) {
       return factoryMdxExpression.call(
         self,
         effects,
-        factorySpace(effects, after, types.whitespace),
+        after,
         'mdxFlowExpression',
         'mdxFlowExpressionMarker',
         'mdxFlowExpressionChunk',
@@ -112,8 +144,33 @@ export function mdxExpression(options) {
       )(code)
     }
 
-    /** @type {State} */
+    /**
+     * After expression.
+     *
+     * ```markdown
+     * > | {Math.PI}
+     *              ^
+     * ```
+     *
+     * @type {State}
+     */
     function after(code) {
+      return markdownSpace(code)
+        ? factorySpace(effects, end, types.whitespace)(code)
+        : end(code)
+    }
+
+    /**
+     * After expression, after optional whitespace.
+     *
+     * ```markdown
+     * > | {Math.PI}␠␊
+     *               ^
+     * ```
+     *
+     * @type {State}
+     */
+    function end(code) {
       return code === codes.eof || markdownLineEnding(code)
         ? ok(code)
         : nok(code)
@@ -121,6 +178,13 @@ export function mdxExpression(options) {
   }
 
   /**
+   * MDX expression (text).
+   *
+   * ```markdown
+   * > | a {Math.PI} c.
+   *       ^^^^^^^^^
+   * ```
+   *
    * @this {TokenizeContext}
    * @type {Tokenizer}
    */
@@ -129,7 +193,17 @@ export function mdxExpression(options) {
 
     return start
 
-    /** @type {State} */
+    /**
+     * Start of an MDX expression (text).
+     *
+     * ```markdown
+     * > | a {Math.PI} c.
+     *       ^
+     * ```
+     *
+     *
+     * @type {State}
+     */
     function start(code) {
       assert(code === codes.leftCurlyBrace, 'expected `{`')
       return factoryMdxExpression.call(

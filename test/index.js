@@ -1,9 +1,9 @@
 /**
  * @typedef {import('acorn').Comment} Comment
  * @typedef {import('acorn').Token} Token
- * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
  * @typedef {import('micromark-util-types').CompileContext} CompileContext
  * @typedef {import('micromark-util-types').Handle} Handle
+ * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
  */
 
 import assert from 'node:assert/strict'

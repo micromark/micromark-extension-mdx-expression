@@ -1,4 +1,5 @@
 /**
+ * @typedef {import('estree').Program} Program
  * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
  * @typedef {import('micromark-util-types').Effects} Effects
@@ -7,8 +8,25 @@
  * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  */
 
+/**
+ * @typedef MdxSignalOk
+ * @property {'ok'} type
+ * @property {Program | undefined} estree
+ *
+ * @typedef MdxSignalNok
+ * @property {'nok'} type
+ * @property {VFileMessage} message
+ *
+ * @typedef MdxSignalEof
+ *   Currently not given back.
+ * @property {'eof'} type
+ * @property {VFileMessage} message
+ *
+ * @typedef {MdxSignalOk | MdxSignalNok} MdxSignal
+ */
+
 import {ok as assert} from 'uvu/assert'
-import {markdownLineEnding} from 'micromark-util-character'
+import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
 import {constants} from 'micromark-util-symbol/constants.js'
@@ -30,7 +48,6 @@ import {eventsToAcorn} from 'micromark-util-events-to-acorn'
  * @param {boolean | null | undefined} [spread=false]
  * @param {boolean | null | undefined} [allowEmpty=false]
  * @param {boolean | null | undefined} [allowLazy=false]
- * @param {number | null | undefined} [startColumn=0]
  * @returns {State}
  */
 // eslint-disable-next-line max-params
@@ -45,38 +62,49 @@ export function factoryMdxExpression(
   addResult,
   spread,
   allowEmpty,
-  allowLazy,
-  startColumn
+  allowLazy
 ) {
   const self = this
   const eventStart = this.events.length + 3 // Add main and marker token
-  const tail = this.events[this.events.length - 1]
-  const initialPrefix =
-    tail && tail[1].type === types.linePrefix
-      ? tail[2].sliceSerialize(tail[1], true).length
-      : 0
-  const prefixExpressionIndent = initialPrefix ? initialPrefix + 1 : 0
-  let balance = 1
+  let size = 0
   /** @type {Point} */
-  let startPosition
+  let pointStart
   /** @type {Error} */
   let lastCrash
 
   return start
 
-  /** @type {State} */
+  /**
+   * Start of an MDX expression.
+   *
+   * ```markdown
+   * > | a {Math.PI} c
+   *       ^
+   * ```
+   *
+   * @type {State}
+   */
   function start(code) {
     assert(code === codes.leftCurlyBrace, 'expected `{`')
     effects.enter(type)
     effects.enter(markerType)
     effects.consume(code)
     effects.exit(markerType)
-    startPosition = self.now()
-    return atBreak
+    pointStart = self.now()
+    return before
   }
 
-  /** @type {State} */
-  function atBreak(code) {
+  /**
+   * Before data.
+   *
+   * ```markdown
+   * > | a {Math.PI} c
+   *        ^
+   * ```
+   *
+   * @type {State}
+   */
+  function before(code) {
     if (code === codes.eof) {
       throw (
         lastCrash ||
@@ -88,37 +116,103 @@ export function factoryMdxExpression(
       )
     }
 
-    if (code === codes.rightCurlyBrace) {
-      return atClosingBrace(code)
-    }
-
     if (markdownLineEnding(code)) {
       effects.enter(types.lineEnding)
       effects.consume(code)
       effects.exit(types.lineEnding)
-      // `startColumn` is used by the JSX extensions that also wraps this
-      // factory.
-      // JSX can be indented arbitrarily, but expressions can’t exdent
-      // arbitrarily, due to that they might contain template strings
-      // (backticked strings).
-      // We’ll eat up to where that tag starts (`startColumn`), and a tab size.
-      /* c8 ignore next 3 */
-      const prefixTagIndent = startColumn
-        ? startColumn + constants.tabSize - self.now().column
-        : 0
-      const indent = Math.max(prefixExpressionIndent, prefixTagIndent)
-      return indent
-        ? factorySpace(effects, atBreak, types.linePrefix, indent)
-        : atBreak
+      return eolAfter
     }
 
+    if (code === codes.rightCurlyBrace && size === 0) {
+      /** @type {MdxSignal} */
+      const next = acorn
+        ? mdxExpressionParse.call(
+            self,
+            acorn,
+            acornOptions,
+            eventStart,
+            pointStart,
+            allowEmpty || false,
+            spread || false
+          )
+        : {type: 'ok', estree: undefined}
+
+      if (next.type === 'ok') {
+        effects.enter(markerType)
+        effects.consume(code)
+        effects.exit(markerType)
+        const token = effects.exit(type)
+
+        if (addResult && next.estree) {
+          Object.assign(token, {estree: next.estree})
+        }
+
+        return ok
+      }
+
+      lastCrash = next.message
+      effects.enter(chunkType)
+      effects.consume(code)
+      return inside
+    }
+
+    effects.enter(chunkType)
+    return inside(code)
+  }
+
+  /**
+   * In data.
+   *
+   * ```markdown
+   * > | a {Math.PI} c
+   *        ^
+   * ```
+   *
+   * @type {State}
+   */
+  function inside(code) {
+    if (
+      (code === codes.rightCurlyBrace && size === 0) ||
+      code === codes.eof ||
+      markdownLineEnding(code)
+    ) {
+      effects.exit(chunkType)
+      return before(code)
+    }
+
+    // Don’t count if gnostic.
+    if (code === codes.leftCurlyBrace && !acorn) {
+      size += 1
+    } else if (code === codes.rightCurlyBrace) {
+      size -= 1
+    }
+
+    effects.consume(code)
+    return inside
+  }
+
+  /**
+   * After eol.
+   *
+   * ```markdown
+   *   | a {b +
+   * > | c} d
+   *     ^
+   * ```
+   *
+   * @type {State}
+   */
+  function eolAfter(code) {
     const now = self.now()
 
+    // Lazy continuation in a flow expression (or flow tag) is a syntax error.
     if (
-      now.line !== startPosition.line &&
+      now.line !== pointStart.line &&
       !allowLazy &&
       self.parser.lazy[now.line]
     ) {
+      // `markdown-rs` uses:
+      // ``Unexpected lazy line in expression in container, expected line to be prefixed with `>` when in a block quote, whitespace when in a list, etc``.
       throw new VFileMessage(
         'Unexpected end of file in expression, expected a corresponding closing brace for `{`',
         self.now(),
@@ -126,104 +220,119 @@ export function factoryMdxExpression(
       )
     }
 
-    effects.enter(chunkType)
-    return inside(code)
-  }
+    if (markdownSpace(code)) {
+      // Idea: investigate if we’d need to use more complex stripping.
+      // Take this example:
+      //
+      // ```markdown
+      // >  aaa <b c={`
+      // >      d
+      // >  `} /> eee
+      // ```
+      //
+      // Currently, the “paragraph” starts at `> | aaa`, so for the next line
+      // here we split it into `>␠|␠␠␠␠|␠d` (prefix, this indent here,
+      // expression data).
+      // The intention above is likely for the split to be as `>␠␠|␠␠␠␠|d`,
+      // which is impossible, but we can mimick it with `>␠|␠␠␠␠␠|d`.
+      //
+      // To improve the situation, we could take `tokenizer.line_start` at
+      // the start of the expression and move past whitespace.
+      // For future lines, we’d move at most to
+      // `line_start_shifted.column + 4`.
+      return factorySpace(
+        effects,
+        before,
+        types.linePrefix,
+        constants.tabSize
+      )(code)
+    }
 
-  /** @type {State} */
-  function inside(code) {
+    return before(code)
+  }
+}
+
+/**
+ * Mix of `markdown-rs`’s `parse_expression` and `MdxExpressionParse`
+ * functionality, to wrap our `eventsToAcorn`.
+ *
+ * In the future, the plan is to realise the rust way, which allows arbitrary
+ * parsers.
+ *
+ * @this {TokenizeContext}
+ * @param {Acorn} acorn
+ * @param {AcornOptions | null | undefined} acornOptions
+ * @param {number} eventStart
+ * @param {Point} pointStart
+ * @param {boolean} allowEmpty
+ * @param {boolean} spread
+ * @returns {MdxSignal}
+ */
+// eslint-disable-next-line max-params
+function mdxExpressionParse(
+  acorn,
+  acornOptions,
+  eventStart,
+  pointStart,
+  allowEmpty,
+  spread
+) {
+  // Gnostic mode: parse w/ acorn.
+  const result = eventsToAcorn(this.events.slice(eventStart), {
+    acorn,
+    acornOptions,
+    start: pointStart,
+    expression: true,
+    allowEmpty,
+    prefix: spread ? '({' : '',
+    suffix: spread ? '})' : ''
+  })
+  const estree = result.estree
+
+  // Get the spread value.
+  if (spread && estree) {
+    // Should always be the case as we wrap in `d={}`
+    assert(estree.type === 'Program', 'expected program')
+    const head = estree.body[0]
+    assert(head, 'expected body')
+
+    // Can occur in some complex attributes.
+    /* c8 ignore next 11 */
     if (
-      code === codes.eof ||
-      code === codes.rightCurlyBrace ||
-      markdownLineEnding(code)
+      head.type !== 'ExpressionStatement' ||
+      head.expression.type !== 'ObjectExpression'
     ) {
-      effects.exit(chunkType)
-      return atBreak(code)
+      throw new VFileMessage(
+        'Unexpected `' +
+          head.type +
+          '` in code: expected an object spread (`{...spread}`)',
+        positionFromEstree(head).start,
+        'micromark-extension-mdx-expression:non-spread'
+      )
+    } else if (head.expression.properties[1]) {
+      throw new VFileMessage(
+        'Unexpected extra content in spread: only a single spread is supported',
+        positionFromEstree(head.expression.properties[1]).start,
+        'micromark-extension-mdx-expression:spread-extra'
+      )
+    } else if (
+      head.expression.properties[0] &&
+      head.expression.properties[0].type !== 'SpreadElement'
+    ) {
+      throw new VFileMessage(
+        'Unexpected `' +
+          head.expression.properties[0].type +
+          '` in code: only spread elements are supported',
+        positionFromEstree(head.expression.properties[0]).start,
+        'micromark-extension-mdx-expression:non-spread'
+      )
     }
-
-    if (code === codes.leftCurlyBrace && !acorn) {
-      effects.consume(code)
-      balance++
-      return inside
-    }
-
-    effects.consume(code)
-    return inside
   }
 
-  /** @type {State} */
-  function atClosingBrace(code) {
-    balance--
-
-    // Agnostic mode: count balanced braces.
-    if (!acorn) {
-      if (balance) {
-        effects.enter(chunkType)
-        effects.consume(code)
-        return inside
-      }
-
-      effects.enter(markerType)
-      effects.consume(code)
-      effects.exit(markerType)
-      effects.exit(type)
-      return ok
-    }
-
-    // Gnostic mode: parse w/ acorn.
-    const result = eventsToAcorn(self.events.slice(eventStart), {
-      acorn,
-      acornOptions,
-      start: startPosition,
-      expression: true,
-      allowEmpty,
-      prefix: spread ? '({' : '',
-      suffix: spread ? '})' : ''
-    })
-    const estree = result.estree
-
-    // Get the spread value.
-    if (spread && estree) {
-      // Should always be the case as we wrap in `d={}`
-      assert(estree.type === 'Program', 'expected program')
-      const head = estree.body[0]
-      assert(head, 'expected body')
-
-      // Can occur in some complex attributes.
-      /* c8 ignore next 11 */
-      if (
-        head.type !== 'ExpressionStatement' ||
-        head.expression.type !== 'ObjectExpression'
-      ) {
-        throw new VFileMessage(
-          'Unexpected `' +
-            head.type +
-            '` in code: expected an object spread (`{...spread}`)',
-          positionFromEstree(head).start,
-          'micromark-extension-mdx-expression:non-spread'
-        )
-      } else if (head.expression.properties[1]) {
-        throw new VFileMessage(
-          'Unexpected extra content in spread: only a single spread is supported',
-          positionFromEstree(head.expression.properties[1]).start,
-          'micromark-extension-mdx-expression:spread-extra'
-        )
-      } else if (
-        head.expression.properties[0] &&
-        head.expression.properties[0].type !== 'SpreadElement'
-      ) {
-        throw new VFileMessage(
-          'Unexpected `' +
-            head.expression.properties[0].type +
-            '` in code: only spread elements are supported',
-          positionFromEstree(head.expression.properties[0]).start,
-          'micromark-extension-mdx-expression:non-spread'
-        )
-      }
-    }
-
-    if (result.error) {
-      lastCrash = new VFileMessage(
+  if (result.error) {
+    return {
+      type: 'nok',
+      message: new VFileMessage(
         'Could not parse expression with acorn: ' + result.error.message,
         {
           line: result.error.loc.line,
@@ -232,20 +341,8 @@ export function factoryMdxExpression(
         },
         'micromark-extension-mdx-expression:acorn'
       )
-
-      if (code !== codes.eof && result.swallow) {
-        effects.enter(chunkType)
-        effects.consume(code)
-        return inside
-      }
-
-      throw lastCrash
     }
-
-    effects.enter(markerType)
-    effects.consume(code)
-    effects.exit(markerType)
-    Object.assign(effects.exit(type), addResult ? {estree} : undefined)
-    return ok
   }
+
+  return {type: 'ok', estree}
 }
