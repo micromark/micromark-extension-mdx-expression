@@ -1,10 +1,10 @@
 /**
- * @typedef {import('micromark-util-types').Point} Point
- * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
- * @typedef {import('micromark-util-types').Effects} Effects
- * @typedef {import('micromark-util-types').State} State
  * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
+ * @typedef {import('micromark-util-types').Effects} Effects
+ * @typedef {import('micromark-util-types').Point} Point
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  */
 
 import {ok as assert} from 'uvu/assert'
@@ -226,11 +226,8 @@ export function factoryMdxExpression(
       lastCrash = new VFileMessage(
         'Could not parse expression with acorn: ' + result.error.message,
         {
-          // @ts-expect-error: fine.
           line: result.error.loc.line,
-          // @ts-expect-error: fine.
           column: result.error.loc.column + 1,
-          // @ts-expect-error: fine.
           offset: result.error.pos
         },
         'micromark-extension-mdx-expression:acorn'

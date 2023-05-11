@@ -1,11 +1,13 @@
 /**
- * @typedef {import('micromark-util-types').Extension} Extension
- * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
- * @typedef {import('micromark-util-types').State} State
- * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
- *
+ * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ */
+
+/**
  * @typedef Options
  *   Configuration (optional).
  * @property {Acorn | null | undefined} [acorn]

@@ -1,24 +1,60 @@
 /**
+ * @typedef {import('acorn').Comment} Comment
+ * @typedef {import('acorn').Node} AcornNode
+ * @typedef {import('acorn').Options} AcornOptions
+ * @typedef {import('acorn').Token} Token
+ * @typedef {import('estree').Node} EstreeNode
+ * @typedef {import('estree').Program} Program
  * @typedef {import('micromark-util-types').Event} Event
  * @typedef {import('micromark-util-types').Point} Point
- * @typedef {import('acorn').Options} AcornOptions
- * @typedef {import('acorn').Comment} Comment
- * @typedef {import('acorn').Token} Token
- * @typedef {import('acorn').Node} AcornNode
- * @typedef {import('estree').Program} Program
- * @typedef {import('estree').Node} EstreeNode
+ */
+
+/**
+ * @typedef Acorn
+ *   Acorn-like interface.
+ * @property {import('acorn').parse} parse
+ *   Parse a program.
+ * @property {import('acorn').parseExpressionAt} parseExpressionAt
+ *   Parse an expression.
  *
- * @typedef {{parse: import('acorn').parse, parseExpressionAt: import('acorn').parseExpressionAt}} Acorn
- * @typedef {Error & {raisedAt: number, pos: number, loc: {line: number, column: number}}} AcornError
+ * @typedef AcornLoc
+ * @property {number} line
+ * @property {number} column
+ *
+ * @typedef AcornErrorFields
+ * @property {number} raisedAt
+ * @property {number} pos
+ * @property {AcornLoc} loc
+ *
+ * @typedef {Error & AcornErrorFields} AcornError
  *
  * @typedef Options
+ *   Configuration.
  * @property {Acorn} acorn
+ *   Typically `acorn`, object with with `parse` and `parseExpressionAt` fields.
  * @property {AcornOptions | null | undefined} [acornOptions]
+ *   Configuration for `acorn`.
  * @property {Point | null | undefined} [start]
+ *   Place where events start.
  * @property {string | null | undefined} [prefix='']
+ *   Text to place before events.
  * @property {string | null | undefined} [suffix='']
+ *   Text to place after events.
  * @property {boolean | null | undefined} [expression=false]
+ *   Whether this is a program or expression.
  * @property {boolean | null | undefined} [allowEmpty=false]
+ *   Whether an empty expression is allowed (programs are always allowed to
+ *   be empty).
+ *
+ * @typedef Result
+ *   Result.
+ * @property {Program | undefined} estree
+ *   Program.
+ * @property {AcornError | undefined} error
+ *   Error if unparseable
+ * @property {boolean} swallow
+ *   Whether the error, if there is one, can be swallowed and more JavaScript
+ *   could be valid.
  */
 
 import {ok as assert} from 'uvu/assert'
@@ -31,7 +67,7 @@ import {location} from 'vfile-location'
  *
  * @param {Array<Event>} events
  * @param {Options} options
- * @returns {{estree: Program | undefined, error: Error | undefined, swallow: boolean}}
+ * @returns {Result}
  */
 // eslint-disable-next-line complexity
 export function eventsToAcorn(events, options) {
@@ -52,7 +88,7 @@ export function eventsToAcorn(events, options) {
   let swallow = false
   /** @type {AcornNode | undefined} */
   let estree
-  /** @type {Error | undefined} */
+  /** @type {AcornError | undefined} */
   let exception
   /** @type {number} */
   let startLine
@@ -135,11 +171,12 @@ export function eventsToAcorn(events, options) {
       }
     } else {
       const point = parseOffsetToUnistPoint(estree.end)
-      exception = new Error('Unexpected content after expression')
-      // @ts-expect-error: acorn exception.
-      exception.pos = point.offset
-      // @ts-expect-error: acorn exception.
-      exception.loc = {line: point.line, column: point.column - 1}
+      const error = /** @type {AcornError} */ (
+        new Error('Unexpected content after expression')
+      )
+      error.pos = point.offset
+      error.loc = {line: point.line, column: point.column - 1}
+      exception = error
       estree = undefined
     }
   }
