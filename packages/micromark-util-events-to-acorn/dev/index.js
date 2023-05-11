@@ -259,6 +259,8 @@ export function eventsToAcorn(events, options) {
       typeof startLine === 'number',
       'expected `startLine` to be found or given '
     )
+    assert(typeof pointInSource.line === 'number')
+    assert(typeof pointInSource.column === 'number')
     const line = startLine + (pointInSource.line - 1)
     assert(line in lines, 'expected line to be defined')
     const column = lines[line].column + (pointInSource.column - 1)
