@@ -231,6 +231,14 @@ export function eventsToAcorn(events, options) {
     }
 
     for (const token of tokens) {
+      // Ignore tokens that ends in prefix or start in suffix:
+      if (
+        token.end <= prefix.length ||
+        token.start - prefix.length >= source.length
+      ) {
+        continue
+      }
+
       fixPosition(token)
 
       if (Array.isArray(onToken)) {

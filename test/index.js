@@ -2,8 +2,14 @@
  * @typedef {import('acorn').Comment} Comment
  * @typedef {import('acorn').Token} Token
  * @typedef {import('micromark-util-types').CompileContext} CompileContext
+ * @typedef {import('micromark-util-types').Extension} Extension
  * @typedef {import('micromark-util-types').Handle} Handle
  * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-factory-mdx-expression').Acorn} Acorn
+ * @typedef {import('micromark-factory-mdx-expression').AcornOptions} AcornOptions
  */
 
 import assert from 'node:assert/strict'
@@ -11,7 +17,9 @@ import test from 'node:test'
 import {Parser} from 'acorn'
 import acornJsx from 'acorn-jsx'
 import {micromark} from 'micromark'
+import {codes} from 'micromark-util-symbol/codes.js'
 import {mdxExpression} from 'micromark-extension-mdx-expression'
+import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 
 const acorn = Parser.extend(acornJsx())
 
@@ -1108,3 +1116,145 @@ test('spread (hidden)', function () {
     'should support a spread'
   )
 })
+
+test('should add correct positional info on acorn tokens', function () {
+  const micromarkExample = 'a {b} c'
+  const acornExample = '   b   '
+  /** @type {Array<Token>} */
+  const micromarkTokens = []
+  /** @type {Array<Token>} */
+  const acornTokens = []
+
+  acorn.parseExpressionAt(acornExample, 0, {
+    ecmaVersion: 'latest',
+    onToken: acornTokens,
+    locations: true,
+    ranges: true
+  })
+
+  micromark(micromarkExample, {
+    extensions: [
+      createExtensionFromFactoryOptions(
+        acorn,
+        {ecmaVersion: 'latest', onToken: micromarkTokens},
+        false,
+        false,
+        false,
+        true
+      )
+    ]
+  })
+
+  for (const d of micromarkTokens) {
+    // @ts-expect-error: we add offsets, as we have them.
+    delete d.loc?.start.offset
+    // @ts-expect-error: we add offsets.
+    delete d.loc?.end.offset
+  }
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(micromarkTokens)),
+    JSON.parse(JSON.stringify(acornTokens))
+  )
+})
+
+test('should add correct positional info on acorn tokens with spread', function () {
+  const micromarkExample = 'alp {...b}'
+  const acornExample = 'a = {...b}'
+  /** @type {Array<Token>} */
+  const micromarkTokens = []
+  /** @type {Array<Token>} */
+  const acornTokens = []
+
+  acorn.parseExpressionAt(acornExample, 0, {
+    ecmaVersion: 'latest',
+    onToken: acornTokens,
+    locations: true,
+    ranges: true
+  })
+
+  micromark(micromarkExample, {
+    extensions: [
+      createExtensionFromFactoryOptions(
+        acorn,
+        {ecmaVersion: 'latest', onToken: micromarkTokens},
+        false,
+        true,
+        false,
+        true
+      )
+    ]
+  })
+
+  // Remove `a`, `=`, `{`
+  acornTokens.splice(0, 3)
+  // Remove `}`.
+  acornTokens.pop()
+
+  for (const d of micromarkTokens) {
+    // @ts-expect-error: we add offsets, as we have them.
+    delete d.loc?.start.offset
+    // @ts-expect-error: we add offsets.
+    delete d.loc?.end.offset
+  }
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(micromarkTokens)),
+    JSON.parse(JSON.stringify(acornTokens))
+  )
+})
+
+/**
+ * @param {Acorn | null | undefined} [acorn]
+ *   Object with `acorn.parse` and `acorn.parseExpressionAt`.
+ * @param {AcornOptions | null | undefined} [acornOptions]
+ *   Configuration for acorn.
+ * @param {boolean | null | undefined} [addResult=false]
+ *   Add `estree` to token.
+ * @param {boolean | null | undefined} [spread=false]
+ *   Support a spread (`{...a}`) only.
+ * @param {boolean | null | undefined} [allowEmpty=false]
+ *   Support an empty expression.
+ * @param {boolean | null | undefined} [allowLazy=false]
+ *   Support lazy continuation of an expression.
+ * @returns {Extension}
+ */
+// eslint-disable-next-line max-params
+function createExtensionFromFactoryOptions(
+  acorn,
+  acornOptions,
+  addResult,
+  spread,
+  allowEmpty,
+  allowLazy
+) {
+  return {text: {[codes.leftCurlyBrace]: {tokenize}}}
+
+  /**
+   * @this {TokenizeContext}
+   * @type {Tokenizer}
+   */
+  function tokenize(effects, ok) {
+    const self = this
+
+    return start
+
+    /** @type {State} */
+    function start(code) {
+      return factoryMdxExpression.call(
+        self,
+        effects,
+        ok,
+        'expression',
+        'expressionMarker',
+        'expressionChunk',
+        acorn,
+        acornOptions,
+        addResult,
+        spread,
+        allowEmpty,
+        allowLazy
+      )(code)
+    }
+  }
+}
