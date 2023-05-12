@@ -8,7 +8,7 @@
 [![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
 
-[micromark][] extension to support MDX expressions (`{2 * Math.PI}`).
+[micromark][] extension to support [MDX][mdxjs] expressions (`{Math.PI}`).
 
 ## Contents
 
@@ -18,6 +18,7 @@
 *   [Use](#use)
 *   [API](#api)
     *   [`mdxExpression(options?)`](#mdxexpressionoptions)
+    *   [Options](#options)
 *   [Authoring](#authoring)
 *   [Syntax](#syntax)
 *   [Errors](#errors)
@@ -34,37 +35,33 @@
 
 ## What is this?
 
-This project contains three packages (it’s a monorepo).
+This package contains an extension that adds support for the expression syntax
+enabled by [MDX][mdxjs] to [`micromark`][micromark].
+These extensions are used inside MDX.
 
-*   `micromark-extension-mdx-expression`
-    — extension that adds support for expressions enabled by MDX to
-    [`micromark`][micromark]
-*   `micromark-factory-mdx-expression`
-    — subroutine to parse the expressions
-*   `micromark-util-events-to-acorn`
-    — subroutine to turn parse micromark events with acorn
-
-This readme will focus on `micromark-extension-mdx-expression`.
+This package can be made aware or unaware of JavaScript syntax.
+When unaware, expressions could include Rust or variables or whatnot.
 
 ## When to use this
 
-These tools are all low-level.
-In many cases, you want to use [`remark-mdx`][remark-mdx] with remark instead.
-When you are using [`mdx-js/mdx`][mdxjs], that is already included.
+This project is useful when you want to support expressions in markdown.
 
-Even when you want to use `micromark`, you likely want to use
-[`micromark-extension-mdxjs`][micromark-extension-mdxjs] to support all MDX
-features.
-That extension includes this extension.
+You can use this extension when you are working with [`micromark`][micromark].
+To support all MDX features, use
+[`micromark-extension-mdxjs`][micromark-extension-mdxjs] instead.
 
-When working with [`mdast-util-from-markdown`][mdast-util-from-markdown], you
-must combine this package with
+When you need a syntax tree, combine this package with
 [`mdast-util-mdx-expression`][mdast-util-mdx-expression].
+
+All these packages are used in [`remark-mdx`][remark-mdx], which focusses on
+making it easier to transform content by abstracting these internals away.
+
+When you are using [`mdx-js/mdx`][mdxjs], all of this is already included.
 
 ## Install
 
 This package is [ESM only][esm].
-In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
+In Node.js (version 16+), install with [npm][]:
 
 ```sh
 npm install micromark-extension-mdx-expression
@@ -87,17 +84,18 @@ In browsers with [`esm.sh`][esmsh]:
 ## Use
 
 ```js
-import * as acorn from 'acorn'
+import {Parser} from 'acorn'
+import acornJsx from 'acorn-jsx'
 import {micromark} from 'micromark'
 import {mdxExpression} from 'micromark-extension-mdx-expression'
 
-// Agnostic (balanced braces):
+// Unaware of JavaScript (“agnostic”) (balanced braces):
 const output = micromark('a {1 + 1} b', {extensions: [mdxExpression()]})
 
 console.log(output)
 
-// Gnostic (JavaScript):
-micromark('a {!} b', {extensions: [mdxExpression({acorn})]})
+// Aware of JavaScript:
+micromark('a {!} b', {extensions: [mdxExpression({acorn: Parser.extend(acornJsx())})]})
 ```
 
 Yields:
@@ -126,41 +124,42 @@ Yields:
 
 ## API
 
-This package exports the identifier `mdxExpression`.
+This package exports the identifier [`mdxExpression`][api-mdx-expression].
 There is no default export.
 
-The export map supports the endorsed [`development` condition][condition].
+The export map supports the [`development` condition][development].
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
 ### `mdxExpression(options?)`
 
-Add support for MDX expressions.
+Create an extension for `micromark` to enable MDX expression syntax.
 
-Function called optionally with options to get a syntax extension for micromark
-(passed in `extensions`).
+###### Parameters
 
-##### `options`
+*   `options` ([`Options`][api-options], optional)
+    — configuration
 
-Configuration (optional).
+###### Returns
 
-###### `options.acorn`
+Extension for `micromark` that can be passed in `extensions` to enable MDX
+expression syntax ([`Extension`][micromark-extension]).
 
-Acorn parser to use ([`Acorn`][acorn], optional).
+### Options
 
-###### `options.acornOptions`
+Configuration (TypeScript type).
 
-Options to pass to acorn (`Object`, default: `{ecmaVersion: 2020, locations:
-true, sourceType: 'module'}`).
-All fields can be set.
-Positional info (`loc`, `range`) is set on ES nodes regardless of acorn options.
+###### Fields
 
-###### `options.addResult`
+*   `acorn` ([`Acorn`][acorn], optional)
+    — acorn parser to use
+*   `acornOptions` ([`AcornOptions`][acorn-options], default:
+    `{ecmaVersion: 2020, locations: true, sourceType: 'module'}`)
+    — configuration for acorn; all fields except `locations` can be set
+*   `addResult` (`boolean`, default: `false`)
+    — whether to add `estree` fields to tokens with results from acorn
 
-Whether to add an `estree` field to `mdxFlowExpression` and `mdxTextExpression`
-tokens with the results from acorn (`boolean`, default: `false`).
-Note that expressions can be empty or be just comments, in which case `estree`
-will be undefined.
+<!-- Note: `spread` and `allowEmpty` are intentionally not documented. -->
 
 ## Authoring
 
@@ -168,14 +167,15 @@ When authoring markdown with JavaScript, keep in mind that MDX is a whitespace
 sensitive and line-based language, while JavaScript is insensitive to
 whitespace.
 This affects how markdown and JavaScript interleave with eachother in MDX.
-For more info on how it works, see [§ Interleaving][interleaving] on the MDX
-site.
+For more info on how it works, see [§ Interleaving][mdxjs-interleaving] on the
+MDX site.
 
 ## Syntax
 
-This extension supports MDX both agnostic and gnostic to JavaScript.
+This extension supports MDX both aware and unaware to JavaScript (respectively
+gnostic and agnostic).
 Depending on whether acorn is passed, either valid JavaScript must be used in
-expressions, or arbitrary text could (such as Rust or so) can be used.
+expressions, or arbitrary text (such as Rust code or so) can be used.
 
 There are two types of expressions: in text (inline, span) or in flow (block).
 They start with `{`.
@@ -281,27 +281,29 @@ They include:
 ## Types
 
 This package is fully typed with [TypeScript][].
-It exports the additional type `Options`.
+It exports the additional type [`Options`][api-options].
 
 ## Compatibility
 
-This package is at least compatible with all maintained versions of Node.js.
-As of now, that is Node.js 12.20+, 14.14+, 16.0+, and 18.0+.
-It also works in Deno and modern browsers.
+Projects maintained by the unified collective are compatible with all maintained
+versions of Node.js.
+As of now, that is Node.js 16+.
+Our projects sometimes work with older versions, but this is not guaranteed.
+
+These extensions work with `micromark` version 3+.
 
 ## Security
 
-This package deals with compiling JavaScript.
-If you do not trust the JavaScript, this package does nothing to change that.
+This package is safe.
 
 ## Related
 
-*   [`micromark/micromark-extension-mdxjs`][micromark-extension-mdxjs]
-    — micromark extension to support MDX
-*   [`syntax-tree/mdast-util-mdx-expression`][mdast-util-mdx-expression]
-    — mdast utility to support MDX expressions
+*   [`micromark-extension-mdxjs`][micromark-extension-mdxjs]
+    — support all MDX syntax
+*   [`mdast-util-mdx-expression`][mdast-util-mdx-expression]
+    — support MDX expressions in mdast
 *   [`remark-mdx`][remark-mdx]
-    — remark plugin to support MDX syntax
+    — support all MDX syntax in remark
 
 ## Contribute
 
@@ -353,19 +355,21 @@ abide by its terms.
 
 [author]: https://wooorm.com
 
-[contributing]: https://github.com/micromark/.github/blob/HEAD/contributing.md
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
 
-[support]: https://github.com/micromark/.github/blob/HEAD/support.md
+[support]: https://github.com/micromark/.github/blob/main/support.md
 
-[coc]: https://github.com/micromark/.github/blob/HEAD/code-of-conduct.md
+[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
 
 [esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
 [typescript]: https://www.typescriptlang.org
 
-[condition]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
 
 [micromark]: https://github.com/micromark/micromark
+
+[micromark-extension]: https://github.com/micromark/micromark#syntaxextension
 
 [micromark-extension-mdxjs]: https://github.com/micromark/micromark-extension-mdxjs
 
@@ -377,6 +381,12 @@ abide by its terms.
 
 [mdxjs]: https://mdxjs.com
 
-[interleaving]: https://mdxjs.com/docs/what-is-mdx/#interleaving
+[mdxjs-interleaving]: https://mdxjs.com/docs/what-is-mdx/#interleaving
 
 [acorn]: https://github.com/acornjs/acorn
+
+[acorn-options]: https://github.com/acornjs/acorn/blob/96c721dbf89d0ccc3a8c7f39e69ef2a6a3c04dfa/acorn/dist/acorn.d.ts#L16
+
+[api-mdx-expression]: #mdxexpressionoptions
+
+[api-options]: #options

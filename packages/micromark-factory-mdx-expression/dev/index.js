@@ -37,17 +37,29 @@ import {eventsToAcorn} from 'micromark-util-events-to-acorn'
 
 /**
  * @this {TokenizeContext}
+ *   Context.
  * @param {Effects} effects
+ *   Context.
  * @param {State} ok
+ *   State switched to when successful
  * @param {string} type
+ *   Token type for whole (`{}`).
  * @param {string} markerType
+ *   Token type for the markers (`{`, `}`).
  * @param {string} chunkType
+ *   Token type for the value (`1`).
  * @param {Acorn | null | undefined} [acorn]
+ *   Object with `acorn.parse` and `acorn.parseExpressionAt`.
  * @param {AcornOptions | null | undefined} [acornOptions]
+ *   Configuration for acorn.
  * @param {boolean | null | undefined} [addResult=false]
+ *   Add `estree` to token.
  * @param {boolean | null | undefined} [spread=false]
+ *   Support a spread (`{...a}`) only.
  * @param {boolean | null | undefined} [allowEmpty=false]
+ *   Support an empty expression.
  * @param {boolean | null | undefined} [allowLazy=false]
+ *   Support lazy continuation of an expression.
  * @returns {State}
  */
 // eslint-disable-next-line max-params

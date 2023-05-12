@@ -8,7 +8,7 @@
 [![Backers][backers-badge]][opencollective]
 [![Chat][chat-badge]][chat]
 
-micromark utility to try and parse events w/ acorn.
+[micromark][] utility to try and parse events with acorn.
 
 ## Contents
 
@@ -16,7 +16,10 @@ micromark utility to try and parse events w/ acorn.
 *   [Use](#use)
 *   [API](#api)
     *   [`eventsToAcorn(events, options)`](#eventstoacornevents-options)
+    *   [`Options`](#options)
+    *   [`Result`](#result)
 *   [Types](#types)
+*   [Compatibility](#compatibility)
 *   [Security](#security)
 *   [Contribute](#contribute)
 *   [License](#license)
@@ -24,7 +27,7 @@ micromark utility to try and parse events w/ acorn.
 ## Install
 
 This package is [ESM only][esm].
-In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
+In Node.js (version 16+), install with [npm][]:
 
 ```sh
 npm install micromark-util-events-to-acorn
@@ -33,14 +36,14 @@ npm install micromark-util-events-to-acorn
 In Deno with [`esm.sh`][esmsh]:
 
 ```js
-import {mdxExpression} from 'https://esm.sh/micromark-util-events-to-acorn@1'
+import {eventsToAcorn} from 'https://esm.sh/micromark-util-events-to-acorn@1'
 ```
 
 In browsers with [`esm.sh`][esmsh]:
 
 ```html
 <script type="module">
-  import {mdxExpression} from 'https://esm.sh/micromark-util-events-to-acorn@1?bundle'
+  import {eventsToAcorn} from 'https://esm.sh/micromark-util-events-to-acorn@1?bundle'
 </script>
 ```
 
@@ -56,26 +59,20 @@ function factoryMdxExpression(effects, ok, nok) {
 
   // …
 
-  /** @type {State} */
-  atClosingBrace(code) {
     // …
 
     // Gnostic mode: parse w/ acorn.
-    const result = eventsToAcorn(
-      self.events.slice(eventStart),
+    const result = eventsToAcorn(this.events.slice(eventStart), {
       acorn,
       acornOptions,
-      {
-        start: startPosition,
-        expression: true,
-        allowEmpty,
-        prefix: spread ? '({' : '',
-        suffix: spread ? '})' : ''
-      }
-    )
+      start: pointStart,
+      expression: true,
+      allowEmpty,
+      prefix: spread ? '({' : '',
+      suffix: spread ? '})' : ''
+    })
 
     // …
-  }
 
   // …
 }
@@ -83,10 +80,10 @@ function factoryMdxExpression(effects, ok, nok) {
 
 ## API
 
-This module exports the identifier `eventsToAcorn`.
+This module exports the identifier [`eventsToAcorn`][api-events-to-acorn].
 There is no default export.
 
-The export map supports the endorsed [`development` condition][condition].
+The export map supports the [`development` condition][development].
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
@@ -96,28 +93,44 @@ Without this condition, production code is loaded.
 
 *   `events` (`Array<Event>`)
     — events
-*   `options.acorn` (`Acorn`, required)
-    — object with `acorn.parse` and
-    `acorn.parseExpressionAt`
-*   `options.acornOptions` ([`AcornOptions`][acorn-options])
-    — configuration for acorn
-*   `options.start` (`Point`, optional)
-    — place where events start
-*   `options.prefix` (`string`, default: `''`)
-    — text to place before events
-*   `options.suffix` (`string`, default: `''`)
-    — text to place after events
-*   `options.expression` (`boolean`, default: `false`)
-    — whether this is a program or expression
-*   `options.allowEmpty` (`boolean`, default: `false`)
-    — whether an empty expression is allowed (programs are always allowed to
-    be empty)
+*   `options` ([`Options`][api-options])
+    — configuration
 
 ###### Returns
 
-*   `estree` ([`Program?`][program])
-    — estree node
-*   `error` (`Error?`)
+Result ([`Result`][api-result]).
+
+### `Options`
+
+Configuration (TypeScript type).
+
+###### Fields
+
+*   `acorn` ([`Acorn`][acorn], required)
+    — typically `acorn`, object with `parse` and `parseExpressionAt` fields
+*   `acornOptions` ([`AcornOptions`][acorn-options], optional)
+    — configuration for `acorn`
+*   `start` (`Point`, optional)
+    — place where events start
+*   `prefix` (`string`, default: `''`)
+    — text to place before events
+*   `suffix` (`string`, default: `''`)
+    — text to place after events
+*   `expression` (`boolean`, default: `false`)
+    — whether this is a program or expression
+*   `allowEmpty` (`boolean`, default: `false`)
+    — whether an empty expression is allowed (programs are always allowed to be
+    empty)
+
+### `Result`
+
+Result (TypeScript type).
+
+###### Fields
+
+*   `estree` ([`Program`][program] or `undefined`)
+    — Program
+*   `error` (`Error` or `undefined`)
     — error if unparseable
 *   `swallow` (`boolean`)
     — whether the error, if there is one, can be swallowed and more JavaScript
@@ -126,13 +139,22 @@ Without this condition, production code is loaded.
 ## Types
 
 This package is fully typed with [TypeScript][].
-It exports the additional types `Acorn`, `AcornOptions`, `Options`, `Point`,
-and `Program`.
+It exports the additional types [`Acorn`][acorn],
+[`AcornOptions`][acorn-options], [`Options`][api-options], and
+[`Result`][api-result].
+
+## Compatibility
+
+Projects maintained by the unified collective are compatible with all maintained
+versions of Node.js.
+As of now, that is Node.js 16+.
+Our projects sometimes work with older versions, but this is not guaranteed.
+
+These extensions work with `micromark` version 3+.
 
 ## Security
 
-See [`security.md`][securitymd] in [`micromark/.github`][health] for how to
-submit a security report.
+This package is safe.
 
 ## Contribute
 
@@ -186,20 +208,28 @@ abide by its terms.
 
 [health]: https://github.com/micromark/.github
 
-[securitymd]: https://github.com/micromark/.github/blob/HEAD/security.md
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
 
-[contributing]: https://github.com/micromark/.github/blob/HEAD/contributing.md
+[support]: https://github.com/micromark/.github/blob/main/support.md
 
-[support]: https://github.com/micromark/.github/blob/HEAD/support.md
-
-[coc]: https://github.com/micromark/.github/blob/HEAD/code-of-conduct.md
+[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
 
 [esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
 [typescript]: https://www.typescriptlang.org
 
-[condition]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+
+[acorn]: https://github.com/acornjs/acorn
+
+[acorn-options]: https://github.com/acornjs/acorn/blob/96c721dbf89d0ccc3a8c7f39e69ef2a6a3c04dfa/acorn/dist/acorn.d.ts#L16
+
+[micromark]: https://github.com/micromark/micromark
 
 [program]: https://github.com/estree/estree/blob/master/es2015.md#programs
 
-[acorn-options]: https://github.com/acornjs/acorn/tree/master/acorn#interface
+[api-events-to-acorn]: #eventstoacornevents-options
+
+[api-options]: #options
+
+[api-result]: #result

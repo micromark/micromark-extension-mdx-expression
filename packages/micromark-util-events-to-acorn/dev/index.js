@@ -31,7 +31,7 @@
  * @typedef Options
  *   Configuration.
  * @property {Acorn} acorn
- *   Typically `acorn`, object with with `parse` and `parseExpressionAt` fields.
+ *   Typically `acorn`, object with `parse` and `parseExpressionAt` fields.
  * @property {AcornOptions | null | undefined} [acornOptions]
  *   Configuration for `acorn`.
  * @property {Point | null | undefined} [start]
@@ -66,8 +66,11 @@ import {location} from 'vfile-location'
  * Parse a list of micromark events with acorn.
  *
  * @param {Array<Event>} events
+ *   Events.
  * @param {Options} options
+ *   Configuration.
  * @returns {Result}
+ *   Result.
  */
 // eslint-disable-next-line complexity
 export function eventsToAcorn(events, options) {

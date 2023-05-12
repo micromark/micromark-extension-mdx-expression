@@ -8,7 +8,7 @@
 [![Backers][backers-badge]][opencollective]
 [![Chat][chat-badge]][chat]
 
-micromark factory to parse MDX expressions (found in JSX attributes, flow,
+[micromark][] factory to parse MDX expressions (found in JSX attributes, flow,
 text).
 
 ## Contents
@@ -18,6 +18,7 @@ text).
 *   [API](#api)
     *   [`factoryMdxExpression(…)`](#factorymdxexpression)
 *   [Types](#types)
+*   [Compatibility](#compatibility)
 *   [Security](#security)
 *   [Contribute](#contribute)
 *   [License](#license)
@@ -25,7 +26,7 @@ text).
 ## Install
 
 This package is [ESM only][esm].
-In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
+In Node.js (version 16+), install with [npm][]:
 
 ```sh
 npm install micromark-factory-mdx-expression
@@ -34,14 +35,14 @@ npm install micromark-factory-mdx-expression
 In Deno with [`esm.sh`][esmsh]:
 
 ```js
-import {mdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1'
+import {factoryMdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1'
 ```
 
 In browsers with [`esm.sh`][esmsh]:
 
 ```html
 <script type="module">
-  import {mdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1?bundle'
+  import {factoryMdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1?bundle'
 </script>
 ```
 
@@ -83,10 +84,11 @@ function tokenizeFlowExpression(effects, ok, nok) {
 
 ## API
 
-This module exports the identifiers `factoryMdxExpression`.
+This module exports the identifier
+[`factoryMdxExpression`][api-factory-mdx-expression].
 There is no default export.
 
-The export map supports the endorsed [`development` condition][condition].
+The export map supports the [`development` condition][development].
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
@@ -94,38 +96,57 @@ Without this condition, production code is loaded.
 
 ###### Parameters
 
-*   `effects` (`Effects`) — Context
-*   `ok` (`State`) — State switched to when successful
-*   `type` (`string`) — Token type for whole (`{}`)
-*   `markerType` (`string`) — Token type for the markers (`{`, `}`)
-*   `chunkType` (`string`) — Token type for the value (`1`)
-*   `acorn` (`Acorn`) — Object with `acorn.parse` and `acorn.parseExpressionAt`
-*   `acornOptions` ([`AcornOptions`][acorn-options]) — Configuration for acorn
-*   `boolean` (`addResult`, default: `false`) — Add `estree` to token
-*   `boolean` (`spread`, default: `false`) — Support a spread (`{...a}`) only
-*   `boolean` (`allowEmpty`, default: `false`) — Support an empty expression
-*   `boolean` (`allowLazy`, default: `false`) — Support lazy continuation of an
-    expression
+*   `effects` (`Effects`)
+    — context
+*   `ok` (`State`)
+    — state switched to when successful
+*   `type` (`string`)
+    — token type for whole (`{}`)
+*   `markerType` (`string`)
+    — token type for the markers (`{`, `}`)
+*   `chunkType` (`string`)
+    — token type for the value (`1`)
+*   `acorn` (`Acorn`)
+    — object with `acorn.parse` and `acorn.parseExpressionAt`
+*   `acornOptions` ([`AcornOptions`][acorn-options])
+    — configuration for acorn
+*   `boolean` (`addResult`, default: `false`)
+    — add `estree` to token
+*   `boolean` (`spread`, default: `false`)
+    — support a spread (`{...a}`) only
+*   `boolean` (`allowEmpty`, default: `false`)
+    — support an empty expression
+*   `boolean` (`allowLazy`, default: `false`)
+    — support lazy continuation of an expression
 *   `number` (`startColumn`, default: `0`) — Treat whitespace up to this number
     and a tab size as indent
+
+<!--
+  To do: add `startColumn` back (https://github.com/micromark/micromark-extension-mdx-expression/commit/3fede42b95b644709e20f32401251d8b223171bc), test it and port to `markdown-rs`?
+-->
 
 ###### Returns
 
 `State`.
 
-###### Examples
-
-See [`micromark-extension-mdx-expression`][extension]
-
 ## Types
 
 This package is fully typed with [TypeScript][].
-It exports the additional types `Acorn` and `AcornOptions`.
+It exports the additional types [`Acorn`][acorn] and
+[`AcornOptions`][acorn-options].
+
+## Compatibility
+
+Projects maintained by the unified collective are compatible with all maintained
+versions of Node.js.
+As of now, that is Node.js 16+.
+Our projects sometimes work with older versions, but this is not guaranteed.
+
+These extensions work with `micromark` version 3+.
 
 ## Security
 
-See [`security.md`][securitymd] in [`micromark/.github`][health] for how to
-submit a security report.
+This package is safe.
 
 ## Contribute
 
@@ -179,20 +200,22 @@ abide by its terms.
 
 [health]: https://github.com/micromark/.github
 
-[securitymd]: https://github.com/micromark/.github/blob/HEAD/security.md
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
 
-[contributing]: https://github.com/micromark/.github/blob/HEAD/contributing.md
+[support]: https://github.com/micromark/.github/blob/main/support.md
 
-[support]: https://github.com/micromark/.github/blob/HEAD/support.md
-
-[coc]: https://github.com/micromark/.github/blob/HEAD/code-of-conduct.md
+[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
 
 [esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
 [typescript]: https://www.typescriptlang.org
 
-[condition]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
 
-[acorn-options]: https://github.com/acornjs/acorn/tree/master/acorn#interface
+[acorn]: https://github.com/acornjs/acorn
 
-[extension]: https://github.com/micromark/micromark-extension-mdx-expression
+[acorn-options]: https://github.com/acornjs/acorn/blob/96c721dbf89d0ccc3a8c7f39e69ef2a6a3c04dfa/acorn/dist/acorn.d.ts#L16
+
+[micromark]: https://github.com/micromark/micromark
+
+[api-factory-mdx-expression]: #micromark-factory-mdx-expression

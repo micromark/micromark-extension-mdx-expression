@@ -13,12 +13,12 @@
  * @property {Acorn | null | undefined} [acorn]
  *   Acorn parser to use (optional).
  * @property {AcornOptions | null | undefined} [acornOptions]
- *   Options to pass to acorn (default: `{ecmaVersion: 2020, locations: true,
+ *   Configuration for acorn (default: `{ecmaVersion: 2020, locations: true,
  *   sourceType: 'module'}`).
- *   All fields (except for `locations`) can be set.
+ *
+ *   All fields except `locations` can be set.
  * @property {boolean | null | undefined} [addResult=false]
- *   Whether to add an `estree` field to `mdxFlowExpression` and
- *   `mdxTextExpression` tokens with results from acorn.
+ *   Whether to add `estree` fields to tokens with results from acorn.
  * @property {boolean | null | undefined} [spread=false]
  *   Undocumented option to parse only a spread (used by
  *   `micromark-extension-mdx-jsx` to parse spread attributes).
@@ -35,10 +35,7 @@ import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
 
 /**
- * Add support for MDX expressions.
- *
- * Function called optionally with options to get a syntax extension for
- * micromark.
+ * Create an extension for `micromark` to enable MDX expression syntax.
  *
  * @param {Options | null | undefined} [options]
  *   Configuration (optional).
