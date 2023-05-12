@@ -2,8 +2,6 @@
 
 [![Build][build-badge]][build]
 [![Coverage][coverage-badge]][coverage]
-[![Downloads][downloads-badge]][downloads]
-[![Size][size-badge]][size]
 [![Sponsors][sponsors-badge]][collective]
 [![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
@@ -65,14 +63,6 @@ abide by its terms.
 [coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-mdx-expression.svg
 
 [coverage]: https://codecov.io/github/micromark/micromark-extension-mdx-expression
-
-[downloads-badge]: https://img.shields.io/npm/dm/micromark-extension-mdx-expression.svg
-
-[downloads]: https://www.npmjs.com/package/micromark-extension-mdx-expression
-
-[size-badge]: https://img.shields.io/bundlephobia/minzip/micromark-extension-mdx-expression.svg
-
-[size]: https://bundlephobia.com/result?p=micromark-extension-mdx-expression
 
 [sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
 
