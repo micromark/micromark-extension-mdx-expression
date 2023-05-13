@@ -5,8 +5,10 @@
  * @typedef {import('acorn').Token} Token
  * @typedef {import('estree').Node} EstreeNode
  * @typedef {import('estree').Program} Program
+ * @typedef {import('micromark-util-types').Chunk} Chunk
  * @typedef {import('micromark-util-types').Event} Event
- * @typedef {import('micromark-util-types').Point} Point
+ * @typedef {import('micromark-util-types').Point} MicromarkPoint
+ * @typedef {import('unist').Point} UnistPoint
  */
 
 /**
@@ -34,7 +36,7 @@
  *   Typically `acorn`, object with `parse` and `parseExpressionAt` fields.
  * @property {AcornOptions | null | undefined} [acornOptions]
  *   Configuration for `acorn`.
- * @property {Point | null | undefined} [start]
+ * @property {MicromarkPoint | null | undefined} [start]
  *   Place where events start.
  * @property {string | null | undefined} [prefix='']
  *   Text to place before events.
@@ -55,12 +57,20 @@
  * @property {boolean} swallow
  *   Whether the error, if there is one, can be swallowed and more JavaScript
  *   could be valid.
+ *
+ * @typedef {[number, MicromarkPoint]} Stop
+ *
+ * @typedef Collection
+ * @property {string} value
+ * @property {Array<Stop>} stops
  */
 
-import {ok as assert} from 'uvu/assert'
 import {visit} from 'estree-util-visit'
+import {codes} from 'micromark-util-symbol/codes.js'
+import {values} from 'micromark-util-symbol/values.js'
+import {types} from 'micromark-util-symbol/types.js'
+import {ok as assert} from 'uvu/assert'
 import {VFileMessage} from 'vfile-message'
-import {location} from 'vfile-location'
 
 /**
  * Parse a list of micromark events with acorn.
@@ -83,18 +93,11 @@ export function eventsToAcorn(events, options) {
   const tokens = []
   const onComment = acornOptions.onComment
   const onToken = acornOptions.onToken
-  /** @type {Array<string>} */
-  const chunks = []
-  /** @type {Record<string, Point>} */
-  const lines = {}
-  let index = -1
   let swallow = false
   /** @type {AcornNode | undefined} */
   let estree
   /** @type {AcornError | undefined} */
   let exception
-  /** @type {number} */
-  let startLine
   /** @type {AcornOptions} */
   const acornConfig = Object.assign({}, acornOptions, {
     onComment: comments,
@@ -105,28 +108,25 @@ export function eventsToAcorn(events, options) {
     acornConfig.onToken = tokens
   }
 
-  // We use `events` to detect everything, however, it could be empty.
-  // In that case, we need `options.start` to make sense of positional info.
-  if (options.start) {
-    startLine = options.start.line
-    lines[startLine] = options.start
-  }
+  const collection = collect(events, [
+    types.lineEnding,
+    // To do: these should be passed by users in parameters.
+    'expressionChunk', // From tests.
+    'mdxFlowExpressionChunk', // Flow chunk.
+    'mdxTextExpressionChunk', // Text chunk.
+    // JSX:
+    'mdxJsxTextTagExpressionAttributeValue',
+    'mdxJsxTextTagAttributeValueExpressionValue',
+    'mdxJsxFlowTagExpressionAttributeValue',
+    'mdxJsxFlowTagAttributeValueExpressionValue',
+    // ESM:
+    'mdxjsEsmData'
+  ])
 
-  while (++index < events.length) {
-    const [kind, token, context] = events[index]
+  const source = collection.value
 
-    // Assume only void events (and `enter` followed immediately by an `exit`).
-    if (kind === 'exit') {
-      chunks.push(context.sliceSerialize(token))
-      setPoint(token.start)
-      setPoint(token.end)
-    }
-  }
-
-  const source = chunks.join('')
   const value = prefix + source + suffix
   const isEmptyExpression = options.expression && empty(source)
-  const place = location(source)
 
   if (isEmptyExpression && !options.allowEmpty) {
     throw new VFileMessage(
@@ -145,6 +145,8 @@ export function eventsToAcorn(events, options) {
     const error = /** @type {AcornError} */ (error_)
     const point = parseOffsetToUnistPoint(error.pos)
     error.message = String(error.message).replace(/ \(\d+:\d+\)$/, '')
+    // Always defined in our unist points that come from micromark.
+    assert(point.offset, 'expected `offset`')
     error.pos = point.offset
     error.loc = {line: point.line, column: point.column - 1}
     exception = error
@@ -177,6 +179,8 @@ export function eventsToAcorn(events, options) {
       const error = /** @type {AcornError} */ (
         new Error('Unexpected content after expression')
       )
+      // Always defined in our unist points that come from micromark.
+      assert(point.offset, 'expected `offset`')
       error.pos = point.offset
       error.loc = {line: point.line, column: point.column - 1}
       exception = error
@@ -269,6 +273,9 @@ export function eventsToAcorn(events, options) {
     assert('end' in nodeOrToken, 'expected `end` in node or token from acorn')
     const pointStart = parseOffsetToUnistPoint(nodeOrToken.start)
     const pointEnd = parseOffsetToUnistPoint(nodeOrToken.end)
+    // Always defined in our unist points that come from micromark.
+    assert(pointStart.offset, 'expected `offset`')
+    assert(pointEnd.offset, 'expected `offset`')
     nodeOrToken.start = pointStart.offset
     nodeOrToken.end = pointEnd.offset
     nodeOrToken.loc = {
@@ -291,7 +298,7 @@ export function eventsToAcorn(events, options) {
    * value.
    *
    * @param {number} acornOffset
-   * @returns {Point}
+   * @returns {UnistPoint}
    */
   function parseOffsetToUnistPoint(acornOffset) {
     let sourceOffset = acornOffset - prefix.length
@@ -302,31 +309,21 @@ export function eventsToAcorn(events, options) {
       sourceOffset = source.length
     }
 
-    const pointInSource = place.toPoint(sourceOffset)
-    assert(
-      typeof startLine === 'number',
-      'expected `startLine` to be found or given '
-    )
-    assert(typeof pointInSource.line === 'number')
-    assert(typeof pointInSource.column === 'number')
-    const line = startLine + (pointInSource.line - 1)
-    assert(line in lines, 'expected line to be defined')
-    const column = lines[line].column + (pointInSource.column - 1)
-    const offset = lines[line].offset + (pointInSource.column - 1)
-    return /** @type {Point} */ ({line, column, offset})
-  }
+    let point = relativeToPoint(collection.stops, sourceOffset)
 
-  /** @param {Point} point */
-  function setPoint(point) {
-    // Not passed by `micromark-extension-mdxjs-esm`
-    /* c8 ignore next 3 */
-    if (!startLine || point.line < startLine) {
-      startLine = point.line
+    if (!point) {
+      assert(
+        options.start,
+        'empty expressions are need `options.start` being passed'
+      )
+      point = {
+        line: options.start.line,
+        column: options.start.column,
+        offset: options.start.offset
+      }
     }
 
-    if (!(point.line in lines) || lines[point.line].offset > point.offset) {
-      lines[point.line] = point
-    }
+    return point
   }
 }
 
@@ -344,4 +341,137 @@ function empty(value) {
       // mean the closing brace is on the commented-out line
       .replace(/\/\/[^\r\n]*(\r\n|\n|\r)/g, '')
   )
+}
+
+// Port from <https://github.com/wooorm/markdown-rs/blob/e692ab0/src/util/mdx_collect.rs#L15>.
+/**
+ * @param {Array<Event>} events
+ * @param {Array<string>} names
+ * @returns {Collection}
+ */
+function collect(events, names) {
+  /** @type {Collection} */
+  const result = {value: '', stops: []}
+  let index = -1
+
+  while (++index < events.length) {
+    const event = events[index]
+
+    // Assume void.
+    if (event[0] === 'enter' && names.includes(event[1].type)) {
+      const chunks = event[2].sliceStream(event[1])
+
+      // Drop virtual spaces.
+      while (chunks.length > 0 && chunks[0] === codes.virtualSpace) {
+        chunks.shift()
+      }
+
+      const value = serializeChunks(chunks)
+      result.stops.push([result.value.length, event[1].start])
+      result.value += value
+      result.stops.push([result.value.length, event[1].end])
+    }
+  }
+
+  return result
+}
+
+// Port from <https://github.com/wooorm/markdown-rs/blob/e692ab0/src/util/location.rs#L91>.
+/**
+ * Turn a relative offset into an absolute offset.
+ *
+ * @param {Array<Stop>} stops
+ * @param {number} relative
+ * @returns {UnistPoint | undefined}
+ */
+function relativeToPoint(stops, relative) {
+  let index = 0
+
+  while (index < stops.length && stops[index][0] <= relative) {
+    index += 1
+  }
+
+  // There are no points: that only occurs if there was an empty string.
+  if (index === 0) {
+    return undefined
+  }
+
+  const [stopRelative, stopAbsolute] = stops[index - 1]
+  const rest = relative - stopRelative
+  return {
+    line: stopAbsolute.line,
+    column: stopAbsolute.column + rest,
+    offset: stopAbsolute.offset + rest
+  }
+}
+
+// Copy from <https://github.com/micromark/micromark/blob/ce3593a/packages/micromark/dev/lib/create-tokenizer.js#L595>
+// To do: expose that?
+/**
+ * Get the string value of a slice of chunks.
+ *
+ * @param {Array<Chunk>} chunks
+ * @returns {string}
+ */
+function serializeChunks(chunks) {
+  let index = -1
+  /** @type {Array<string>} */
+  const result = []
+  /** @type {boolean | undefined} */
+  let atTab
+
+  while (++index < chunks.length) {
+    const chunk = chunks[index]
+    /** @type {string} */
+    let value
+
+    if (typeof chunk === 'string') {
+      value = chunk
+    } else
+      switch (chunk) {
+        case codes.carriageReturn: {
+          value = values.cr
+
+          break
+        }
+
+        case codes.lineFeed: {
+          value = values.lf
+
+          break
+        }
+
+        case codes.carriageReturnLineFeed: {
+          value = values.cr + values.lf
+
+          break
+        }
+
+        case codes.horizontalTab: {
+          value = values.ht
+
+          break
+        }
+
+        /* c8 ignore next 6 */
+        case codes.virtualSpace: {
+          if (atTab) continue
+          value = values.space
+
+          break
+        }
+
+        default: {
+          assert(typeof chunk === 'number', 'expected number')
+          // Currently only replacement character.
+          // eslint-disable-next-line unicorn/prefer-code-point
+          value = String.fromCharCode(chunk)
+        }
+      }
+
+    atTab = chunk === codes.horizontalTab
+    result.push(value)
+  }
+
+  return result.join('')
 }

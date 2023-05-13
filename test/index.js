@@ -1,6 +1,8 @@
 /**
  * @typedef {import('acorn').Comment} Comment
  * @typedef {import('acorn').Token} Token
+ * @typedef {import('estree').Node} Node
+ * @typedef {import('estree').Program} Program
  * @typedef {import('micromark-util-types').CompileContext} CompileContext
  * @typedef {import('micromark-util-types').Extension} Extension
  * @typedef {import('micromark-util-types').Handle} Handle
@@ -16,10 +18,12 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {Parser} from 'acorn'
 import acornJsx from 'acorn-jsx'
+import {visit} from 'estree-util-visit'
 import {micromark} from 'micromark'
-import {codes} from 'micromark-util-symbol/codes.js'
 import {mdxExpression} from 'micromark-extension-mdx-expression'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
+import {markdownLineEnding} from 'micromark-util-character'
+import {codes} from 'micromark-util-symbol/codes.js'
 
 const acorn = Parser.extend(acornJsx())
 
@@ -1145,12 +1149,7 @@ test('should add correct positional info on acorn tokens', function () {
     ]
   })
 
-  for (const d of micromarkTokens) {
-    // @ts-expect-error: we add offsets, as we have them.
-    delete d.loc?.start.offset
-    // @ts-expect-error: we add offsets.
-    delete d.loc?.end.offset
-  }
+  removeOffsetsFromTokens(micromarkTokens)
 
   assert.deepEqual(
     JSON.parse(JSON.stringify(micromarkTokens)),
@@ -1186,22 +1185,318 @@ test('should add correct positional info on acorn tokens with spread', function 
     ]
   })
 
+  removeOffsetsFromTokens(micromarkTokens)
+
   // Remove `a`, `=`, `{`
   acornTokens.splice(0, 3)
   // Remove `}`.
   acornTokens.pop()
 
-  for (const d of micromarkTokens) {
-    // @ts-expect-error: we add offsets, as we have them.
-    delete d.loc?.start.offset
-    // @ts-expect-error: we add offsets.
-    delete d.loc?.end.offset
-  }
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(micromarkTokens)),
+    JSON.parse(JSON.stringify(acornTokens))
+  )
+})
+
+test('should use correct positional info when tabs are used', function () {
+  const micromarkExample = 'ab {`\n\t`}'
+  const acornExample = 'a = `\n\t` '
+  /** @type {Array<Token>} */
+  const micromarkTokens = []
+  /** @type {Array<Token>} */
+  const acornTokens = []
+  /** @type {Program | undefined} */
+  let program
+
+  const acornNode = /** @type {Node} */ (
+    acorn.parseExpressionAt(acornExample, 0, {
+      ecmaVersion: 'latest',
+      onToken: acornTokens,
+      locations: true,
+      ranges: true
+    })
+  )
+
+  micromark(micromarkExample, {
+    extensions: [
+      createExtensionFromFactoryOptions(
+        acorn,
+        {ecmaVersion: 'latest', onToken: micromarkTokens},
+        true,
+        false,
+        false,
+        true
+      )
+    ],
+    htmlExtensions: [{enter: {expression}}]
+  })
+
+  if (program) removeOffsets(program)
+  removeOffsetsFromTokens(micromarkTokens)
+
+  // Remove: `a`, `=`
+  acornTokens.splice(0, 2)
 
   assert.deepEqual(
     JSON.parse(JSON.stringify(micromarkTokens)),
     JSON.parse(JSON.stringify(acornTokens))
   )
+
+  assert(acornNode.type === 'AssignmentExpression')
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(program)),
+    JSON.parse(
+      JSON.stringify({
+        type: 'Program',
+        start: 4,
+        end: 8,
+        body: [
+          {
+            type: 'ExpressionStatement',
+            expression: acornNode.right,
+            start: 4,
+            end: 8,
+            loc: {start: {line: 1, column: 4}, end: {line: 2, column: 2}},
+            range: [4, 8]
+          }
+        ],
+        sourceType: 'module',
+        comments: [],
+        loc: {start: {line: 1, column: 4}, end: {line: 2, column: 2}},
+        range: [4, 8]
+      })
+    )
+  )
+
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+  function expression(token) {
+    assert('estree' in token)
+    // @ts-expect-error: fine.
+    program = token.estree
+  }
+})
+
+test('should use correct positional when there are virtual spaces due to a block quote', function () {
+  // Note: we drop the entire tab in this case, even though it represents 3
+  // spaces, where the first is eaten by the block quote.
+  // I believe it would be too complex for users to understand that two spaces
+  // are passed to acorn and present in template strings.
+  const micromarkExample = '> ab {`\n>\t`}'
+  const acornExample = '`\n`'
+  /** @type {Array<Token>} */
+  const micromarkTokens = []
+  /** @type {Array<Token>} */
+  const acornTokens = []
+  /** @type {Program | undefined} */
+  let program
+
+  acorn.parseExpressionAt(acornExample, 0, {
+    ecmaVersion: 'latest',
+    onToken: acornTokens,
+    locations: true,
+    ranges: true
+  })
+
+  micromark(micromarkExample, {
+    extensions: [
+      createExtensionFromFactoryOptions(
+        acorn,
+        {ecmaVersion: 'latest', onToken: micromarkTokens},
+        true,
+        false,
+        false,
+        true
+      )
+    ],
+    htmlExtensions: [{enter: {expression}}]
+  })
+
+  if (program) removeOffsets(program)
+  removeOffsetsFromTokens(micromarkTokens)
+
+  assert(acornTokens.length === 3)
+  // `` ` ``
+  acornTokens[0].start = 6
+  assert(acornTokens[0].loc)
+  acornTokens[0].loc.start.column = 6
+  acornTokens[0].end = 7
+  acornTokens[0].loc.end.column = 7
+  acornTokens[0].range = [6, 7]
+  // `template`
+  acornTokens[1].start = 7
+  assert(acornTokens[1].loc)
+  acornTokens[1].loc.start.column = 7
+  acornTokens[1].end = 10
+  acornTokens[1].loc.end.column = 2
+  acornTokens[1].range = [7, 10]
+  // `` ` ``
+  acornTokens[2].start = 10
+  assert(acornTokens[2].loc)
+  acornTokens[2].loc.start.column = 2
+  acornTokens[2].end = 11
+  acornTokens[2].loc.end.column = 3
+  acornTokens[2].range = [10, 11]
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(micromarkTokens)),
+    JSON.parse(JSON.stringify(acornTokens))
+  )
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(program)),
+    JSON.parse(
+      JSON.stringify({
+        type: 'Program',
+        start: 6,
+        end: 11,
+        body: [
+          {
+            type: 'ExpressionStatement',
+            expression: {
+              type: 'TemplateLiteral',
+              start: 6,
+              end: 11,
+              expressions: [],
+              quasis: [
+                {
+                  type: 'TemplateElement',
+                  start: 7,
+                  end: 10,
+                  value: {raw: '\n', cooked: '\n'},
+                  tail: true,
+                  loc: {
+                    start: {line: 1, column: 7},
+                    end: {line: 2, column: 2}
+                  },
+                  range: [7, 10]
+                }
+              ],
+              loc: {start: {line: 1, column: 6}, end: {line: 2, column: 3}},
+              range: [6, 11]
+            },
+            start: 6,
+            end: 11,
+            loc: {start: {line: 1, column: 6}, end: {line: 2, column: 3}},
+            range: [6, 11]
+          }
+        ],
+        sourceType: 'module',
+        comments: [],
+        loc: {start: {line: 1, column: 6}, end: {line: 2, column: 3}},
+        range: [6, 11]
+      })
+    )
+  )
+
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+  function expression(token) {
+    assert('estree' in token)
+    // @ts-expect-error: fine.
+    program = token.estree
+  }
+})
+
+test('should keep the correct number of spaces in a blockquote (flow)', function () {
+  /** @type {Program | undefined} */
+  let program
+
+  micromark('> {`\n> alpha\n>  bravo\n>   charlie\n>    delta\n> `}', {
+    extensions: [
+      createExtensionFromFactoryOptions(acorn, {ecmaVersion: 'latest'}, true)
+    ],
+    htmlExtensions: [{enter: {expression}}]
+  })
+
+  assert(program)
+  const statement = program.body[0]
+  assert(statement.type === 'ExpressionStatement')
+  assert(statement.expression.type === 'TemplateLiteral')
+  const quasi = statement.expression.quasis[0]
+  assert(quasi)
+  const value = quasi.value.cooked
+  assert.equal(value, '\nalpha\n bravo\n  charlie\n   delta\n')
+
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+  function expression(token) {
+    assert('estree' in token)
+    // @ts-expect-error: fine.
+    program = token.estree
+  }
+})
+
+test('should keep the correct number of spaces in a blockquote (text)', function () {
+  /** @type {Program | undefined} */
+  let program
+
+  micromark(
+    '> alpha {`\n> bravo\n>  charlie\n>   delta\n>    echo\n> `} foxtrot.',
+    {
+      extensions: [
+        createExtensionFromFactoryOptions(acorn, {ecmaVersion: 'latest'}, true)
+      ],
+      htmlExtensions: [{enter: {expression}}]
+    }
+  )
+
+  assert(program)
+  const statement = program.body[0]
+  assert(statement.type === 'ExpressionStatement')
+  assert(statement.expression.type === 'TemplateLiteral')
+  const quasi = statement.expression.quasis[0]
+  assert(quasi)
+  const value = quasi.value.cooked
+  assert.equal(value, '\nbravo\n charlie\n  delta\n   echo\n')
+
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+  function expression(token) {
+    assert('estree' in token)
+    // @ts-expect-error: fine.
+    program = token.estree
+  }
+})
+
+test('should support `\\0` and `\\r` in expressions', function () {
+  /** @type {Program | undefined} */
+  let program
+
+  micromark('{`a\0b\rc\nd\r\ne`}', {
+    extensions: [
+      createExtensionFromFactoryOptions(acorn, {ecmaVersion: 'latest'}, true)
+    ],
+    htmlExtensions: [{enter: {expression}}]
+  })
+
+  assert(program)
+  const statement = program.body[0]
+  assert(statement.type === 'ExpressionStatement')
+  assert(statement.expression.type === 'TemplateLiteral')
+  const quasi = statement.expression.quasis[0]
+  assert(quasi)
+  const value = quasi.value.cooked
+  assert.equal(value, 'a�b\nc\nd\ne')
+
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+  function expression(token) {
+    assert('estree' in token)
+    // @ts-expect-error: fine.
+    program = token.estree
+  }
 })
 
 /**
@@ -1228,13 +1523,53 @@ function createExtensionFromFactoryOptions(
   allowEmpty,
   allowLazy
 ) {
-  return {text: {[codes.leftCurlyBrace]: {tokenize}}}
+  return {
+    flow: {
+      [codes.leftCurlyBrace]: {tokenize: tokenizeFlow, concrete: true}
+    },
+    text: {[codes.leftCurlyBrace]: {tokenize: tokenizeText}}
+  }
 
   /**
    * @this {TokenizeContext}
    * @type {Tokenizer}
    */
-  function tokenize(effects, ok) {
+  function tokenizeFlow(effects, ok, nok) {
+    const self = this
+
+    return start
+
+    /** @type {State} */
+    function start(code) {
+      return factoryMdxExpression.call(
+        self,
+        effects,
+        after,
+        'expression',
+        'expressionMarker',
+        'expressionChunk',
+        acorn,
+        acornOptions,
+        addResult,
+        spread,
+        allowEmpty
+      )(code)
+    }
+
+    // Note: trailing whitespace not supported.
+    /** @type {State} */
+    function after(code) {
+      return code === codes.eof || markdownLineEnding(code)
+        ? ok(code)
+        : nok(code)
+    }
+  }
+
+  /**
+   * @this {TokenizeContext}
+   * @type {Tokenizer}
+   */
+  function tokenizeText(effects, ok) {
     const self = this
 
     return start
@@ -1256,5 +1591,32 @@ function createExtensionFromFactoryOptions(
         allowLazy
       )(code)
     }
+  }
+}
+
+/**
+ * @param {Node} node
+ * @returns {void}
+ */
+function removeOffsets(node) {
+  visit(node, (d) => {
+    assert(d.loc, 'expected `loc`')
+    // @ts-expect-error: we add offsets, as we have them.
+    delete d.loc.start.offset
+    // @ts-expect-error: we add offsets.
+    delete d.loc.end.offset
+  })
+}
+
+/**
+ * @param {Array<Token>} tokens
+ * @returns {void}
+ */
+function removeOffsetsFromTokens(tokens) {
+  for (const d of tokens) {
+    // @ts-expect-error: we add offsets, as we have them.
+    delete d.loc?.start.offset
+    // @ts-expect-error: we add offsets.
+    delete d.loc?.end.offset
   }
 }

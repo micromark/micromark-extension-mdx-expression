@@ -27,12 +27,12 @@
  *   `micromark-extension-mdx-jsx` to prohobit empty attribute values).
  */
 
-import {ok as assert} from 'uvu/assert'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
+import {ok as assert} from 'uvu/assert'
 
 /**
  * Create an extension for `micromark` to enable MDX expression syntax.
@@ -111,6 +111,7 @@ export function mdxExpression(options) {
      */
     function start(code) {
       // To do: in `markdown-rs`, constructs need to parse the indent themselves.
+      // This should also be introduced in `micromark-js`.
       assert(code === codes.leftCurlyBrace, 'expected `{`')
       return before(code)
     }

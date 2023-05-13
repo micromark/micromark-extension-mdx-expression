@@ -10,30 +10,29 @@
 
 /**
  * @typedef MdxSignalOk
+ *   Good result.
  * @property {'ok'} type
+ *   Type.
  * @property {Program | undefined} estree
+ *   Value.
  *
  * @typedef MdxSignalNok
+ *   Bad result.
  * @property {'nok'} type
+ *   Type.
  * @property {VFileMessage} message
- *
- * @typedef MdxSignalEof
- *   Currently not given back.
- * @property {'eof'} type
- * @property {VFileMessage} message
+ *   Value.
  *
  * @typedef {MdxSignalOk | MdxSignalNok} MdxSignal
  */
 
-import {ok as assert} from 'uvu/assert'
-import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
+import {markdownLineEnding} from 'micromark-util-character'
+import {eventsToAcorn} from 'micromark-util-events-to-acorn'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
-import {constants} from 'micromark-util-symbol/constants.js'
-import {factorySpace} from 'micromark-factory-space'
 import {positionFromEstree} from 'unist-util-position-from-estree'
+import {ok as assert} from 'uvu/assert'
 import {VFileMessage} from 'vfile-message'
-import {eventsToAcorn} from 'micromark-util-events-to-acorn'
 
 /**
  * @this {TokenizeContext}
@@ -232,34 +231,21 @@ export function factoryMdxExpression(
       )
     }
 
-    if (markdownSpace(code)) {
-      // Idea: investigate if we’d need to use more complex stripping.
-      // Take this example:
-      //
-      // ```markdown
-      // >  aaa <b c={`
-      // >      d
-      // >  `} /> eee
-      // ```
-      //
-      // Currently, the “paragraph” starts at `> | aaa`, so for the next line
-      // here we split it into `>␠|␠␠␠␠|␠d` (prefix, this indent here,
-      // expression data).
-      // The intention above is likely for the split to be as `>␠␠|␠␠␠␠|d`,
-      // which is impossible, but we can mimick it with `>␠|␠␠␠␠␠|d`.
-      //
-      // To improve the situation, we could take `tokenizer.line_start` at
-      // the start of the expression and move past whitespace.
-      // For future lines, we’d move at most to
-      // `line_start_shifted.column + 4`.
-      return factorySpace(
-        effects,
-        before,
-        types.linePrefix,
-        constants.tabSize
-      )(code)
-    }
-
+    // Idea: investigate if we’d need to use more complex stripping.
+    // Take this example:
+    //
+    // ```markdown
+    // >  aaa <b c={`
+    // >      d
+    // >  `} /> eee
+    // ```
+    //
+    // The block quote takes one space from each line, the paragraph doesn’t.
+    // The intent above is *perhaps* for the split to be as `>␠␠|␠␠␠␠|d`,
+    // Currently, we *don’t* do anything at all, it’s `>␠|␠␠␠␠␠|d` instead.
+    //
+    // Note: we used to have some handling here, and `markdown-rs` still does,
+    // which should be removed.
     return before(code)
   }
 }
