@@ -118,12 +118,6 @@ Without this condition, production code is loaded.
     — support an empty expression
 *   `boolean` (`allowLazy`, default: `false`)
     — support lazy continuation of an expression
-*   `number` (`startColumn`, default: `0`) — Treat whitespace up to this number
-    and a tab size as indent
-
-<!--
-  To do: add `startColumn` back (https://github.com/micromark/micromark-extension-mdx-expression/commit/3fede42b95b644709e20f32401251d8b223171bc), test it and port to `markdown-rs`?
--->
 
 ###### Returns
 
