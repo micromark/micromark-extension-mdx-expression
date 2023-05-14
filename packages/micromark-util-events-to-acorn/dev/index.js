@@ -146,7 +146,7 @@ export function eventsToAcorn(events, options) {
     const point = parseOffsetToUnistPoint(error.pos)
     error.message = String(error.message).replace(/ \(\d+:\d+\)$/, '')
     // Always defined in our unist points that come from micromark.
-    assert(point.offset, 'expected `offset`')
+    assert(point.offset !== undefined, 'expected `offset`')
     error.pos = point.offset
     error.loc = {line: point.line, column: point.column - 1}
     exception = error
@@ -180,7 +180,7 @@ export function eventsToAcorn(events, options) {
         new Error('Unexpected content after expression')
       )
       // Always defined in our unist points that come from micromark.
-      assert(point.offset, 'expected `offset`')
+      assert(point.offset !== undefined, 'expected `offset`')
       error.pos = point.offset
       error.loc = {line: point.line, column: point.column - 1}
       exception = error
@@ -274,8 +274,8 @@ export function eventsToAcorn(events, options) {
     const pointStart = parseOffsetToUnistPoint(nodeOrToken.start)
     const pointEnd = parseOffsetToUnistPoint(nodeOrToken.end)
     // Always defined in our unist points that come from micromark.
-    assert(pointStart.offset, 'expected `offset`')
-    assert(pointEnd.offset, 'expected `offset`')
+    assert(pointStart.offset !== undefined, 'expected `offset`')
+    assert(pointEnd.offset !== undefined, 'expected `offset`')
     nodeOrToken.start = pointStart.offset
     nodeOrToken.end = pointEnd.offset
     nodeOrToken.loc = {
