@@ -47,6 +47,7 @@
     "default": "./index.js"
   },
   "dependencies": {
+    "@types/estree": "^1.0.0",
     "micromark-factory-mdx-expression": "^1.0.0",
     "micromark-factory-space": "^1.0.0",
     "micromark-util-character": "^1.0.0",
