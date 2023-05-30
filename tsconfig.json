@@ -1,5 +1,9 @@
 {
-  "include": ["**/*.js"],
+  "include": [
+    "**/*.js",
+    "packages/micromark-extension-mdx-expression/dev/index.d.ts",
+    "test/complex-types.d.ts"
+  ],
   "exclude": [
     "**/coverage/",
     "**/node_modules/",

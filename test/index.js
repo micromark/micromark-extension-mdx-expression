@@ -12,6 +12,8 @@
  * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
  * @typedef {import('micromark-factory-mdx-expression').Acorn} Acorn
  * @typedef {import('micromark-factory-mdx-expression').AcornOptions} AcornOptions
+ *
+ * @typedef {import('./complex-types.js')} DoNotTouchThisRegistersExtraTypes
  */
 
 import assert from 'node:assert/strict'

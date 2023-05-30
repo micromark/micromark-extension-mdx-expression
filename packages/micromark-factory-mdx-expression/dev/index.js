@@ -5,6 +5,7 @@
  * @typedef {import('micromark-util-types').Effects} Effects
  * @typedef {import('micromark-util-types').Point} Point
  * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').TokenType} TokenType
  * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  */
 
@@ -41,11 +42,11 @@ import {VFileMessage} from 'vfile-message'
  *   Context.
  * @param {State} ok
  *   State switched to when successful
- * @param {string} type
+ * @param {TokenType} type
  *   Token type for whole (`{}`).
- * @param {string} markerType
+ * @param {TokenType} markerType
  *   Token type for the markers (`{`, `}`).
- * @param {string} chunkType
+ * @param {TokenType} chunkType
  *   Token type for the value (`1`).
  * @param {Acorn | null | undefined} [acorn]
  *   Object with `acorn.parse` and `acorn.parseExpressionAt`.

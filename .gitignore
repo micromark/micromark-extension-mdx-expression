@@ -6,3 +6,5 @@ packages/*/index.js
 *.log
 .DS_Store
 yarn.lock
+!packages/micromark-extension-mdx-expression/dev/index.d.ts
+!test/complex-types.d.ts
