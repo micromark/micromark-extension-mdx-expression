@@ -107,16 +107,24 @@ Yields:
 ```
 
 ```txt
-[1:5: Could not parse expression with acorn: Unexpected token] {
-  reason: 'Could not parse expression with acorn: Unexpected token',
-  line: 1,
+[1:5: Could not parse expression with acorn] {
+  ancestors: undefined,
+  cause: SyntaxError: Unexpected token
+      at pp$4.raise (file:///Users/tilde/Projects/oss/micromark-extension-mdx-expression/node_modules/acorn/dist/acorn.mjs:3547:13)
+      at pp$9.unexpected (file:///Users/tilde/Projects/oss/micromark-extension-mdx-expression/node_modules/acorn/dist/acorn.mjs:758:8)
+      …
+    pos: 4,
+    loc: { line: 1, column: 4 },
+    raisedAt: 1
+  },
   column: 5,
-  source: 'micromark-extension-mdx-expression',
+  fatal: undefined,
+  line: 1,
+  place: { line: 1, column: 5, offset: 4 },
+  reason: 'Could not parse expression with acorn',
   ruleId: 'acorn',
-  position: {
-    start: { line: 1, column: 5, offset: 4 },
-    end: { line: null, column: null }
-  }
+  source: 'micromark-extension-mdx-expression',
+  url: 'https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression#could-not-parse-expression-with-acorn'
 }
 ```
 
@@ -315,12 +323,15 @@ It exports the additional type [`Options`][api-options].
 
 ## Compatibility
 
-Projects maintained by the unified collective are compatible with all maintained
+Projects maintained by the unified collective are compatible with maintained
 versions of Node.js.
-As of now, that is Node.js 16+.
-Our projects sometimes work with older versions, but this is not guaranteed.
 
-These extensions work with `micromark` version 3+.
+When we cut a new major release, we drop support for unmaintained versions of
+Node.
+This means we try to keep the current release line,
+`micromark-extension-mdx-expression@^1`, compatible with Node.js 12.
+
+This package works with `micromark` version `3` and later.
 
 ## Security
 
@@ -363,9 +374,9 @@ abide by its terms.
 
 [downloads]: https://www.npmjs.com/package/micromark-extension-mdx-expression
 
-[size-badge]: https://img.shields.io/bundlephobia/minzip/micromark-extension-mdx-expression.svg
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-extension-mdx-expression
 
-[size]: https://bundlephobia.com/result?p=micromark-extension-mdx-expression
+[size]: https://bundlejs.com/?q=micromark-extension-mdx-expression
 
 [sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
 

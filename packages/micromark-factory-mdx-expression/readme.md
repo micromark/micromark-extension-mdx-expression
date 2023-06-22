@@ -3,7 +3,7 @@
 [![Build][build-badge]][build]
 [![Coverage][coverage-badge]][coverage]
 [![Downloads][downloads-badge]][downloads]
-[![Size][bundle-size-badge]][bundle-size]
+[![Size][size-badge]][size]
 [![Sponsors][sponsors-badge]][opencollective]
 [![Backers][backers-badge]][opencollective]
 [![Chat][chat-badge]][chat]
@@ -131,12 +131,15 @@ It exports the additional types [`Acorn`][acorn] and
 
 ## Compatibility
 
-Projects maintained by the unified collective are compatible with all maintained
+Projects maintained by the unified collective are compatible with maintained
 versions of Node.js.
-As of now, that is Node.js 16+.
-Our projects sometimes work with older versions, but this is not guaranteed.
 
-These extensions work with `micromark` version 3+.
+When we cut a new major release, we drop support for unmaintained versions of
+Node.
+This means we try to keep the current release line,
+`micromark-factory-mdx-expression@^1`, compatible with Node.js 12.
+
+This package works with `micromark` version `3` and later.
 
 ## Security
 
@@ -170,9 +173,9 @@ abide by its terms.
 
 [downloads]: https://www.npmjs.com/package/micromark-factory-mdx-expression
 
-[bundle-size-badge]: https://img.shields.io/bundlephobia/minzip/micromark-factory-mdx-expression.svg
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-factory-mdx-expression
 
-[bundle-size]: https://bundlephobia.com/result?p=micromark-factory-mdx-expression
+[size]: https://bundlejs.com/?q=micromark-factory-mdx-expression
 
 [sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
 
