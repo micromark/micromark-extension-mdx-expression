@@ -36,14 +36,14 @@ npm install micromark-util-events-to-acorn
 In Deno with [`esm.sh`][esmsh]:
 
 ```js
-import {eventsToAcorn} from 'https://esm.sh/micromark-util-events-to-acorn@1'
+import {eventsToAcorn} from 'https://esm.sh/micromark-util-events-to-acorn@2'
 ```
 
 In browsers with [`esm.sh`][esmsh]:
 
 ```html
 <script type="module">
-  import {eventsToAcorn} from 'https://esm.sh/micromark-util-events-to-acorn@1?bundle'
+  import {eventsToAcorn} from 'https://esm.sh/micromark-util-events-to-acorn@2?bundle'
 </script>
 ```
 
