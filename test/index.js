@@ -25,7 +25,7 @@ import {micromark} from 'micromark'
 import {mdxExpression} from 'micromark-extension-mdx-expression'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {markdownLineEnding} from 'micromark-util-character'
-import {codes} from 'micromark-util-symbol/codes.js'
+import {codes} from 'micromark-util-symbol'
 
 const acorn = Parser.extend(acornJsx())
 

@@ -50,11 +50,11 @@
     "@types/estree": "^1.0.0",
     "devlop": "^1.0.0",
     "micromark-factory-mdx-expression": "^1.0.0",
-    "micromark-factory-space": "^1.0.0",
-    "micromark-util-character": "^1.0.0",
+    "micromark-factory-space": "^2.0.0",
+    "micromark-util-character": "^2.0.0",
     "micromark-util-events-to-acorn": "^1.0.0",
-    "micromark-util-symbol": "^1.0.0",
-    "micromark-util-types": "^1.0.0"
+    "micromark-util-symbol": "^2.0.0",
+    "micromark-util-types": "^2.0.0"
   },
   "scripts": {
     "build": "micromark-build"

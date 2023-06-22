@@ -66,9 +66,7 @@
  */
 
 import {visit} from 'estree-util-visit'
-import {codes} from 'micromark-util-symbol/codes.js'
-import {values} from 'micromark-util-symbol/values.js'
-import {types} from 'micromark-util-symbol/types.js'
+import {codes, types, values} from 'micromark-util-symbol'
 import {ok as assert} from 'devlop'
 import {VFileMessage} from 'vfile-message'
 

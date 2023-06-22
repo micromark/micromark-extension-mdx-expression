@@ -33,8 +33,7 @@
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
-import {codes} from 'micromark-util-symbol/codes.js'
-import {types} from 'micromark-util-symbol/types.js'
+import {codes, types} from 'micromark-util-symbol'
 import {ok as assert} from 'devlop'
 
 /**

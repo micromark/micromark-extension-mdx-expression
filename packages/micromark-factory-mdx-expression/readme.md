@@ -51,7 +51,7 @@ In browsers with [`esm.sh`][esmsh]:
 ```js
 import {ok as assert} from 'devlop'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
-import {codes} from 'micromark-util-symbol/codes'
+import {codes} from 'micromark-util-symbol'
 
 // A micromark tokenizer that uses the factory:
 /** @type {Tokenizer} */

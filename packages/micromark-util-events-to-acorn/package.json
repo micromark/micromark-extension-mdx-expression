@@ -44,9 +44,9 @@
     "@types/unist": "^2.0.0",
     "devlop": "^1.0.0",
     "estree-util-visit": "^1.0.0",
-    "micromark-util-symbol": "^1.0.0",
-    "micromark-util-types": "^1.0.0",
-    "vfile-message": "^3.0.0"
+    "micromark-util-symbol": "^2.0.0",
+    "micromark-util-types": "^2.0.0",
+    "vfile-message": "^4.0.0"
   },
   "scripts": {
     "build": "micromark-build"

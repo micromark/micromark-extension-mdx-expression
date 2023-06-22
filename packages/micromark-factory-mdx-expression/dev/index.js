@@ -29,8 +29,7 @@
 
 import {markdownLineEnding} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
-import {codes} from 'micromark-util-symbol/codes.js'
-import {types} from 'micromark-util-symbol/types.js'
+import {codes, types} from 'micromark-util-symbol'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {ok as assert} from 'devlop'
 import {VFileMessage} from 'vfile-message'
