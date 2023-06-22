@@ -35,14 +35,14 @@ npm install micromark-factory-mdx-expression
 In Deno with [`esm.sh`][esmsh]:
 
 ```js
-import {factoryMdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1'
+import {factoryMdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@2'
 ```
 
 In browsers with [`esm.sh`][esmsh]:
 
 ```html
 <script type="module">
-  import {factoryMdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@1?bundle'
+  import {factoryMdxExpression} from 'https://esm.sh/micromark-factory-mdx-expression@2?bundle'
 </script>
 ```
 
