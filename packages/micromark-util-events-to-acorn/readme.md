@@ -108,7 +108,9 @@ Configuration (TypeScript type).
 
 *   `acorn` ([`Acorn`][acorn], required)
     — typically `acorn`, object with `parse` and `parseExpressionAt` fields
-    (required)
+*   `tokenTypes` (`Array<TokenType>`], required)
+    — names of (void) tokens to consider as data; `'lineEnding'` is always
+    included
 *   `acornOptions` ([`AcornOptions`][acorn-options], optional)
     — configuration for `acorn`
 *   `start` (`Point`, optional, required if `allowEmpty`)

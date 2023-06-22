@@ -8,6 +8,7 @@
  * @typedef {import('micromark-util-types').Chunk} Chunk
  * @typedef {import('micromark-util-types').Event} Event
  * @typedef {import('micromark-util-types').Point} MicromarkPoint
+ * @typedef {import('micromark-util-types').TokenType} TokenType
  * @typedef {import('unist').Point} UnistPoint
  */
 
@@ -34,6 +35,9 @@
  *   Configuration.
  * @property {Acorn} acorn
  *   Typically `acorn`, object with `parse` and `parseExpressionAt` fields (required).
+ * @property {Array<TokenType>} tokenTypes
+ *   Names of (void) tokens to consider as data; `'lineEnding'` is always
+ *   included (required).
  * @property {AcornOptions | null | undefined} [acornOptions]
  *   Configuration for `acorn` (optional).
  * @property {MicromarkPoint | null | undefined} [start]
@@ -106,20 +110,7 @@ export function eventsToAcorn(events, options) {
     acornConfig.onToken = tokens
   }
 
-  const collection = collect(events, [
-    types.lineEnding,
-    // To do: these should be passed by users in parameters.
-    'expressionChunk', // From tests.
-    'mdxFlowExpressionChunk', // Flow chunk.
-    'mdxTextExpressionChunk', // Text chunk.
-    // JSX:
-    'mdxJsxTextTagExpressionAttributeValue',
-    'mdxJsxTextTagAttributeValueExpressionValue',
-    'mdxJsxFlowTagExpressionAttributeValue',
-    'mdxJsxFlowTagAttributeValueExpressionValue',
-    // ESM:
-    'mdxjsEsmData'
-  ])
+  const collection = collect(events, options.tokenTypes)
 
   const source = collection.value
 
@@ -344,10 +335,10 @@ function empty(value) {
 // Port from <https://github.com/wooorm/markdown-rs/blob/e692ab0/src/util/mdx_collect.rs#L15>.
 /**
  * @param {Array<Event>} events
- * @param {Array<string>} names
+ * @param {Array<TokenType>} tokenTypes
  * @returns {Collection}
  */
-function collect(events, names) {
+function collect(events, tokenTypes) {
   /** @type {Collection} */
   const result = {value: '', stops: []}
   let index = -1
@@ -356,18 +347,22 @@ function collect(events, names) {
     const event = events[index]
 
     // Assume void.
-    if (event[0] === 'enter' && names.includes(event[1].type)) {
-      const chunks = event[2].sliceStream(event[1])
+    if (event[0] === 'enter') {
+      const type = event[1].type
 
-      // Drop virtual spaces.
-      while (chunks.length > 0 && chunks[0] === codes.virtualSpace) {
-        chunks.shift()
+      if (type === types.lineEnding || tokenTypes.includes(type)) {
+        const chunks = event[2].sliceStream(event[1])
+
+        // Drop virtual spaces.
+        while (chunks.length > 0 && chunks[0] === codes.virtualSpace) {
+          chunks.shift()
+        }
+
+        const value = serializeChunks(chunks)
+        result.stops.push([result.value.length, event[1].start])
+        result.value += value
+        result.stops.push([result.value.length, event[1].end])
       }
-
-      const value = serializeChunks(chunks)
-      result.stops.push([result.value.length, event[1].start])
-      result.value += value
-      result.stops.push([result.value.length, event[1].end])
     }
   }
 

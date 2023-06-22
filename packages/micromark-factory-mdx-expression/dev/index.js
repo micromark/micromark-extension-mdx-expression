@@ -158,6 +158,7 @@ export function factoryMdxExpression(
             self,
             acorn,
             acornOptions,
+            chunkType,
             eventStart,
             pointStart,
             allowEmpty || false,
@@ -280,6 +281,7 @@ export function factoryMdxExpression(
  * @this {TokenizeContext}
  * @param {Acorn} acorn
  * @param {AcornOptions | null | undefined} acornOptions
+ * @param {TokenType} chunkType
  * @param {number} eventStart
  * @param {Point} pointStart
  * @param {boolean} allowEmpty
@@ -290,6 +292,7 @@ export function factoryMdxExpression(
 function mdxExpressionParse(
   acorn,
   acornOptions,
+  chunkType,
   eventStart,
   pointStart,
   allowEmpty,
@@ -298,6 +301,7 @@ function mdxExpressionParse(
   // Gnostic mode: parse w/ acorn.
   const result = eventsToAcorn(this.events.slice(eventStart), {
     acorn,
+    tokenTypes: [chunkType],
     acornOptions,
     start: pointStart,
     expression: true,
