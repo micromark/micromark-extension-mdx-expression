@@ -27,17 +27,15 @@
   ],
   "sideEffects": false,
   "type": "module",
-  "main": "index.js",
-  "types": "dev/index.d.ts",
+  "exports": {
+    "development": "./dev/index.js",
+    "default": "./index.js"
+  },
   "files": [
     "dev/",
     "index.d.ts",
     "index.js"
   ],
-  "exports": {
-    "development": "./dev/index.js",
-    "default": "./index.js"
-  },
   "dependencies": {
     "@types/acorn": "^4.0.0",
     "@types/estree": "^1.0.0",
