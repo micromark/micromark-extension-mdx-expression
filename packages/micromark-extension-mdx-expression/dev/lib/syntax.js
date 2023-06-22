@@ -18,13 +18,16 @@
  *
  *   All fields except `locations` can be set.
  * @property {boolean | null | undefined} [addResult=false]
- *   Whether to add `estree` fields to tokens with results from acorn.
+ *   Whether to add `estree` fields to tokens with results from acorn (default:
+ *   `false`).
  * @property {boolean | null | undefined} [spread=false]
  *   Undocumented option to parse only a spread (used by
- *   `micromark-extension-mdx-jsx` to parse spread attributes).
+ *   `micromark-extension-mdx-jsx` to parse spread attributes) (default:
+ *   `false`).
  * @property {boolean | null | undefined} [allowEmpty=true]
  *   Undocumented option to disallow empty attributes (used by
- *   `micromark-extension-mdx-jsx` to prohobit empty attribute values).
+ *   `micromark-extension-mdx-jsx` to prohobit empty attribute values)
+ *   (default: `false`).
  */
 
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'

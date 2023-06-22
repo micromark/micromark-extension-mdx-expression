@@ -33,20 +33,20 @@
  * @typedef Options
  *   Configuration.
  * @property {Acorn} acorn
- *   Typically `acorn`, object with `parse` and `parseExpressionAt` fields.
+ *   Typically `acorn`, object with `parse` and `parseExpressionAt` fields (required).
  * @property {AcornOptions | null | undefined} [acornOptions]
- *   Configuration for `acorn`.
+ *   Configuration for `acorn` (optional).
  * @property {MicromarkPoint | null | undefined} [start]
- *   Place where events start.
+ *   Place where events start (optional, required if `allowEmpty`).
  * @property {string | null | undefined} [prefix='']
- *   Text to place before events.
+ *   Text to place before events (default: `''`).
  * @property {string | null | undefined} [suffix='']
- *   Text to place after events.
+ *   Text to place after events (default: `''`).
  * @property {boolean | null | undefined} [expression=false]
- *   Whether this is a program or expression.
+ *   Whether this is a program or expression (default: `false`).
  * @property {boolean | null | undefined} [allowEmpty=false]
  *   Whether an empty expression is allowed (programs are always allowed to
- *   be empty).
+ *   be empty) (default: `false`).
  *
  * @typedef Result
  *   Result.
@@ -78,7 +78,7 @@ import {VFileMessage} from 'vfile-message'
  * @param {Array<Event>} events
  *   Events.
  * @param {Options} options
- *   Configuration.
+ *   Configuration (required).
  * @returns {Result}
  *   Result.
  */
@@ -193,11 +193,11 @@ export function eventsToAcorn(events, options) {
     estree.comments = comments
 
     // @ts-expect-error: acorn looks enough like estree.
-    visit(estree, (esnode, field, index, parents) => {
+    visit(estree, function (esnode, field, index, parents) {
       let context = /** @type {AcornNode | Array<AcornNode>} */ (
         parents[parents.length - 1]
       )
-      /** @type {string | number | null} */
+      /** @type {number | string | null} */
       let prop = field
 
       // Remove non-standard `ParenthesizedExpression`.
@@ -263,7 +263,7 @@ export function eventsToAcorn(events, options) {
    * Update the position of a node.
    *
    * @param {AcornNode | EstreeNode | Token} nodeOrToken
-   * @returns {void}
+   * @returns {undefined}
    */
   function fixPosition(nodeOrToken) {
     assert(

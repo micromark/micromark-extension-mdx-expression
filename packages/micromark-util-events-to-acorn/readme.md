@@ -108,9 +108,10 @@ Configuration (TypeScript type).
 
 *   `acorn` ([`Acorn`][acorn], required)
     — typically `acorn`, object with `parse` and `parseExpressionAt` fields
+    (required)
 *   `acornOptions` ([`AcornOptions`][acorn-options], optional)
     — configuration for `acorn`
-*   `start` (`Point`, optional)
+*   `start` (`Point`, optional, required if `allowEmpty`)
     — place where events start
 *   `prefix` (`string`, default: `''`)
     — text to place before events

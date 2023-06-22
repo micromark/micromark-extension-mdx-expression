@@ -24,7 +24,7 @@
  * @property {VFileMessage} message
  *   Value.
  *
- * @typedef {MdxSignalOk | MdxSignalNok} MdxSignal
+ * @typedef {MdxSignalNok | MdxSignalOk} MdxSignal
  */
 
 import {markdownLineEnding} from 'micromark-util-character'
@@ -53,13 +53,13 @@ import {VFileMessage} from 'vfile-message'
  * @param {AcornOptions | null | undefined} [acornOptions]
  *   Configuration for acorn.
  * @param {boolean | null | undefined} [addResult=false]
- *   Add `estree` to token.
+ *   Add `estree` to token (default: `false`).
  * @param {boolean | null | undefined} [spread=false]
- *   Support a spread (`{...a}`) only.
+ *   Support a spread (`{...a}`) only (default: `false`).
  * @param {boolean | null | undefined} [allowEmpty=false]
- *   Support an empty expression.
+ *   Support an empty expression (default: `false`).
  * @param {boolean | null | undefined} [allowLazy=false]
- *   Support lazy continuation of an expression.
+ *   Support lazy continuation of an expression (default: `false`).
  * @returns {State}
  */
 // eslint-disable-next-line max-params
