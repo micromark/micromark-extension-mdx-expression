@@ -65,9 +65,9 @@
  * @property {Array<Stop>} stops
  */
 
+import {ok as assert} from 'devlop'
 import {visit} from 'estree-util-visit'
 import {codes, types, values} from 'micromark-util-symbol'
-import {ok as assert} from 'devlop'
 import {VFileMessage} from 'vfile-message'
 
 /**
@@ -127,11 +127,11 @@ export function eventsToAcorn(events, options) {
   const isEmptyExpression = options.expression && empty(source)
 
   if (isEmptyExpression && !options.allowEmpty) {
-    throw new VFileMessage(
-      'Unexpected empty expression',
-      parseOffsetToUnistPoint(0),
-      'micromark-extension-mdx-expression:unexpected-empty-expression'
-    )
+    throw new VFileMessage('Unexpected empty expression', {
+      place: parseOffsetToUnistPoint(0),
+      ruleId: 'unexpected-empty-expression',
+      source: 'micromark-extension-mdx-expression'
+    })
   }
 
   try {

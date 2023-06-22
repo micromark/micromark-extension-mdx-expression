@@ -108,7 +108,7 @@ test('mdxExpression', async function (t) {
   await t.test('should not support JSX by default', async function () {
     assert.throws(function () {
       micromark('a {<b />} c', {extensions: [mdxExpression({acorn: Parser})]})
-    }, /Could not parse expression with acorn: Unexpected token/)
+    }, /Could not parse expression with acorn/)
   })
 
   await t.test(
@@ -129,7 +129,7 @@ test('mdxExpression', async function (t) {
       micromark('a {(() => {})()} c', {
         extensions: [mdxExpression({acorn, acornOptions: {ecmaVersion: 5}})]
       })
-    }, /Could not parse expression with acorn: Unexpected token/)
+    }, /Could not parse expression with acorn/)
   })
 
   await t.test('should support `acornOptions` (2)', async function () {
@@ -369,7 +369,7 @@ test('mdxExpression', async function (t) {
     async function () {
       assert.throws(function () {
         micromark('a {//} b', {extensions: [mdxExpression({acorn})]})
-      }, /Could not parse expression with acorn: Unexpected token/)
+      }, /Could not parse expression with acorn/)
     }
   )
 
@@ -378,7 +378,7 @@ test('mdxExpression', async function (t) {
     async function () {
       assert.throws(function () {
         micromark('a { // b } c', {extensions: [mdxExpression({acorn})]})
-      }, /Could not parse expression with acorn: Unexpected token/)
+      }, /Could not parse expression with acorn/)
     }
   )
 
@@ -702,7 +702,7 @@ test('mdxExpression', async function (t) {
   await t.test('should crash on non-expressions', async function () {
     assert.throws(function () {
       micromark('a {var b = "c"} d', {extensions: [mdxExpression({acorn})]})
-    }, /Could not parse expression with acorn: Unexpected token/)
+    }, /Could not parse expression with acorn/)
   })
 
   await t.test('should support expressions in containers', async function () {
@@ -720,7 +720,7 @@ test('mdxExpression', async function (t) {
     async function () {
       assert.throws(function () {
         micromark('> a {\n> b<} c', {extensions: [mdxExpression({acorn})]})
-      }, /Could not parse expression with acorn: Unexpected token/)
+      }, /Could not parse expression with acorn/)
     }
   )
 
@@ -729,7 +729,7 @@ test('mdxExpression', async function (t) {
     async function () {
       assert.throws(function () {
         micromark('> a {\n> b\n> c} d', {extensions: [mdxExpression({acorn})]})
-      }, /Could not parse expression with acorn: Unexpected content after expression/)
+      }, /Could not parse expression with acorn/)
     }
   )
 })
@@ -824,7 +824,7 @@ test('text (gnostic)', async function (t) {
   await t.test('should crash on an incorrect expression', async function () {
     assert.throws(function () {
       micromark('a {??} b', {extensions: [mdxExpression({acorn})]})
-    }, /Could not parse expression with acorn: Unexpected token/)
+    }, /Could not parse expression with acorn/)
   })
 
   await t.test('should support an empty expression', async function () {
@@ -851,7 +851,7 @@ test('text (gnostic)', async function (t) {
     async function () {
       assert.throws(function () {
         micromark('a {b { c } d', {extensions: [mdxExpression({acorn})]})
-      }, /Could not parse expression with acorn: Unexpected content after expression/)
+      }, /Could not parse expression with acorn/)
     }
   )
 
@@ -993,7 +993,7 @@ test('flow (agnostic)', async function (t) {
   await t.test('should not support lazyness (1)', async function () {
     assert.throws(function () {
       micromark('> {a\nb}', {extensions: [mdxExpression()]})
-    }, /Unexpected end of file in expression/)
+    }, /Unexpected lazy line in expression in container/)
   })
 
   await t.test('should not support lazyness (2)', async function () {
@@ -1019,7 +1019,7 @@ test('flow (agnostic)', async function (t) {
   await t.test('should not support lazyness (4)', async function () {
     assert.throws(function () {
       micromark('> {\n> a\nb}', {extensions: [mdxExpression()]})
-    }, /Unexpected end of file in expression/)
+    }, /Unexpected lazy line in expression in container/)
   })
 })
 
@@ -1058,7 +1058,7 @@ test('flow (gnostic)', async function (t) {
     async function () {
       assert.throws(function () {
         micromark('{b { c }', {extensions: [mdxExpression({acorn})]})
-      }, /Could not parse expression with acorn: Unexpected content after expression/)
+      }, /Could not parse expression with acorn/)
     }
   )
 
@@ -1152,8 +1152,19 @@ test('spread (hidden)', async function (t) {
       micromark('a {...?} c', {
         extensions: [mdxExpression({acorn, spread: true})]
       })
-    }, /Could not parse expression with acorn: Unexpected token/)
+    }, /Could not parse expression with acorn/)
   })
+
+  await t.test(
+    'should crash on an incorrect spread that looks like an assignment',
+    async function () {
+      assert.throws(function () {
+        micromark('a {b=c}={} d', {
+          extensions: [mdxExpression({acorn, spread: true})]
+        })
+      }, /Unexpected `ExpressionStatement` in code: expected an object spread/)
+    }
+  )
 
   await t.test('should crash if a spread and other things', async function () {
     assert.throws(function () {
@@ -1191,7 +1202,7 @@ test('spread (hidden)', async function (t) {
         micromark('{a=b}', {
           extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
         })
-      }, /Could not parse expression with acorn: Shorthand property assignments are valid only in destructuring patterns/)
+      }, /Could not parse expression with acorn/)
     }
   )
 

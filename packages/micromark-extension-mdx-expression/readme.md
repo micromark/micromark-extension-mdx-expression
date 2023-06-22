@@ -23,8 +23,10 @@
 *   [Syntax](#syntax)
 *   [Errors](#errors)
     *   [Unexpected end of file in expression, expected a corresponding closing brace for `{`](#unexpected-end-of-file-in-expression-expected-a-corresponding-closing-brace-for-)
-    *   [Could not parse expression with acorn: Unexpected content after expression](#could-not-parse-expression-with-acorn-unexpected-content-after-expression)
-    *   [Could not parse expression with acorn: $error](#could-not-parse-expression-with-acorn-error)
+    *   [Unexpected lazy line in expression in container, expected line to be prefixed…](#unexpected-lazy-line-in-expression-in-container-expected-line-to-be-prefixed)
+    *   [Unexpected `$type` in code: expected an object spread (`{...spread}`)](#unexpected-type-in-code-expected-an-object-spread-spread)
+    *   [Unexpected extra content in spread: only a single spread is supported](#unexpected-extra-content-in-spread-only-a-single-spread-is-supported)
+    *   [Could not parse expression with acorn](#could-not-parse-expression-with-acorn)
 *   [Tokens](#tokens)
 *   [Types](#types)
 *   [Compatibility](#compatibility)
@@ -193,7 +195,7 @@ end of the file must follow.
 While markdown typically knows no errors, for MDX it is decided to instead
 throw on invalid syntax.
 
-```markdown
+```mdx
 Here is an expression in a heading:
 
 ## Hello, {1 + 1}!
@@ -217,13 +219,16 @@ This is incorrect, because there are further characters:
 {
   1 + 1
 }!
+```
 
+```mdx-broken
 Blank lines cannot occur in text, because markdown has already split them in
 separate constructs, so this is incorrect: {1 +
 
 1}
+```
 
-
+```mdx
 In flow, you can have blank lines:
 
 {
@@ -241,27 +246,52 @@ This error occurs if a `{` was seen without a `}` (source:
 `micromark-extension-mdx-expression`, rule id: `unexpected-eof`).
 For example:
 
-```markdown
+```mdx-broken
 a { b
 ```
 
-### Could not parse expression with acorn: Unexpected content after expression
+### Unexpected lazy line in expression in container, expected line to be prefixed…
 
-This error occurs when there is more content after a JS expression (source:
-`micromark-extension-mdx-expression`, rule id: `acorn`).
+This error occurs if a `{` was seen in a container which then has lazy content
+(source: `micromark-extension-mdx-expression`, rule id: `unexpected-lazy`).
 For example:
 
-```markdown
+```mdx-broken
+> {a
+b}
+```
+
+### Unexpected `$type` in code: expected an object spread (`{...spread}`)
+
+This error occurs if a spread was expected but something else was found
+(source: `micromark-extension-mdx-expression`, rule id: `non-spread`).
+For example:
+
+```mdx-broken
+<a {b=c}={} d>
+```
+
+### Unexpected extra content in spread: only a single spread is supported
+
+This error occurs if a spread was expected but more was found after it
+(source: `micromark-extension-mdx-expression`, rule id: `spread-extra`).
+For example:
+
+```mdx-broken
+<a {...b,c} d>
+```
+
+### Could not parse expression with acorn
+
+This error occurs if acorn crashes or when there is more content after a JS
+expression (source: `micromark-extension-mdx-expression`, rule id: `acorn`).
+For example:
+
+```mdx-broken
 a {"b" "c"} d
 ```
 
-### Could not parse expression with acorn: $error
-
-This error occurs if acorn crashes (source: `micromark-extension-mdx-expression`,
-rule id: `acorn`).
-For example:
-
-```markdown
+```mdx-broken
 a {var b = "c"} d
 ```
 

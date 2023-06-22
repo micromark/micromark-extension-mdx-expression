@@ -27,12 +27,25 @@
  * @typedef {MdxSignalNok | MdxSignalOk} MdxSignal
  */
 
+import {ok as assert} from 'devlop'
 import {markdownLineEnding} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
 import {codes, types} from 'micromark-util-symbol'
 import {positionFromEstree} from 'unist-util-position-from-estree'
-import {ok as assert} from 'devlop'
 import {VFileMessage} from 'vfile-message'
+
+const trouble =
+  'https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression'
+
+const unexpectedEofHash =
+  '#unexpected-end-of-file-in-expression-expected-a-corresponding-closing-brace-for-'
+const unexpectedLazyHash =
+  '#unexpected-lazy-line-in-expression-in-container-expected-line-to-be-prefixed'
+const nonSpreadHash =
+  '#unexpected-type-in-code-expected-an-object-spread-spread'
+const spreadExtraHash =
+  '#unexpected-extra-content-in-spread-only-a-single-spread-is-supported'
+const acornHash = '#could-not-parse-expression-with-acorn'
 
 /**
  * @this {TokenizeContext}
@@ -117,14 +130,18 @@ export function factoryMdxExpression(
    */
   function before(code) {
     if (code === codes.eof) {
-      throw (
-        lastCrash ||
-        new VFileMessage(
-          'Unexpected end of file in expression, expected a corresponding closing brace for `{`',
-          self.now(),
-          'micromark-extension-mdx-expression:unexpected-eof'
-        )
+      if (lastCrash) throw lastCrash
+
+      const error = new VFileMessage(
+        'Unexpected end of file in expression, expected a corresponding closing brace for `{`',
+        {
+          place: self.now(),
+          ruleId: 'unexpected-eof',
+          source: 'micromark-extension-mdx-expression'
+        }
       )
+      error.url = trouble + unexpectedEofHash
+      throw error
     }
 
     if (markdownLineEnding(code)) {
@@ -222,13 +239,16 @@ export function factoryMdxExpression(
       !allowLazy &&
       self.parser.lazy[now.line]
     ) {
-      // `markdown-rs` uses:
-      // ``Unexpected lazy line in expression in container, expected line to be prefixed with `>` when in a block quote, whitespace when in a list, etc``.
-      throw new VFileMessage(
-        'Unexpected end of file in expression, expected a corresponding closing brace for `{`',
-        self.now(),
-        'micromark-extension-mdx-expression:unexpected-eof'
+      const error = new VFileMessage(
+        'Unexpected lazy line in expression in container, expected line to be prefixed with `>` when in a block quote, whitespace when in a list, etc',
+        {
+          place: self.now(),
+          ruleId: 'unexpected-lazy',
+          source: 'micromark-extension-mdx-expression'
+        }
       )
+      error.url = trouble + unexpectedLazyHash
+      throw error
     }
 
     // Idea: investigate if we’d need to use more complex stripping.
@@ -294,52 +314,70 @@ function mdxExpressionParse(
     const head = estree.body[0]
     assert(head, 'expected body')
 
-    // Can occur in some complex attributes.
-    /* c8 ignore next 11 */
     if (
       head.type !== 'ExpressionStatement' ||
       head.expression.type !== 'ObjectExpression'
     ) {
-      throw new VFileMessage(
+      const error = new VFileMessage(
         'Unexpected `' +
           head.type +
           '` in code: expected an object spread (`{...spread}`)',
-        positionFromEstree(head).start,
-        'micromark-extension-mdx-expression:non-spread'
+        {
+          place: positionFromEstree(head).start,
+          ruleId: 'non-spread',
+          source: 'micromark-extension-mdx-expression'
+        }
       )
-    } else if (head.expression.properties[1]) {
-      throw new VFileMessage(
+      error.url = trouble + nonSpreadHash
+      throw error
+    }
+
+    if (head.expression.properties[1]) {
+      const error = new VFileMessage(
         'Unexpected extra content in spread: only a single spread is supported',
-        positionFromEstree(head.expression.properties[1]).start,
-        'micromark-extension-mdx-expression:spread-extra'
+        {
+          place: positionFromEstree(head.expression.properties[1]).start,
+          ruleId: 'spread-extra',
+          source: 'micromark-extension-mdx-expression'
+        }
       )
-    } else if (
+      error.url = trouble + spreadExtraHash
+      throw error
+    }
+
+    if (
       head.expression.properties[0] &&
       head.expression.properties[0].type !== 'SpreadElement'
     ) {
-      throw new VFileMessage(
+      const error = new VFileMessage(
         'Unexpected `' +
           head.expression.properties[0].type +
           '` in code: only spread elements are supported',
-        positionFromEstree(head.expression.properties[0]).start,
-        'micromark-extension-mdx-expression:non-spread'
+        {
+          place: positionFromEstree(head.expression.properties[0]).start,
+          ruleId: 'non-spread',
+          source: 'micromark-extension-mdx-expression'
+        }
       )
+      error.url = trouble + nonSpreadHash
+      throw error
     }
   }
 
   if (result.error) {
-    return {
-      type: 'nok',
-      message: new VFileMessage(
-        'Could not parse expression with acorn: ' + result.error.message,
-        {
-          line: result.error.loc.line,
-          column: result.error.loc.column + 1,
-          offset: result.error.pos
-        },
-        'micromark-extension-mdx-expression:acorn'
-      )
-    }
+    const error = new VFileMessage('Could not parse expression with acorn', {
+      cause: result.error,
+      place: {
+        line: result.error.loc.line,
+        column: result.error.loc.column + 1,
+        offset: result.error.pos
+      },
+      ruleId: 'acorn',
+      source: 'micromark-extension-mdx-expression'
+    })
+    error.url = trouble + acornHash
+
+    return {type: 'nok', message: error}
   }
 
   return {type: 'ok', estree}

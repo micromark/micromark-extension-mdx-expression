@@ -30,11 +30,11 @@
  *   (default: `false`).
  */
 
+import {ok as assert} from 'devlop'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
 import {codes, types} from 'micromark-util-symbol'
-import {ok as assert} from 'devlop'
 
 /**
  * Create an extension for `micromark` to enable MDX expression syntax.
