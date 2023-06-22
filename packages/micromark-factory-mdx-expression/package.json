@@ -40,12 +40,12 @@
   },
   "dependencies": {
     "@types/estree": "^1.0.0",
+    "devlop": "^1.0.0",
     "micromark-util-character": "^1.0.0",
     "micromark-util-events-to-acorn": "^1.0.0",
     "micromark-util-symbol": "^1.0.0",
     "micromark-util-types": "^1.0.0",
     "unist-util-position-from-estree": "^1.0.0",
-    "uvu": "^0.5.0",
     "vfile-message": "^3.0.0"
   },
   "scripts": {

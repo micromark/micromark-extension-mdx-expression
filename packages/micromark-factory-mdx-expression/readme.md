@@ -49,7 +49,7 @@ In browsers with [`esm.sh`][esmsh]:
 ## Use
 
 ```js
-import {ok as assert} from 'uvu/assert'
+import {ok as assert} from 'devlop'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {codes} from 'micromark-util-symbol/codes'
 

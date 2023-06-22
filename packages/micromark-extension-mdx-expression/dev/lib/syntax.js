@@ -35,7 +35,7 @@ import {factorySpace} from 'micromark-factory-space'
 import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
-import {ok as assert} from 'uvu/assert'
+import {ok as assert} from 'devlop'
 
 /**
  * Create an extension for `micromark` to enable MDX expression syntax.
