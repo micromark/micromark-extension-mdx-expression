@@ -39,7 +39,7 @@
   "dependencies": {
     "@types/acorn": "^4.0.0",
     "@types/estree": "^1.0.0",
-    "@types/unist": "^2.0.0",
+    "@types/unist": "^3.0.0",
     "devlop": "^1.0.0",
     "estree-util-visit": "^1.0.0",
     "micromark-util-symbol": "^2.0.0",

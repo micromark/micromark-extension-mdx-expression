@@ -322,12 +322,14 @@ function mdxExpressionParse(
       head.type !== 'ExpressionStatement' ||
       head.expression.type !== 'ObjectExpression'
     ) {
+      const place = positionFromEstree(head)
+      assert(place, 'expected position')
       const error = new VFileMessage(
         'Unexpected `' +
           head.type +
           '` in code: expected an object spread (`{...spread}`)',
         {
-          place: positionFromEstree(head).start,
+          place: place.start,
           ruleId: 'non-spread',
           source: 'micromark-extension-mdx-expression'
         }
@@ -337,10 +339,12 @@ function mdxExpressionParse(
     }
 
     if (head.expression.properties[1]) {
+      const place = positionFromEstree(head.expression.properties[1])
+      assert(place, 'expected position')
       const error = new VFileMessage(
         'Unexpected extra content in spread: only a single spread is supported',
         {
-          place: positionFromEstree(head.expression.properties[1]).start,
+          place: place.start,
           ruleId: 'spread-extra',
           source: 'micromark-extension-mdx-expression'
         }
@@ -353,12 +357,14 @@ function mdxExpressionParse(
       head.expression.properties[0] &&
       head.expression.properties[0].type !== 'SpreadElement'
     ) {
+      const place = positionFromEstree(head.expression.properties[0])
+      assert(place, 'expected position')
       const error = new VFileMessage(
         'Unexpected `' +
           head.expression.properties[0].type +
           '` in code: only spread elements are supported',
         {
-          place: positionFromEstree(head.expression.properties[0]).start,
+          place: place.start,
           ruleId: 'non-spread',
           source: 'micromark-extension-mdx-expression'
         }
