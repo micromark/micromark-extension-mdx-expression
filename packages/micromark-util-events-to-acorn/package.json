@@ -41,7 +41,7 @@
     "@types/estree": "^1.0.0",
     "@types/unist": "^3.0.0",
     "devlop": "^1.0.0",
-    "estree-util-visit": "^1.0.0",
+    "estree-util-visit": "^2.0.0",
     "micromark-util-symbol": "^2.0.0",
     "micromark-util-types": "^2.0.0",
     "vfile-message": "^4.0.0"
@@ -55,5 +55,11 @@
     "ignoreCatch": true,
     "strict": true
   },
-  "xo": false
+  "xo": {
+    "prettier": true,
+    "rules": {
+      "unicorn/prefer-at": "off",
+      "unicorn/prefer-string-replace-all": "off"
+    }
+  }
 }

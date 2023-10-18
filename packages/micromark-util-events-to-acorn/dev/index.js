@@ -186,7 +186,7 @@ export function eventsToAcorn(events, options) {
       let context = /** @type {AcornNode | Array<AcornNode>} */ (
         parents[parents.length - 1]
       )
-      /** @type {number | string | null} */
+      /** @type {number | string | undefined} */
       let prop = field
 
       // Remove non-standard `ParenthesizedExpression`.
