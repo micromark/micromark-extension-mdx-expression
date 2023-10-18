@@ -13,7 +13,7 @@
  * @property {Acorn | null | undefined} [acorn]
  *   Acorn parser to use (optional).
  * @property {AcornOptions | null | undefined} [acornOptions]
- *   Configuration for acorn (default: `{ecmaVersion: 2020, locations: true,
+ *   Configuration for acorn (default: `{ecmaVersion: 2024, locations: true,
  *   sourceType: 'module'}`).
  *
  *   All fields except `locations` can be set.
@@ -71,7 +71,7 @@ export function mdxExpression(options) {
     }
 
     acornOptions = Object.assign(
-      {ecmaVersion: 2020, sourceType: 'module'},
+      {ecmaVersion: 2024, sourceType: 'module'},
       options_.acornOptions
     )
   } else if (options_.acornOptions || options_.addResult) {
