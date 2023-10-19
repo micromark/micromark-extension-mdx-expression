@@ -80,9 +80,18 @@ export function mdxExpression(options) {
 
   return {
     flow: {
-      [codes.leftCurlyBrace]: {tokenize: tokenizeFlowExpression, concrete: true}
+      [codes.leftCurlyBrace]: {
+        name: 'mdxFlowExpression',
+        tokenize: tokenizeFlowExpression,
+        concrete: true
+      }
     },
-    text: {[codes.leftCurlyBrace]: {tokenize: tokenizeTextExpression}}
+    text: {
+      [codes.leftCurlyBrace]: {
+        name: 'mdxTextExpression',
+        tokenize: tokenizeTextExpression
+      }
+    }
   }
 
   /**
@@ -171,6 +180,45 @@ export function mdxExpression(options) {
      * @type {State}
      */
     function end(code) {
+      // We want to allow tags directly after expressions.
+      //
+      // This case is useful:
+      //
+      // ```mdx
+      // <a>{b}</a>
+      // ```
+      //
+      // This case is not (very?) useful:
+      //
+      // ```mdx
+      // {a}<b/>
+      // ```
+      //
+      // …but it would be tougher than needed to disallow.
+      //
+      // To allow that, here we call the flow construct of
+      // `micromark-extension-mdx-jsx`, and there we call this one.
+      //
+      // It would introduce a cyclical interdependency if we test JSX and
+      // expressions here.
+      // Because the JSX extension already uses parts of this monorepo, we
+      // instead test it there.
+      const lessThanValue = self.parser.constructs.flow[codes.lessThan]
+      const constructs = Array.isArray(lessThanValue)
+        ? lessThanValue
+        : /* c8 ignore next 3 -- always a list when normalized. */
+        lessThanValue
+        ? [lessThanValue]
+        : []
+      const jsxTag = constructs.find(function (d) {
+        return d.name === 'mdxJsxFlowTag'
+      })
+
+      /* c8 ignore next 3 -- this is tested in `micromark-extension-mdx-jsx` */
+      if (code === codes.lessThan && jsxTag) {
+        return effects.attempt(jsxTag, end, nok)(code)
+      }
+
       return code === codes.eof || markdownLineEnding(code)
         ? ok(code)
         : nok(code)
