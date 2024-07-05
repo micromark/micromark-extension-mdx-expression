@@ -1,19 +1,9 @@
 /**
- * @typedef {import('acorn').Comment} Comment
- * @typedef {import('acorn').Token} Token
- * @typedef {import('estree').Node} Node
- * @typedef {import('estree').Program} Program
- * @typedef {import('micromark-util-types').CompileContext} CompileContext
- * @typedef {import('micromark-util-types').Extension} Extension
- * @typedef {import('micromark-util-types').Handle} Handle
- * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
- * @typedef {import('micromark-util-types').State} State
- * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
- * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
- * @typedef {import('micromark-factory-mdx-expression').Acorn} Acorn
- * @typedef {import('micromark-factory-mdx-expression').AcornOptions} AcornOptions
- *
- * @typedef {import('./complex-types.js')} DoNotTouchThisRegistersExtraTypes
+ * @import {Comment, Token} from 'acorn'
+ * @import {Node, Program} from 'estree'
+ * @import {CompileContext, Extension, Handle, HtmlExtension, State, TokenizeContext, Tokenizer} from 'micromark-util-types'
+ * @import {Acorn, AcornOptions} from 'micromark-util-events-to-acorn'
+ * @import {} from './types.js'
  */
 
 import assert from 'node:assert/strict'

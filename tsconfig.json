@@ -21,6 +21,8 @@
   "include": [
     "**/*.js",
     "packages/micromark-extension-mdx-expression/dev/index.d.ts",
-    "test/complex-types.d.ts"
+    "packages/micromark-util-events-to-acorn/dev/lib/types.d.ts",
+    "packages/micromark-util-events-to-acorn/dev/index.d.ts",
+    "test/types.d.ts"
   ]
 }

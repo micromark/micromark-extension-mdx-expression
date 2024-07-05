@@ -1,33 +1,7 @@
 /**
- * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
- * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
- * @typedef {import('micromark-util-types').Extension} Extension
- * @typedef {import('micromark-util-types').State} State
- * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
- * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
- */
-
-/**
- * @typedef Options
- *   Configuration (optional).
- * @property {Acorn | null | undefined} [acorn]
- *   Acorn parser to use (optional).
- * @property {AcornOptions | null | undefined} [acornOptions]
- *   Configuration for acorn (default: `{ecmaVersion: 2024, locations: true,
- *   sourceType: 'module'}`).
- *
- *   All fields except `locations` can be set.
- * @property {boolean | null | undefined} [addResult=false]
- *   Whether to add `estree` fields to tokens with results from acorn (default:
- *   `false`).
- * @property {boolean | null | undefined} [spread=false]
- *   Undocumented option to parse only a spread (used by
- *   `micromark-extension-mdx-jsx` to parse spread attributes) (default:
- *   `false`).
- * @property {boolean | null | undefined} [allowEmpty=true]
- *   Undocumented option to disallow empty attributes (used by
- *   `micromark-extension-mdx-jsx` to prohobit empty attribute values)
- *   (default: `false`).
+ * @import {Options} from 'micromark-extension-mdx-expression'
+ * @import {AcornOptions} from 'micromark-util-events-to-acorn'
+ * @import {Extension, State, TokenizeContext, Tokenizer} from 'micromark-util-types'
  */
 
 import {ok as assert} from 'devlop'

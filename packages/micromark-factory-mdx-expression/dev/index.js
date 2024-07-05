@@ -1,12 +1,7 @@
 /**
- * @typedef {import('estree').Program} Program
- * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
- * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
- * @typedef {import('micromark-util-types').Effects} Effects
- * @typedef {import('micromark-util-types').Point} Point
- * @typedef {import('micromark-util-types').State} State
- * @typedef {import('micromark-util-types').TokenType} TokenType
- * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @import {Program} from 'estree'
+ * @import {Acorn, AcornOptions} from 'micromark-util-events-to-acorn'
+ * @import {Effects, Point, State, TokenType, TokenizeContext} from 'micromark-util-types'
  */
 
 /**
