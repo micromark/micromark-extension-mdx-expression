@@ -187,20 +187,20 @@ export function eventsToAcorn(events, options) {
         parents[parents.length - 1]
       )
       /** @type {number | string | undefined} */
-      let prop = field
+      let property = field
 
       // Remove non-standard `ParenthesizedExpression`.
       // @ts-expect-error: included in acorn.
-      if (esnode.type === 'ParenthesizedExpression' && context && prop) {
+      if (esnode.type === 'ParenthesizedExpression' && context && property) {
         /* c8 ignore next 5 */
         if (typeof index === 'number') {
           // @ts-expect-error: indexable.
-          context = context[prop]
-          prop = index
+          context = context[property]
+          property = index
         }
 
         // @ts-expect-error: indexable.
-        context[prop] = esnode.expression
+        context[property] = esnode.expression
       }
 
       fixPosition(esnode)
@@ -271,11 +271,13 @@ export function eventsToAcorn(events, options) {
       start: {
         line: pointStart.line,
         column: pointStart.column - 1,
+        // @ts-expect-error: not allowed by acorn types.
         offset: pointStart.offset
       },
       end: {
         line: pointEnd.line,
         column: pointEnd.column - 1,
+        // @ts-expect-error: not allowed by acorn types.
         offset: pointEnd.offset
       }
     }

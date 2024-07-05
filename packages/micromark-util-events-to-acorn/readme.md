@@ -12,17 +12,17 @@
 
 ## Contents
 
-*   [Install](#install)
-*   [Use](#use)
-*   [API](#api)
-    *   [`eventsToAcorn(events, options)`](#eventstoacornevents-options)
-    *   [`Options`](#options)
-    *   [`Result`](#result)
-*   [Types](#types)
-*   [Compatibility](#compatibility)
-*   [Security](#security)
-*   [Contribute](#contribute)
-*   [License](#license)
+* [Install](#install)
+* [Use](#use)
+* [API](#api)
+  * [`eventsToAcorn(events, options)`](#eventstoacornevents-options)
+  * [`Options`](#options)
+  * [`Result`](#result)
+* [Types](#types)
+* [Compatibility](#compatibility)
+* [Security](#security)
+* [Contribute](#contribute)
+* [License](#license)
 
 ## Install
 
@@ -91,10 +91,10 @@ Without this condition, production code is loaded.
 
 ###### Parameters
 
-*   `events` (`Array<Event>`)
-    — events
-*   `options` ([`Options`][api-options])
-    — configuration (required)
+* `events` (`Array<Event>`)
+  — events
+* `options` ([`Options`][api-options])
+  — configuration (required)
 
 ###### Returns
 
@@ -106,24 +106,24 @@ Configuration (TypeScript type).
 
 ###### Fields
 
-*   `acorn` ([`Acorn`][acorn], required)
-    — typically `acorn`, object with `parse` and `parseExpressionAt` fields
-*   `tokenTypes` (`Array<TokenType>`], required)
-    — names of (void) tokens to consider as data; `'lineEnding'` is always
-    included
-*   `acornOptions` ([`AcornOptions`][acorn-options], optional)
-    — configuration for `acorn`
-*   `start` (`Point`, optional, required if `allowEmpty`)
-    — place where events start
-*   `prefix` (`string`, default: `''`)
-    — text to place before events
-*   `suffix` (`string`, default: `''`)
-    — text to place after events
-*   `expression` (`boolean`, default: `false`)
-    — whether this is a program or expression
-*   `allowEmpty` (`boolean`, default: `false`)
-    — whether an empty expression is allowed (programs are always allowed to be
-    empty)
+* `acorn` ([`Acorn`][acorn], required)
+  — typically `acorn`, object with `parse` and `parseExpressionAt` fields
+* `tokenTypes` (`Array<TokenType>`], required)
+  — names of (void) tokens to consider as data; `'lineEnding'` is always
+  included
+* `acornOptions` ([`AcornOptions`][acorn-options], optional)
+  — configuration for `acorn`
+* `start` (`Point`, optional, required if `allowEmpty`)
+  — place where events start
+* `prefix` (`string`, default: `''`)
+  — text to place before events
+* `suffix` (`string`, default: `''`)
+  — text to place after events
+* `expression` (`boolean`, default: `false`)
+  — whether this is a program or expression
+* `allowEmpty` (`boolean`, default: `false`)
+  — whether an empty expression is allowed (programs are always allowed to be
+  empty)
 
 ### `Result`
 
@@ -131,13 +131,13 @@ Result (TypeScript type).
 
 ###### Fields
 
-*   `estree` ([`Program`][program] or `undefined`)
-    — Program
-*   `error` (`Error` or `undefined`)
-    — error if unparseable
-*   `swallow` (`boolean`)
-    — whether the error, if there is one, can be swallowed and more JavaScript
-    could be valid
+* `estree` ([`Program`][program] or `undefined`)
+  — Program
+* `error` (`Error` or `undefined`)
+  — error if unparseable
+* `swallow` (`boolean`)
+  — whether the error, if there is one, can be swallowed and more JavaScript
+  could be valid
 
 ## Types
 

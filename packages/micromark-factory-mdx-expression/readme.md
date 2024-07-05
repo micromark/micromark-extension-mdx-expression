@@ -13,15 +13,15 @@ text).
 
 ## Contents
 
-*   [Install](#install)
-*   [Use](#use)
-*   [API](#api)
-    *   [`factoryMdxExpression(…)`](#factorymdxexpression)
-*   [Types](#types)
-*   [Compatibility](#compatibility)
-*   [Security](#security)
-*   [Contribute](#contribute)
-*   [License](#license)
+* [Install](#install)
+* [Use](#use)
+* [API](#api)
+  * [`factoryMdxExpression(…)`](#factorymdxexpression)
+* [Types](#types)
+* [Compatibility](#compatibility)
+* [Security](#security)
+* [Contribute](#contribute)
+* [License](#license)
 
 ## Install
 
@@ -96,28 +96,28 @@ Without this condition, production code is loaded.
 
 ###### Parameters
 
-*   `effects` (`Effects`)
-    — context
-*   `ok` (`State`)
-    — state switched to when successful
-*   `type` (`string`)
-    — token type for whole (`{}`)
-*   `markerType` (`string`)
-    — token type for the markers (`{`, `}`)
-*   `chunkType` (`string`)
-    — token type for the value (`1`)
-*   `acorn` (`Acorn`)
-    — object with `acorn.parse` and `acorn.parseExpressionAt`
-*   `acornOptions` ([`AcornOptions`][acorn-options])
-    — configuration for acorn
-*   `boolean` (`addResult`, default: `false`)
-    — add `estree` to token
-*   `boolean` (`spread`, default: `false`)
-    — support a spread (`{...a}`) only
-*   `boolean` (`allowEmpty`, default: `false`)
-    — support an empty expression
-*   `boolean` (`allowLazy`, default: `false`)
-    — support lazy continuation of an expression
+* `effects` (`Effects`)
+  — context
+* `ok` (`State`)
+  — state switched to when successful
+* `type` (`string`)
+  — token type for whole (`{}`)
+* `markerType` (`string`)
+  — token type for the markers (`{`, `}`)
+* `chunkType` (`string`)
+  — token type for the value (`1`)
+* `acorn` (`Acorn`)
+  — object with `acorn.parse` and `acorn.parseExpressionAt`
+* `acornOptions` ([`AcornOptions`][acorn-options])
+  — configuration for acorn
+* `boolean` (`addResult`, default: `false`)
+  — add `estree` to token
+* `boolean` (`spread`, default: `false`)
+  — support a spread (`{...a}`) only
+* `boolean` (`allowEmpty`, default: `false`)
+  — support an empty expression
+* `boolean` (`allowLazy`, default: `false`)
+  — support lazy continuation of an expression
 
 ###### Returns
 

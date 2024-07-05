@@ -37,7 +37,7 @@ import {VFileMessage} from 'vfile-message'
 const trouble =
   'https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression'
 
-const unexpectedEofHash =
+const unexpectedEndOfFileHash =
   '#unexpected-end-of-file-in-expression-expected-a-corresponding-closing-brace-for-'
 const unexpectedLazyHash =
   '#unexpected-lazy-line-in-expression-in-container-expected-line-to-be-prefixed'
@@ -140,7 +140,7 @@ export function factoryMdxExpression(
           source: 'micromark-extension-mdx-expression'
         }
       )
-      error.url = trouble + unexpectedEofHash
+      error.url = trouble + unexpectedEndOfFileHash
       throw error
     }
 

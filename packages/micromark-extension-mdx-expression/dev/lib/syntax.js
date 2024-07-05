@@ -207,9 +207,9 @@ export function mdxExpression(options) {
       const constructs = Array.isArray(lessThanValue)
         ? lessThanValue
         : /* c8 ignore next 3 -- always a list when normalized. */
-        lessThanValue
-        ? [lessThanValue]
-        : []
+          lessThanValue
+          ? [lessThanValue]
+          : []
       const jsxTag = constructs.find(function (d) {
         return d.name === 'mdxJsxFlowTag'
       })

@@ -12,21 +12,21 @@ and the underlying tools to handle JavaScript in markdown.
 
 ## Contents
 
-*   [What is this?](#what-is-this)
-*   [When to use this](#when-to-use-this)
-*   [Contribute](#contribute)
-*   [License](#license)
+* [What is this?](#what-is-this)
+* [When to use this](#when-to-use-this)
+* [Contribute](#contribute)
+* [License](#license)
 
 ## What is this?
 
 This project contains three packages:
 
-*   [`micromark-extension-mdx-expression`][micromark-extension-mdx-expression]
-    — extension to support MDX expressions in [`micromark`][micromark]
-*   [`micromark-factory-mdx-expression`][micromark-factory-mdx-expression]
-    — subroutine to parse the expressions
-*   [`micromark-util-events-to-acorn`][micromark-util-events-to-acorn]
-    — subroutine to parse micromark events with acorn
+* [`micromark-extension-mdx-expression`][micromark-extension-mdx-expression]
+  — extension to support MDX expressions in [`micromark`][micromark]
+* [`micromark-factory-mdx-expression`][micromark-factory-mdx-expression]
+  — subroutine to parse the expressions
+* [`micromark-util-events-to-acorn`][micromark-util-events-to-acorn]
+  — subroutine to parse micromark events with acorn
 
 ## When to use this
 

@@ -66,6 +66,7 @@
   "xo": {
     "prettier": true,
     "rules": {
+      "logical-assignment-operators": "off",
       "unicorn/no-this-assignment": "off"
     }
   }

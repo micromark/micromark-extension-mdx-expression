@@ -12,28 +12,28 @@
 
 ## Contents
 
-*   [What is this?](#what-is-this)
-*   [When to use this](#when-to-use-this)
-*   [Install](#install)
-*   [Use](#use)
-*   [API](#api)
-    *   [`mdxExpression(options?)`](#mdxexpressionoptions)
-    *   [Options](#options)
-*   [Authoring](#authoring)
-*   [Syntax](#syntax)
-*   [Errors](#errors)
-    *   [Unexpected end of file in expression, expected a corresponding closing brace for `{`](#unexpected-end-of-file-in-expression-expected-a-corresponding-closing-brace-for-)
-    *   [Unexpected lazy line in expression in container, expected line to be prefixed…](#unexpected-lazy-line-in-expression-in-container-expected-line-to-be-prefixed)
-    *   [Unexpected `$type` in code: expected an object spread (`{...spread}`)](#unexpected-type-in-code-expected-an-object-spread-spread)
-    *   [Unexpected extra content in spread: only a single spread is supported](#unexpected-extra-content-in-spread-only-a-single-spread-is-supported)
-    *   [Could not parse expression with acorn](#could-not-parse-expression-with-acorn)
-*   [Tokens](#tokens)
-*   [Types](#types)
-*   [Compatibility](#compatibility)
-*   [Security](#security)
-*   [Related](#related)
-*   [Contribute](#contribute)
-*   [License](#license)
+* [What is this?](#what-is-this)
+* [When to use this](#when-to-use-this)
+* [Install](#install)
+* [Use](#use)
+* [API](#api)
+  * [`mdxExpression(options?)`](#mdxexpressionoptions)
+  * [Options](#options)
+* [Authoring](#authoring)
+* [Syntax](#syntax)
+* [Errors](#errors)
+  * [Unexpected end of file in expression, expected a corresponding closing brace for `{`](#unexpected-end-of-file-in-expression-expected-a-corresponding-closing-brace-for-)
+  * [Unexpected lazy line in expression in container, expected line to be prefixed…](#unexpected-lazy-line-in-expression-in-container-expected-line-to-be-prefixed)
+  * [Unexpected `$type` in code: expected an object spread (`{...spread}`)](#unexpected-type-in-code-expected-an-object-spread-spread)
+  * [Unexpected extra content in spread: only a single spread is supported](#unexpected-extra-content-in-spread-only-a-single-spread-is-supported)
+  * [Could not parse expression with acorn](#could-not-parse-expression-with-acorn)
+* [Tokens](#tokens)
+* [Types](#types)
+* [Compatibility](#compatibility)
+* [Security](#security)
+* [Related](#related)
+* [Contribute](#contribute)
+* [License](#license)
 
 ## What is this?
 
@@ -147,8 +147,8 @@ Create an extension for `micromark` to enable MDX expression syntax.
 
 ###### Parameters
 
-*   `options` ([`Options`][api-options], optional)
-    — configuration
+* `options` ([`Options`][api-options], optional)
+  — configuration
 
 ###### Returns
 
@@ -161,13 +161,13 @@ Configuration (TypeScript type).
 
 ###### Fields
 
-*   `acorn` ([`Acorn`][acorn], optional)
-    — acorn parser to use
-*   `acornOptions` ([`AcornOptions`][acorn-options], default:
-    `{ecmaVersion: 2024, locations: true, sourceType: 'module'}`)
-    — configuration for acorn; all fields except `locations` can be set
-*   `addResult` (`boolean`, default: `false`)
-    — whether to add `estree` fields to tokens with results from acorn
+* `acorn` ([`Acorn`][acorn], optional)
+  — acorn parser to use
+* `acornOptions` ([`AcornOptions`][acorn-options], default:
+  `{ecmaVersion: 2024, locations: true, sourceType: 'module'}`)
+  — configuration for acorn; all fields except `locations` can be set
+* `addResult` (`boolean`, default: `false`)
+  — whether to add `estree` fields to tokens with results from acorn
 
 <!-- Note: `spread` and `allowEmpty` are intentionally not documented. -->
 
@@ -310,11 +310,11 @@ flow and text expressions.
 
 They include:
 
-*   `lineEnding` for the markdown line endings `\r`, `\n`, and `\r\n`
-*   `mdxFlowExpressionMarker` and `mdxTextExpressionMarker` for the braces
-*   `whitespace` for markdown spaces and tabs in blank lines
-*   `mdxFlowExpressionChunk` and `mdxTextExpressionChunk` for chunks of
-    expression content
+* `lineEnding` for the markdown line endings `\r`, `\n`, and `\r\n`
+* `mdxFlowExpressionMarker` and `mdxTextExpressionMarker` for the braces
+* `whitespace` for markdown spaces and tabs in blank lines
+* `mdxFlowExpressionChunk` and `mdxTextExpressionChunk` for chunks of
+  expression content
 
 ## Types
 
@@ -339,12 +339,12 @@ This package is safe.
 
 ## Related
 
-*   [`micromark-extension-mdxjs`][micromark-extension-mdxjs]
-    — support all MDX syntax
-*   [`mdast-util-mdx-expression`][mdast-util-mdx-expression]
-    — support MDX expressions in mdast
-*   [`remark-mdx`][remark-mdx]
-    — support all MDX syntax in remark
+* [`micromark-extension-mdxjs`][micromark-extension-mdxjs]
+  — support all MDX syntax
+* [`mdast-util-mdx-expression`][mdast-util-mdx-expression]
+  — support MDX expressions in mdast
+* [`remark-mdx`][remark-mdx]
+  — support all MDX syntax in remark
 
 ## Contribute
 
