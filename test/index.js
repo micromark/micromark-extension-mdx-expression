@@ -6,6 +6,8 @@
  * @import {} from './types.js'
  */
 
+/* eslint-disable unicorn/prefer-structured-clone -- `JSON` used to turn instances into plain objects. */
+
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {Parser} from 'acorn'
