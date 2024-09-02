@@ -23,11 +23,18 @@
  */
 
 import {ok as assert} from 'devlop'
-import {markdownLineEnding} from 'micromark-util-character'
+import {factorySpace} from 'micromark-factory-space'
+import {markdownLineEnding, markdownSpace} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
 import {codes, types} from 'micromark-util-symbol'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
+
+// Tab-size to eat has to be the same as what we serialize as.
+// While in some places in markdown that’s 4, in JS it’s more common as 2.
+// Which is what’s also in `mdast-util-mdx-jsx`:
+// <https://github.com/syntax-tree/mdast-util-mdx-jsx/blob/40b951b/lib/index.js#L52>
+const indentSize = 2
 
 const trouble =
   'https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression'
@@ -247,6 +254,8 @@ export function factoryMdxExpression(
       throw error
     }
 
+    // Note: `markdown-rs` uses `4`, but we use `2`.
+    //
     // Idea: investigate if we’d need to use more complex stripping.
     // Take this example:
     //
@@ -256,12 +265,18 @@ export function factoryMdxExpression(
     // >  `} /> eee
     // ```
     //
-    // The block quote takes one space from each line, the paragraph doesn’t.
-    // The intent above is *perhaps* for the split to be as `>␠␠|␠␠␠␠|d`,
-    // Currently, we *don’t* do anything at all, it’s `>␠|␠␠␠␠␠|d` instead.
-    //
-    // Note: we used to have some handling here, and `markdown-rs` still does,
-    // which should be removed.
+    // Currently, the “paragraph” starts at `> | aaa`, so for the next line
+    // here we split it into `>␠|␠␠|␠␠␠d` (prefix, this indent here,
+    // expression data).
+    if (markdownSpace(code)) {
+      return factorySpace(
+        effects,
+        before,
+        types.linePrefix,
+        indentSize + 1
+      )(code)
+    }
+
     return before(code)
   }
 }

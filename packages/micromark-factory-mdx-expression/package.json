@@ -39,6 +39,7 @@
   "dependencies": {
     "@types/estree": "^1.0.0",
     "devlop": "^1.0.0",
+    "micromark-factory-space": "^2.0.0",
     "micromark-util-character": "^2.0.0",
     "micromark-util-events-to-acorn": "^2.0.0",
     "micromark-util-symbol": "^2.0.0",

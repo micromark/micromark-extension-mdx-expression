@@ -1315,10 +1315,10 @@ test('positional info', async function (t) {
   )
 
   await t.test(
-    'should use correct positional info when tabs are used',
+    'should use correct positional info when tabs are used (indent)',
     function () {
       const micromarkExample = 'ab {`\n\t`}'
-      const acornExample = 'a = `\n\t` '
+      const acornExample = 'a = `\n` '
       /** @type {Array<Token>} */
       const micromarkTokens = []
       /** @type {Array<Token>} */
@@ -1326,14 +1326,155 @@ test('positional info', async function (t) {
       /** @type {Program | undefined} */
       let program
 
-      const acornNode = /** @type {Node} */ (
-        acorn.parseExpressionAt(acornExample, 0, {
-          ecmaVersion: 'latest',
-          onToken: acornTokens,
-          locations: true,
-          ranges: true
-        })
-      )
+      acorn.parseExpressionAt(acornExample, 0, {
+        ecmaVersion: 'latest',
+        onToken: acornTokens,
+        locations: true,
+        ranges: true
+      })
+
+      micromark(micromarkExample, {
+        extensions: [
+          createExtensionFromFactoryOptions(
+            acorn,
+            {ecmaVersion: 'latest', onToken: micromarkTokens},
+            true,
+            false,
+            false,
+            true
+          )
+        ],
+        htmlExtensions: [{enter: {expression}}]
+      })
+
+      if (program) removeOffsets(program)
+      removeOffsetsFromTokens(micromarkTokens)
+
+      // Remove: `a`, `=`
+      acornTokens.splice(0, 2)
+
+      assert.deepEqual(JSON.parse(JSON.stringify(micromarkTokens)), [
+        {
+          type: {
+            label: '`',
+            beforeExpr: false,
+            startsExpr: true,
+            isLoop: false,
+            isAssign: false,
+            prefix: false,
+            postfix: false,
+            binop: null
+          },
+          start: 4,
+          end: 5,
+          loc: {start: {line: 1, column: 4}, end: {line: 1, column: 5}},
+          range: [4, 5]
+        },
+        {
+          type: {
+            label: 'template',
+            beforeExpr: false,
+            startsExpr: false,
+            isLoop: false,
+            isAssign: false,
+            prefix: false,
+            postfix: false,
+            binop: null,
+            updateContext: null
+          },
+          value: '\n',
+          start: 5,
+          end: 7,
+          loc: {start: {line: 1, column: 5}, end: {line: 2, column: 1}},
+          range: [5, 7]
+        },
+        {
+          type: {
+            label: '`',
+            beforeExpr: false,
+            startsExpr: true,
+            isLoop: false,
+            isAssign: false,
+            prefix: false,
+            postfix: false,
+            binop: null
+          },
+          start: 7,
+          end: 8,
+          loc: {start: {line: 2, column: 1}, end: {line: 2, column: 2}},
+          range: [7, 8]
+        }
+      ])
+
+      assert.deepEqual(JSON.parse(JSON.stringify(program)), {
+        type: 'Program',
+        start: 4,
+        end: 8,
+        body: [
+          {
+            type: 'ExpressionStatement',
+            expression: {
+              type: 'TemplateLiteral',
+              start: 4,
+              end: 8,
+              expressions: [],
+              quasis: [
+                {
+                  type: 'TemplateElement',
+                  start: 5,
+                  end: 7,
+                  value: {raw: '\n', cooked: '\n'},
+                  tail: true,
+                  loc: {
+                    start: {line: 1, column: 5},
+                    end: {line: 2, column: 1}
+                  },
+                  range: [5, 7]
+                }
+              ],
+              loc: {start: {line: 1, column: 4}, end: {line: 2, column: 2}},
+              range: [4, 8]
+            },
+            start: 4,
+            end: 8,
+            loc: {start: {line: 1, column: 4}, end: {line: 2, column: 2}},
+            range: [4, 8]
+          }
+        ],
+        sourceType: 'module',
+        comments: [],
+        loc: {start: {line: 1, column: 4}, end: {line: 2, column: 2}},
+        range: [4, 8]
+      })
+
+      /**
+       * @this {CompileContext}
+       * @type {Handle}
+       */
+      function expression(token) {
+        program = token.estree
+      }
+    }
+  )
+
+  await t.test(
+    'should use correct positional info when tabs are used (content)',
+    function () {
+      const micromarkExample = 'ab {`\nalpha\t`}'
+      const acornExample = 'a = `\nalpha\t` '
+      /** @type {Array<Token>} */
+      const micromarkTokens = []
+      /** @type {Array<Token>} */
+      const acornTokens = []
+      /** @type {Program | undefined} */
+      let program
+
+      acorn.parseExpressionAt(acornExample, 0, {
+        ecmaVersion: 'latest',
+        onToken: acornTokens,
+        locations: true,
+        ranges: true
+      })
 
       micromark(micromarkExample, {
         extensions: [
@@ -1360,32 +1501,119 @@ test('positional info', async function (t) {
         JSON.parse(JSON.stringify(acornTokens))
       )
 
-      assert(acornNode.type === 'AssignmentExpression')
-
-      assert.deepEqual(
-        JSON.parse(JSON.stringify(program)),
-        JSON.parse(
-          JSON.stringify({
-            type: 'Program',
+      assert.deepEqual(JSON.parse(JSON.stringify(program)), {
+        type: 'Program',
+        start: 4,
+        end: 13,
+        body: [
+          {
+            type: 'ExpressionStatement',
+            expression: {
+              type: 'TemplateLiteral',
+              start: 4,
+              end: 13,
+              expressions: [],
+              quasis: [
+                {
+                  type: 'TemplateElement',
+                  start: 5,
+                  end: 12,
+                  value: {raw: '\nalpha\t', cooked: '\nalpha\t'},
+                  tail: true,
+                  loc: {
+                    start: {line: 1, column: 5},
+                    end: {line: 2, column: 6}
+                  },
+                  range: [5, 12]
+                }
+              ],
+              loc: {start: {line: 1, column: 4}, end: {line: 2, column: 7}},
+              range: [4, 13]
+            },
             start: 4,
-            end: 8,
-            body: [
-              {
-                type: 'ExpressionStatement',
-                expression: acornNode.right,
-                start: 4,
-                end: 8,
-                loc: {start: {line: 1, column: 4}, end: {line: 2, column: 2}},
-                range: [4, 8]
-              }
-            ],
-            sourceType: 'module',
-            comments: [],
-            loc: {start: {line: 1, column: 4}, end: {line: 2, column: 2}},
-            range: [4, 8]
-          })
-        )
-      )
+            end: 13,
+            loc: {start: {line: 1, column: 4}, end: {line: 2, column: 7}},
+            range: [4, 13]
+          }
+        ],
+        sourceType: 'module',
+        comments: [],
+        loc: {start: {line: 1, column: 4}, end: {line: 2, column: 7}},
+        range: [4, 13]
+      })
+
+      /**
+       * @this {CompileContext}
+       * @type {Handle}
+       */
+      function expression(token) {
+        program = token.estree
+      }
+    }
+  )
+
+  await t.test(
+    'should support template strings in JSX (text) in block quotes',
+    function () {
+      /** @type {Program | undefined} */
+      let program
+
+      micromark('>  aaa <b c={`\n>      d\n>  `} /> eee', {
+        extensions: [
+          createExtensionFromFactoryOptions(
+            acorn,
+            {ecmaVersion: 'latest'},
+            true,
+            false,
+            false,
+            true
+          )
+        ],
+        htmlExtensions: [{enter: {expression}}]
+      })
+
+      if (program) removeOffsets(program)
+
+      assert.deepEqual(JSON.parse(JSON.stringify(program)), {
+        type: 'Program',
+        start: 13,
+        end: 28,
+        body: [
+          {
+            type: 'ExpressionStatement',
+            expression: {
+              type: 'TemplateLiteral',
+              start: 13,
+              end: 28,
+              expressions: [],
+              quasis: [
+                {
+                  type: 'TemplateElement',
+                  start: 14,
+                  end: 27,
+                  value: {raw: '\n   d\n', cooked: '\n   d\n'},
+                  tail: true,
+                  loc: {
+                    start: {line: 1, column: 14},
+                    end: {line: 3, column: 3}
+                  },
+                  range: [14, 27]
+                }
+              ],
+              loc: {start: {line: 1, column: 13}, end: {line: 3, column: 4}},
+              range: [13, 28]
+            },
+            start: 13,
+            end: 28,
+            loc: {start: {line: 1, column: 13}, end: {line: 3, column: 4}},
+            range: [13, 28]
+          }
+        ],
+        sourceType: 'module',
+        comments: [],
+        loc: {start: {line: 1, column: 13}, end: {line: 3, column: 4}},
+        range: [13, 28]
+      })
 
       /**
        * @this {CompileContext}
@@ -1547,7 +1775,7 @@ test('indent', async function (t) {
       const quasi = statement.expression.quasis[0]
       assert(quasi)
       const value = quasi.value.cooked
-      assert.equal(value, '\nalpha\n bravo\n  charlie\n   delta\n')
+      assert.equal(value, '\nalpha\nbravo\ncharlie\n delta\n')
 
       /**
        * @this {CompileContext}
@@ -1586,7 +1814,7 @@ test('indent', async function (t) {
       const quasi = statement.expression.quasis[0]
       assert(quasi)
       const value = quasi.value.cooked
-      assert.equal(value, '\nbravo\n charlie\n  delta\n   echo\n')
+      assert.equal(value, '\nbravo\ncharlie\ndelta\n echo\n')
 
       /**
        * @this {CompileContext}
