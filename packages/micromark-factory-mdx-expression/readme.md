@@ -161,58 +161,58 @@ abide by its terms.
 
 <!-- Definitions -->
 
-[build-badge]: https://github.com/micromark/micromark-extension-mdx-expression/workflows/main/badge.svg
-
-[build]: https://github.com/micromark/micromark-extension-mdx-expression/actions
-
-[coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-mdx-expression.svg
-
-[coverage]: https://codecov.io/github/micromark/micromark-extension-mdx-expression
-
-[downloads-badge]: https://img.shields.io/npm/dm/micromark-factory-mdx-expression.svg
-
-[downloads]: https://www.npmjs.com/package/micromark-factory-mdx-expression
-
-[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-factory-mdx-expression
-
-[size]: https://bundlejs.com/?q=micromark-factory-mdx-expression
-
-[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
-
-[backers-badge]: https://opencollective.com/unified/backers/badge.svg
-
-[opencollective]: https://opencollective.com/unified
-
-[npm]: https://docs.npmjs.com/cli/install
-
-[esmsh]: https://esm.sh
-
-[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
-
-[chat]: https://github.com/micromark/micromark/discussions
-
-[license]: https://github.com/micromark/micromark-extension-mdx-expression/blob/main/license
-
-[author]: https://wooorm.com
-
-[health]: https://github.com/micromark/.github
-
-[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
-
-[support]: https://github.com/micromark/.github/blob/main/support.md
-
-[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
-
-[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
-
-[typescript]: https://www.typescriptlang.org
-
-[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
-
 [acorn]: https://github.com/acornjs/acorn
 
 [acorn-options]: https://github.com/acornjs/acorn/blob/96c721dbf89d0ccc3a8c7f39e69ef2a6a3c04dfa/acorn/dist/acorn.d.ts#L16
 
+[api-factory-mdx-expression]: #micromark-factory-mdx-expression
+
+[author]: https://wooorm.com
+
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+
+[build]: https://github.com/micromark/micromark-extension-mdx-expression/actions
+
+[build-badge]: https://github.com/micromark/micromark-extension-mdx-expression/workflows/main/badge.svg
+
+[chat]: https://github.com/micromark/micromark/discussions
+
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
+
+[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
+
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
+
+[coverage]: https://codecov.io/github/micromark/micromark-extension-mdx-expression
+
+[coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-mdx-expression.svg
+
+[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+
+[downloads]: https://www.npmjs.com/package/micromark-factory-mdx-expression
+
+[downloads-badge]: https://img.shields.io/npm/dm/micromark-factory-mdx-expression.svg
+
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[esmsh]: https://esm.sh
+
+[health]: https://github.com/micromark/.github
+
+[license]: https://github.com/micromark/micromark-extension-mdx-expression/blob/main/license
+
 [micromark]: https://github.com/micromark/micromark
 
-[api-factory-mdx-expression]: #micromark-factory-mdx-expression
+[npm]: https://docs.npmjs.com/cli/install
+
+[opencollective]: https://opencollective.com/unified
+
+[size]: https://bundlejs.com/?q=micromark-factory-mdx-expression
+
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-factory-mdx-expression
+
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+
+[support]: https://github.com/micromark/.github/blob/main/support.md
+
+[typescript]: https://www.typescriptlang.org

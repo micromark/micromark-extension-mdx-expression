@@ -106,7 +106,7 @@ Yields:
 <p>a  b</p>
 ```
 
-```txt
+```text
 [1:5: Could not parse expression with acorn] {
   ancestors: undefined,
   cause: SyntaxError: Unexpected token
@@ -229,7 +229,7 @@ This is incorrect, because there are further characters:
 }!
 ```
 
-```mdx-broken
+```mdx-invalid
 Blank lines cannot occur in text, because markdown has already split them in
 separate constructs, so this is incorrect: {1 +
 
@@ -254,7 +254,7 @@ This error occurs if a `{` was seen without a `}` (source:
 `micromark-extension-mdx-expression`, rule id: `unexpected-eof`).
 For example:
 
-```mdx-broken
+```mdx-invalid
 a { b
 ```
 
@@ -264,7 +264,7 @@ This error occurs if a `{` was seen in a container which then has lazy content
 (source: `micromark-extension-mdx-expression`, rule id: `unexpected-lazy`).
 For example:
 
-```mdx-broken
+```mdx-invalid
 > {a
 b}
 ```
@@ -275,7 +275,7 @@ This error occurs if a spread was expected but something else was found
 (source: `micromark-extension-mdx-expression`, rule id: `non-spread`).
 For example:
 
-```mdx-broken
+```mdx-invalid
 <a {b=c}={} d>
 ```
 
@@ -285,7 +285,7 @@ This error occurs if a spread was expected but more was found after it
 (source: `micromark-extension-mdx-expression`, rule id: `spread-extra`).
 For example:
 
-```mdx-broken
+```mdx-invalid
 <a {...b,c} d>
 ```
 
@@ -295,11 +295,11 @@ This error occurs if acorn crashes or when there is more content after a JS
 expression (source: `micromark-extension-mdx-expression`, rule id: `acorn`).
 For example:
 
-```mdx-broken
+```mdx-invalid
 a {"b" "c"} d
 ```
 
-```mdx-broken
+```mdx-invalid
 a {var b = "c"} d
 ```
 
@@ -362,68 +362,6 @@ abide by its terms.
 
 <!-- Definitions -->
 
-[build-badge]: https://github.com/micromark/micromark-extension-mdx-expression/workflows/main/badge.svg
-
-[build]: https://github.com/micromark/micromark-extension-mdx-expression/actions
-
-[coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-mdx-expression.svg
-
-[coverage]: https://codecov.io/github/micromark/micromark-extension-mdx-expression
-
-[downloads-badge]: https://img.shields.io/npm/dm/micromark-extension-mdx-expression.svg
-
-[downloads]: https://www.npmjs.com/package/micromark-extension-mdx-expression
-
-[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-extension-mdx-expression
-
-[size]: https://bundlejs.com/?q=micromark-extension-mdx-expression
-
-[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
-
-[backers-badge]: https://opencollective.com/unified/backers/badge.svg
-
-[collective]: https://opencollective.com/unified
-
-[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
-
-[chat]: https://github.com/micromark/micromark/discussions
-
-[npm]: https://docs.npmjs.com/cli/install
-
-[esmsh]: https://esm.sh
-
-[license]: https://github.com/micromark/micromark-extension-mdx-expression/blob/main/license
-
-[author]: https://wooorm.com
-
-[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
-
-[support]: https://github.com/micromark/.github/blob/main/support.md
-
-[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
-
-[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
-
-[typescript]: https://www.typescriptlang.org
-
-[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
-
-[micromark]: https://github.com/micromark/micromark
-
-[micromark-extension]: https://github.com/micromark/micromark#syntaxextension
-
-[micromark-extension-mdxjs]: https://github.com/micromark/micromark-extension-mdxjs
-
-[mdast-util-mdx-expression]: https://github.com/syntax-tree/mdast-util-mdx-expression
-
-[mdast-util-from-markdown]: https://github.com/syntax-tree/mdast-util-from-markdown
-
-[remark-mdx]: https://mdxjs.com/packages/remark-mdx/
-
-[mdxjs]: https://mdxjs.com
-
-[mdxjs-interleaving]: https://mdxjs.com/docs/what-is-mdx/#interleaving
-
 [acorn]: https://github.com/acornjs/acorn
 
 [acorn-options]: https://github.com/acornjs/acorn/blob/96c721dbf89d0ccc3a8c7f39e69ef2a6a3c04dfa/acorn/dist/acorn.d.ts#L16
@@ -431,3 +369,65 @@ abide by its terms.
 [api-mdx-expression]: #mdxexpressionoptions
 
 [api-options]: #options
+
+[author]: https://wooorm.com
+
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+
+[build]: https://github.com/micromark/micromark-extension-mdx-expression/actions
+
+[build-badge]: https://github.com/micromark/micromark-extension-mdx-expression/workflows/main/badge.svg
+
+[chat]: https://github.com/micromark/micromark/discussions
+
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
+
+[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
+
+[collective]: https://opencollective.com/unified
+
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
+
+[coverage]: https://codecov.io/github/micromark/micromark-extension-mdx-expression
+
+[coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-mdx-expression.svg
+
+[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+
+[downloads]: https://www.npmjs.com/package/micromark-extension-mdx-expression
+
+[downloads-badge]: https://img.shields.io/npm/dm/micromark-extension-mdx-expression.svg
+
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[esmsh]: https://esm.sh
+
+[license]: https://github.com/micromark/micromark-extension-mdx-expression/blob/main/license
+
+[mdast-util-from-markdown]: https://github.com/syntax-tree/mdast-util-from-markdown
+
+[mdast-util-mdx-expression]: https://github.com/syntax-tree/mdast-util-mdx-expression
+
+[mdxjs]: https://mdxjs.com
+
+[mdxjs-interleaving]: https://mdxjs.com/docs/what-is-mdx/#interleaving
+
+[micromark]: https://github.com/micromark/micromark
+
+[micromark-extension]: https://github.com/micromark/micromark#syntaxextension
+
+[micromark-extension-mdxjs]: https://github.com/micromark/micromark-extension-mdxjs
+
+[npm]: https://docs.npmjs.com/cli/install
+
+[remark-mdx]: https://mdxjs.com/packages/remark-mdx/
+
+[size]: https://bundlejs.com/?q=micromark-extension-mdx-expression
+
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-extension-mdx-expression
+
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+
+[support]: https://github.com/micromark/.github/blob/main/support.md
+
+[typescript]: https://www.typescriptlang.org

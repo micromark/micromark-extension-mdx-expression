@@ -56,42 +56,42 @@ abide by its terms.
 
 <!-- Definitions -->
 
-[build-badge]: https://github.com/micromark/micromark-extension-mdx-expression/workflows/main/badge.svg
-
-[build]: https://github.com/micromark/micromark-extension-mdx-expression/actions
-
-[coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-mdx-expression.svg
-
-[coverage]: https://codecov.io/github/micromark/micromark-extension-mdx-expression
-
-[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+[author]: https://wooorm.com
 
 [backers-badge]: https://opencollective.com/unified/backers/badge.svg
 
-[collective]: https://opencollective.com/unified
+[build]: https://github.com/micromark/micromark-extension-mdx-expression/actions
 
-[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
+[build-badge]: https://github.com/micromark/micromark-extension-mdx-expression/workflows/main/badge.svg
 
 [chat]: https://github.com/micromark/micromark/discussions
 
-[license]: https://github.com/micromark/micromark-extension-mdx-expression/blob/main/license
-
-[author]: https://wooorm.com
-
-[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
-
-[support]: https://github.com/micromark/.github/blob/main/support.md
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
 
 [coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
 
+[collective]: https://opencollective.com/unified
+
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
+
+[coverage]: https://codecov.io/github/micromark/micromark-extension-mdx-expression
+
+[coverage-badge]: https://img.shields.io/codecov/c/github/micromark/micromark-extension-mdx-expression.svg
+
+[license]: https://github.com/micromark/micromark-extension-mdx-expression/blob/main/license
+
 [micromark]: https://github.com/micromark/micromark
+
+[micromark-extension-mdx-expression]: packages/micromark-extension-mdx-expression/
 
 [micromark-extension-mdx-jsx]: https://github.com/micromark/micromark-extension-mdx-jsx
 
-[micromark-extension-mdx-expression]: packages/micromark-extension-mdx-expression/
+[micromark-extension-mdxjs-esm]: https://github.com/micromark/micromark-extension-mdxjs-esm
 
 [micromark-factory-mdx-expression]: packages/micromark-factory-mdx-expression/
 
 [micromark-util-events-to-acorn]: packages/micromark-util-events-to-acorn/
 
-[micromark-extension-mdxjs-esm]: https://github.com/micromark/micromark-extension-mdxjs-esm
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+
+[support]: https://github.com/micromark/.github/blob/main/support.md
