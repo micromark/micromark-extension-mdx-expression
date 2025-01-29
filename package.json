@@ -1,29 +1,7 @@
 {
-  "private": true,
-  "name": "micromark-extension-mdx-expression-mono",
-  "version": "0.0.0",
-  "description": "",
-  "license": "MIT",
-  "keywords": [],
-  "repository": "micromark/micromark-extension-mdx-expression",
-  "bugs": "https://github.com/micromark/micromark-extension-mdx-expression/issues",
-  "funding": [
-    {
-      "type": "GitHub Sponsors",
-      "url": "https://github.com/sponsors/unifiedjs"
-    },
-    {
-      "type": "OpenCollective",
-      "url": "https://opencollective.com/unified"
-    }
-  ],
   "author": "Titus Wormer <tituswormer@gmail.com> (https://wooorm.com)",
-  "type": "module",
-  "workspaces": [
-    "packages/micromark-util-events-to-acorn",
-    "packages/micromark-factory-mdx-expression",
-    "packages/micromark-extension-mdx-expression"
-  ],
+  "bugs": "https://github.com/micromark/micromark-extension-mdx-expression/issues",
+  "description": "",
   "devDependencies": {
     "@types/acorn": "^4.0.0",
     "@types/estree": "^1.0.0",
@@ -43,16 +21,19 @@
     "typescript": "^5.0.0",
     "xo": "^0.60.0"
   },
-  "scripts": {
-    "prepack": "npm run build && npm run format",
-    "build": "tsc --build --clean && tsc --build && type-coverage && npm run build --workspaces",
-    "format": "remark . -qfo && prettier . -w --log-level warn && xo --fix",
-    "test-api-prod": "node --conditions production test/index.js",
-    "test-api-dev": "node --conditions development test/index.js",
-    "test-api": "npm run test-api-dev && npm run test-api-prod",
-    "test-coverage": "c8 --100 --reporter lcov npm run test-api",
-    "test": "npm run build && npm run format && npm run test-coverage"
-  },
+  "funding": [
+    {
+      "type": "GitHub Sponsors",
+      "url": "https://github.com/sponsors/unifiedjs"
+    },
+    {
+      "type": "OpenCollective",
+      "url": "https://opencollective.com/unified"
+    }
+  ],
+  "keywords": [],
+  "license": "MIT",
+  "name": "micromark-extension-mdx-expression-mono",
   "prettier": {
     "bracketSpacing": false,
     "semi": false,
@@ -61,12 +42,28 @@
     "trailingComma": "none",
     "useTabs": false
   },
+  "private": true,
+  "repository": "micromark/micromark-extension-mdx-expression",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "tsc --build --clean && tsc --build && type-coverage && npm run build --workspaces",
+    "format": "remark --frail --output --quiet -- . && prettier --log-level warn --write -- . && xo --fix",
+    "test-api-dev": "node --conditions development test/index.js",
+    "test-api-prod": "node --conditions production test/index.js",
+    "test-api": "npm run test-api-dev && npm run test-api-prod",
+    "test-coverage": "c8 --100 --reporter lcov npm run test-api",
+    "test": "npm run build && npm run format && npm run test-coverage"
+  },
   "typeCoverage": {
     "atLeast": 100,
-    "detail": true,
-    "ignoreCatch": true,
     "strict": true
   },
+  "type": "module",
+  "workspaces": [
+    "packages/micromark-util-events-to-acorn/",
+    "packages/micromark-factory-mdx-expression/",
+    "packages/micromark-extension-mdx-expression/"
+  ],
   "xo": {
     "prettier": true,
     "rules": {

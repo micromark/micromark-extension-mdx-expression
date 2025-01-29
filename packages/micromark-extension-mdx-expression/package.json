@@ -1,48 +1,8 @@
 {
-  "name": "micromark-extension-mdx-expression",
-  "version": "3.0.0",
-  "description": "micromark extension to support MDX or MDX JS expressions",
-  "license": "MIT",
-  "keywords": [
-    "micromark",
-    "micromark-extension",
-    "mdx",
-    "mdxjs",
-    "expression",
-    "js",
-    "javascript",
-    "es",
-    "ecmascript",
-    "markdown",
-    "unified"
-  ],
-  "repository": "https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression",
-  "bugs": "https://github.com/micromark/micromark-extension-mdx-expression/issues",
-  "funding": [
-    {
-      "type": "GitHub Sponsors",
-      "url": "https://github.com/sponsors/unifiedjs"
-    },
-    {
-      "type": "OpenCollective",
-      "url": "https://opencollective.com/unified"
-    }
-  ],
   "author": "Titus Wormer <tituswormer@gmail.com> (https://wooorm.com)",
+  "bugs": "https://github.com/micromark/micromark-extension-mdx-expression/issues",
   "contributors": [
     "Titus Wormer <tituswormer@gmail.com> (https://wooorm.com)"
-  ],
-  "sideEffects": false,
-  "type": "module",
-  "exports": {
-    "development": "./dev/index.js",
-    "default": "./index.js"
-  },
-  "files": [
-    "dev/",
-    "lib/",
-    "index.d.ts",
-    "index.js"
   ],
   "dependencies": {
     "@types/estree": "^1.0.0",
@@ -54,15 +14,53 @@
     "micromark-util-symbol": "^2.0.0",
     "micromark-util-types": "^2.0.0"
   },
+  "description": "micromark extension to support MDX or MDX JS expressions",
+  "exports": {
+    "development": "./dev/index.js",
+    "default": "./index.js"
+  },
+  "files": [
+    "dev/",
+    "index.d.ts",
+    "index.js",
+    "lib/"
+  ],
+  "funding": [
+    {
+      "type": "GitHub Sponsors",
+      "url": "https://github.com/sponsors/unifiedjs"
+    },
+    {
+      "type": "OpenCollective",
+      "url": "https://opencollective.com/unified"
+    }
+  ],
+  "keywords": [
+    "ecmascript",
+    "es",
+    "expression",
+    "javascript",
+    "js",
+    "markdown",
+    "mdxjs",
+    "mdx",
+    "micromark-extension",
+    "micromark",
+    "unified"
+  ],
+  "license": "MIT",
+  "name": "micromark-extension-mdx-expression",
+  "repository": "https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression",
   "scripts": {
     "build": "micromark-build"
   },
+  "sideEffects": false,
   "typeCoverage": {
     "atLeast": 100,
-    "detail": true,
-    "ignoreCatch": true,
     "strict": true
   },
+  "type": "module",
+  "version": "3.0.0",
   "xo": {
     "overrides": [
       {
