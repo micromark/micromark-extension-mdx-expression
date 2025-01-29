@@ -27,23 +27,6 @@ const html = {
   exit: {mdxFlowExpression: end, mdxTextExpression: end}
 }
 
-/**
- * @this {CompileContext}
- * @type {Handle}
- */
-function start() {
-  this.buffer()
-}
-
-/**
- * @this {CompileContext}
- * @type {Handle}
- */
-function end() {
-  this.resume()
-  this.setData('slurpOneLineEnding', true)
-}
-
 test('api', async function (t) {
   await t.test('should expose the public api', async function () {
     assert.deepEqual(
@@ -65,9 +48,7 @@ test('api', async function (t) {
       ['eventsToAcorn']
     )
   })
-})
 
-test('mdxExpression', async function (t) {
   await t.test(
     'should throw if `acorn` is passed but it has no `parse`',
     async function () {
@@ -286,6 +267,244 @@ test('mdxExpression', async function (t) {
     }
   )
 
+  await t.test('should support `onComment` as a function', async function () {
+    /** @type {Array<Array<unknown>>} */
+    const listOfArguments = []
+
+    assert.equal(
+      micromark('a {/*b*/ // c\n} d', {
+        extensions: [
+          mdxExpression({
+            acorn,
+            acornOptions: {
+              ecmaVersion: 6,
+              onComment() {
+                listOfArguments.push([...arguments])
+              }
+            }
+          })
+        ],
+        htmlExtensions: [html]
+      }),
+      '<p>a  d</p>'
+    )
+
+    assert.deepEqual(listOfArguments, [
+      [
+        true,
+        'b',
+        3,
+        8,
+        {line: 1, column: 3, offset: 3},
+        {line: 1, column: 8, offset: 8}
+      ],
+      [
+        false,
+        ' c',
+        9,
+        13,
+        {line: 1, column: 9, offset: 9},
+        {line: 1, column: 13, offset: 13}
+      ]
+    ])
+  })
+
+  await t.test('should support `onToken` (1, array)', async function () {
+    /** @type {Array<Token>} */
+    const tokens = []
+
+    assert.equal(
+      micromark('a {b.c} d', {
+        extensions: [
+          mdxExpression({
+            acorn,
+            acornOptions: {ecmaVersion: 6, onToken: tokens}
+          })
+        ],
+        htmlExtensions: [html]
+      }),
+      '<p>a  d</p>'
+    )
+
+    assert.equal(
+      JSON.stringify(tokens),
+      JSON.stringify([
+        {
+          type: {
+            label: 'name',
+            beforeExpr: false,
+            startsExpr: true,
+            isLoop: false,
+            isAssign: false,
+            prefix: false,
+            postfix: false,
+            binop: null
+          },
+          value: 'b',
+          start: 3,
+          end: 4,
+          loc: {
+            start: {line: 1, column: 3, offset: 3},
+            end: {line: 1, column: 4, offset: 4}
+          },
+          range: [3, 4]
+        },
+        {
+          type: {
+            label: '.',
+            beforeExpr: false,
+            startsExpr: false,
+            isLoop: false,
+            isAssign: false,
+            prefix: false,
+            postfix: false,
+            binop: null,
+            updateContext: null
+          },
+          start: 4,
+          end: 5,
+          loc: {
+            start: {line: 1, column: 4, offset: 4},
+            end: {line: 1, column: 5, offset: 5}
+          },
+          range: [4, 5]
+        },
+        {
+          type: {
+            label: 'name',
+            beforeExpr: false,
+            startsExpr: true,
+            isLoop: false,
+            isAssign: false,
+            prefix: false,
+            postfix: false,
+            binop: null
+          },
+          value: 'c',
+          start: 5,
+          end: 6,
+          loc: {
+            start: {line: 1, column: 5, offset: 5},
+            end: {line: 1, column: 6, offset: 6}
+          },
+          range: [5, 6]
+        }
+      ])
+    )
+  })
+
+  await t.test('should support `onToken` (2, function)', async function () {
+    /** @type {Array<Token>} */
+    const tokens = []
+
+    assert.equal(
+      micromark('a {b.c} d', {
+        extensions: [
+          mdxExpression({
+            acorn,
+            acornOptions: {
+              ecmaVersion: 6,
+              onToken(token) {
+                tokens.push(token)
+              }
+            }
+          })
+        ],
+        htmlExtensions: [html]
+      }),
+      '<p>a  d</p>'
+    )
+
+    assert.equal(tokens.length, 3)
+  })
+
+  await t.test(
+    'should add correct positional info on acorn tokens',
+    function () {
+      const micromarkExample = 'a {b} c'
+      const acornExample = '   b   '
+      /** @type {Array<Token>} */
+      const micromarkTokens = []
+      /** @type {Array<Token>} */
+      const acornTokens = []
+
+      acorn.parseExpressionAt(acornExample, 0, {
+        ecmaVersion: 'latest',
+        onToken: acornTokens,
+        locations: true,
+        ranges: true
+      })
+
+      micromark(micromarkExample, {
+        extensions: [
+          createExtensionFromFactoryOptions(
+            acorn,
+            {ecmaVersion: 'latest', onToken: micromarkTokens},
+            false,
+            false,
+            false,
+            true
+          )
+        ]
+      })
+
+      removeOffsetsFromTokens(micromarkTokens)
+
+      assert.deepEqual(
+        JSON.parse(JSON.stringify(micromarkTokens)),
+        JSON.parse(JSON.stringify(acornTokens))
+      )
+    }
+  )
+
+  await t.test(
+    'should add correct positional info on acorn tokens with spread',
+    function () {
+      const micromarkExample = 'alp {...b}'
+      const acornExample = 'a = {...b}'
+      /** @type {Array<Token>} */
+      const micromarkTokens = []
+      /** @type {Array<Token>} */
+      const acornTokens = []
+
+      acorn.parseExpressionAt(acornExample, 0, {
+        ecmaVersion: 'latest',
+        onToken: acornTokens,
+        locations: true,
+        ranges: true
+      })
+
+      micromark(micromarkExample, {
+        extensions: [
+          createExtensionFromFactoryOptions(
+            acorn,
+            {ecmaVersion: 'latest', onToken: micromarkTokens},
+            false,
+            true,
+            false,
+            true
+          )
+        ]
+      })
+
+      removeOffsetsFromTokens(micromarkTokens)
+
+      // Remove `a`, `=`, `{`
+      acornTokens.splice(0, 3)
+      // Remove `}`.
+      acornTokens.pop()
+
+      assert.deepEqual(
+        JSON.parse(JSON.stringify(micromarkTokens)),
+        JSON.parse(JSON.stringify(acornTokens))
+      )
+    }
+  )
+})
+
+// Note: these tests are also in `wooorm/markdown-rs` at `tests/mdx_expression_text.rs`
+// as `fn mdx_expression()`.
+test('mdxExpression', async function (t) {
   await t.test('should support an empty expression (1)', async function () {
     assert.equal(
       micromark('a {} b', {
@@ -346,7 +565,7 @@ test('mdxExpression', async function (t) {
     )
   })
 
-  await t.test('should support a multiline comment (4)', async function () {
+  await t.test('should support a multiline comment (5)', async function () {
     assert.equal(
       micromark('a {/*b*/c} d', {
         extensions: [mdxExpression({acorn})],
@@ -391,7 +610,7 @@ test('mdxExpression', async function (t) {
     'should support a line comment followed by a line ending and an expression',
     async function () {
       assert.equal(
-        micromark('a {// b\nd} d', {
+        micromark('a {// b\nc} d', {
           extensions: [mdxExpression({acorn})],
           htmlExtensions: [html]
         }),
@@ -510,157 +729,6 @@ test('mdxExpression', async function (t) {
     }
   })
 
-  await t.test('should support `onComment` as a function', async function () {
-    /** @type {Array<Array<unknown>>} */
-    const listOfArguments = []
-
-    assert.equal(
-      micromark('a {/*b*/ // c\n} d', {
-        extensions: [
-          mdxExpression({
-            acorn,
-            acornOptions: {
-              ecmaVersion: 6,
-              onComment() {
-                listOfArguments.push([...arguments])
-              }
-            }
-          })
-        ],
-        htmlExtensions: [html]
-      }),
-      '<p>a  d</p>'
-    )
-
-    assert.deepEqual(listOfArguments, [
-      [
-        true,
-        'b',
-        3,
-        8,
-        {line: 1, column: 3, offset: 3},
-        {line: 1, column: 8, offset: 8}
-      ],
-      [
-        false,
-        ' c',
-        9,
-        13,
-        {line: 1, column: 9, offset: 9},
-        {line: 1, column: 13, offset: 13}
-      ]
-    ])
-  })
-
-  await t.test('should support `onToken` (array-form)', async function () {
-    /** @type {Array<Token>} */
-    const tokens = []
-
-    assert.equal(
-      micromark('a {b.c} d', {
-        extensions: [
-          mdxExpression({
-            acorn,
-            acornOptions: {ecmaVersion: 6, onToken: tokens}
-          })
-        ],
-        htmlExtensions: [html]
-      }),
-      '<p>a  d</p>'
-    )
-
-    assert.equal(
-      JSON.stringify(tokens),
-      JSON.stringify([
-        {
-          type: {
-            label: 'name',
-            beforeExpr: false,
-            startsExpr: true,
-            isLoop: false,
-            isAssign: false,
-            prefix: false,
-            postfix: false,
-            binop: null
-          },
-          value: 'b',
-          start: 3,
-          end: 4,
-          loc: {
-            start: {line: 1, column: 3, offset: 3},
-            end: {line: 1, column: 4, offset: 4}
-          },
-          range: [3, 4]
-        },
-        {
-          type: {
-            label: '.',
-            beforeExpr: false,
-            startsExpr: false,
-            isLoop: false,
-            isAssign: false,
-            prefix: false,
-            postfix: false,
-            binop: null,
-            updateContext: null
-          },
-          start: 4,
-          end: 5,
-          loc: {
-            start: {line: 1, column: 4, offset: 4},
-            end: {line: 1, column: 5, offset: 5}
-          },
-          range: [4, 5]
-        },
-        {
-          type: {
-            label: 'name',
-            beforeExpr: false,
-            startsExpr: true,
-            isLoop: false,
-            isAssign: false,
-            prefix: false,
-            postfix: false,
-            binop: null
-          },
-          value: 'c',
-          start: 5,
-          end: 6,
-          loc: {
-            start: {line: 1, column: 5, offset: 5},
-            end: {line: 1, column: 6, offset: 6}
-          },
-          range: [5, 6]
-        }
-      ])
-    )
-  })
-
-  await t.test('should support `onToken` (function-form)', async function () {
-    /** @type {Array<Token>} */
-    const tokens = []
-
-    assert.equal(
-      micromark('a {b.c} d', {
-        extensions: [
-          mdxExpression({
-            acorn,
-            acornOptions: {
-              ecmaVersion: 6,
-              onToken(token) {
-                tokens.push(token)
-              }
-            }
-          })
-        ],
-        htmlExtensions: [html]
-      }),
-      '<p>a  d</p>'
-    )
-
-    assert.equal(tokens.length, 3)
-  })
-
   await t.test('should support expression statements (1)', async function () {
     assert.equal(
       micromark('a {b.c} d', {
@@ -726,6 +794,8 @@ test('mdxExpression', async function (t) {
   )
 })
 
+// Note: these tests are also in `wooorm/markdown-rs` at `tests/mdx_expression_text.rs`
+// as `fn mdx_expression_text_agnostic()`.
 test('text (agnostic)', async function (t) {
   await t.test('should support an expression', async function () {
     assert.equal(
@@ -800,8 +870,12 @@ test('text (agnostic)', async function (t) {
       )
     }
   )
+
+  // Note: `markdown-rs` tests for mdast are in `mdast-util-mdx-expression`.
 })
 
+// Note: these tests are also in `wooorm/markdown-rs` at `tests/mdx_expression_text.rs`
+// as `fn mdx_expression_text_gnostic()`.
 test('text (gnostic)', async function (t) {
   await t.test('should support an expression', async function () {
     assert.equal(
@@ -908,8 +982,48 @@ test('text (gnostic)', async function (t) {
       )
     }
   )
+
+  await t.test(
+    'should keep the correct number of spaces in a blockquote (text)',
+    function () {
+      /** @type {Program | undefined} */
+      let program
+
+      micromark(
+        '> alpha {`\n> bravo\n>  charlie\n>   delta\n>    echo\n> `} foxtrot.',
+        {
+          extensions: [
+            createExtensionFromFactoryOptions(
+              acorn,
+              {ecmaVersion: 'latest'},
+              true
+            )
+          ],
+          htmlExtensions: [{enter: {expression}}]
+        }
+      )
+
+      assert(program)
+      const statement = program.body[0]
+      assert(statement.type === 'ExpressionStatement')
+      assert(statement.expression.type === 'TemplateLiteral')
+      const quasi = statement.expression.quasis[0]
+      assert(quasi)
+      const value = quasi.value.cooked
+      assert.equal(value, '\nbravo\ncharlie\ndelta\n echo\n')
+
+      /**
+       * @this {CompileContext}
+       * @type {Handle}
+       */
+      function expression(token) {
+        program = token.estree
+      }
+    }
+  )
 })
 
+// Note: these tests are also in `wooorm/markdown-rs` at `tests/mdx_expression_flow.rs`.
 test('flow (agnostic)', async function (t) {
   await t.test('should support an expression', async function () {
     assert.equal(
@@ -924,6 +1038,33 @@ test('flow (agnostic)', async function (t) {
       ''
     )
   })
+
+  // Note: in MDX, indented code is turned off:
+  await t.test(
+    'should prefer indented code over expressions if it’s enabled',
+    async function () {
+      assert.equal(
+        micromark('    {}', {
+          extensions: [mdxExpression()],
+          htmlExtensions: [html]
+        }),
+        '<pre><code>{}\n</code></pre>'
+      )
+    }
+  )
+
+  await t.test(
+    'should support indented expressions if indented code is enabled',
+    async function () {
+      assert.equal(
+        micromark('   {}', {
+          extensions: [mdxExpression()],
+          htmlExtensions: [html]
+        }),
+        ''
+      )
+    }
+  )
 
   await t.test(
     'should crash if no closing brace is found (1)',
@@ -982,6 +1123,19 @@ test('flow (agnostic)', async function (t) {
     }
   )
 
+  await t.test(
+    'should support lists after non-expressions (wooorm/markdown-rs#11)',
+    async function () {
+      assert.equal(
+        micromark('a\n\n* b', {
+          extensions: [mdxExpression()],
+          htmlExtensions: [html]
+        }),
+        '<p>a</p>\n<ul>\n<li>b</li>\n</ul>'
+      )
+    }
+  )
+
   await t.test('should not support lazyness (1)', async function () {
     assert.throws(function () {
       micromark('> {a\nb}', {extensions: [mdxExpression()]})
@@ -1013,8 +1167,11 @@ test('flow (agnostic)', async function (t) {
       micromark('> {\n> a\nb}', {extensions: [mdxExpression()]})
     }, /Unexpected lazy line in expression in container/)
   })
+
+  // Note: `markdown-rs` tests for mdast are in `mdast-util-mdx-expression`.
 })
 
+// Note: these tests are also in `wooorm/markdown-rs` at `tests/mdx_expression_flow.rs`.
 test('flow (gnostic)', async function (t) {
   await t.test('should support an expression', async function () {
     assert.equal(
@@ -1128,194 +1285,9 @@ test('flow (gnostic)', async function (t) {
       )
     }
   )
-})
-
-test('spread (hidden)', async function (t) {
-  await t.test('should crash if not a spread', async function () {
-    assert.throws(function () {
-      micromark('a {b} c', {
-        extensions: [mdxExpression({acorn, spread: true})]
-      })
-    }, /Unexpected `Property` in code: only spread elements are supported/)
-  })
-
-  await t.test('should crash on an incorrect spread', async function () {
-    assert.throws(function () {
-      micromark('a {...?} c', {
-        extensions: [mdxExpression({acorn, spread: true})]
-      })
-    }, /Could not parse expression with acorn/)
-  })
 
   await t.test(
-    'should crash on an incorrect spread that looks like an assignment',
-    async function () {
-      assert.throws(function () {
-        micromark('a {b=c}={} d', {
-          extensions: [mdxExpression({acorn, spread: true})]
-        })
-      }, /Unexpected `ExpressionStatement` in code: expected an object spread/)
-    }
-  )
-
-  await t.test('should crash if a spread and other things', async function () {
-    assert.throws(function () {
-      micromark('a {...b,c} d', {
-        extensions: [mdxExpression({acorn, spread: true})]
-      })
-    }, /Unexpected extra content in spread: only a single spread is supported/)
-  })
-
-  await t.test('should support an empty spread', async function () {
-    assert.equal(
-      micromark('a {} b', {
-        extensions: [mdxExpression({acorn, spread: true})],
-        htmlExtensions: [html]
-      }),
-      '<p>a  b</p>'
-    )
-  })
-
-  await t.test(
-    'should crash on an empty spread w/ `allowEmpty: false`',
-    async function () {
-      assert.throws(function () {
-        micromark('a {} b', {
-          extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
-        })
-      }, /Unexpected empty expression/)
-    }
-  )
-
-  await t.test(
-    'should crash if not a spread w/ `allowEmpty`',
-    async function () {
-      assert.throws(function () {
-        micromark('{a=b}', {
-          extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
-        })
-      }, /Could not parse expression with acorn/)
-    }
-  )
-
-  await t.test('should support a comment spread', async function () {
-    assert.equal(
-      micromark('a {/* b */} c', {
-        extensions: [mdxExpression({acorn, spread: true})],
-        htmlExtensions: [html]
-      }),
-      '<p>a  c</p>'
-    )
-  })
-
-  await t.test(
-    'should crash on a comment spread w/ `allowEmpty: false`',
-    async function () {
-      assert.throws(function () {
-        micromark('a {/* b */} c', {
-          extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
-        })
-      }, /Unexpected empty expression/)
-    }
-  )
-
-  await t.test('should support a spread', async function () {
-    assert.equal(
-      micromark('a {...b} c', {
-        extensions: [mdxExpression({acorn, spread: true})],
-        htmlExtensions: [html]
-      }),
-      '<p>a  c</p>'
-    )
-  })
-})
-
-test('positional info', async function (t) {
-  await t.test(
-    'should add correct positional info on acorn tokens',
-    function () {
-      const micromarkExample = 'a {b} c'
-      const acornExample = '   b   '
-      /** @type {Array<Token>} */
-      const micromarkTokens = []
-      /** @type {Array<Token>} */
-      const acornTokens = []
-
-      acorn.parseExpressionAt(acornExample, 0, {
-        ecmaVersion: 'latest',
-        onToken: acornTokens,
-        locations: true,
-        ranges: true
-      })
-
-      micromark(micromarkExample, {
-        extensions: [
-          createExtensionFromFactoryOptions(
-            acorn,
-            {ecmaVersion: 'latest', onToken: micromarkTokens},
-            false,
-            false,
-            false,
-            true
-          )
-        ]
-      })
-
-      removeOffsetsFromTokens(micromarkTokens)
-
-      assert.deepEqual(
-        JSON.parse(JSON.stringify(micromarkTokens)),
-        JSON.parse(JSON.stringify(acornTokens))
-      )
-    }
-  )
-
-  await t.test(
-    'should add correct positional info on acorn tokens with spread',
-    function () {
-      const micromarkExample = 'alp {...b}'
-      const acornExample = 'a = {...b}'
-      /** @type {Array<Token>} */
-      const micromarkTokens = []
-      /** @type {Array<Token>} */
-      const acornTokens = []
-
-      acorn.parseExpressionAt(acornExample, 0, {
-        ecmaVersion: 'latest',
-        onToken: acornTokens,
-        locations: true,
-        ranges: true
-      })
-
-      micromark(micromarkExample, {
-        extensions: [
-          createExtensionFromFactoryOptions(
-            acorn,
-            {ecmaVersion: 'latest', onToken: micromarkTokens},
-            false,
-            true,
-            false,
-            true
-          )
-        ]
-      })
-
-      removeOffsetsFromTokens(micromarkTokens)
-
-      // Remove `a`, `=`, `{`
-      acornTokens.splice(0, 3)
-      // Remove `}`.
-      acornTokens.pop()
-
-      assert.deepEqual(
-        JSON.parse(JSON.stringify(micromarkTokens)),
-        JSON.parse(JSON.stringify(acornTokens))
-      )
-    }
-  )
-
-  await t.test(
-    'should use correct positional info when tabs are used (indent)',
+    'should use correct positional info when tabs are used (1, indent)',
     function () {
       const micromarkExample = 'ab {`\n\t`}'
       const acornExample = 'a = `\n` '
@@ -1458,10 +1430,10 @@ test('positional info', async function (t) {
   )
 
   await t.test(
-    'should use correct positional info when tabs are used (content)',
+    'should use correct positional info when tabs are used (2, content)',
     function () {
       const micromarkExample = 'ab {`\nalpha\t`}'
-      const acornExample = 'a = `\nalpha\t` '
+      const acornExample = 'a = `\nalpha\t`'
       /** @type {Array<Token>} */
       const micromarkTokens = []
       /** @type {Array<Token>} */
@@ -1722,7 +1694,10 @@ test('positional info', async function (t) {
                       range: [7, 10]
                     }
                   ],
-                  loc: {start: {line: 1, column: 6}, end: {line: 2, column: 3}},
+                  loc: {
+                    start: {line: 1, column: 6},
+                    end: {line: 2, column: 3}
+                  },
                   range: [6, 11]
                 },
                 start: 6,
@@ -1748,9 +1723,7 @@ test('positional info', async function (t) {
       }
     }
   )
-})
 
-test('indent', async function (t) {
   await t.test(
     'should keep the correct number of spaces in a blockquote (flow)',
     function () {
@@ -1787,47 +1760,6 @@ test('indent', async function (t) {
     }
   )
 
-  await t.test(
-    'should keep the correct number of spaces in a blockquote (text)',
-    function () {
-      /** @type {Program | undefined} */
-      let program
-
-      micromark(
-        '> alpha {`\n> bravo\n>  charlie\n>   delta\n>    echo\n> `} foxtrot.',
-        {
-          extensions: [
-            createExtensionFromFactoryOptions(
-              acorn,
-              {ecmaVersion: 'latest'},
-              true
-            )
-          ],
-          htmlExtensions: [{enter: {expression}}]
-        }
-      )
-
-      assert(program)
-      const statement = program.body[0]
-      assert(statement.type === 'ExpressionStatement')
-      assert(statement.expression.type === 'TemplateLiteral')
-      const quasi = statement.expression.quasis[0]
-      assert(quasi)
-      const value = quasi.value.cooked
-      assert.equal(value, '\nbravo\ncharlie\ndelta\n echo\n')
-
-      /**
-       * @this {CompileContext}
-       * @type {Handle}
-       */
-      function expression(token) {
-        program = token.estree
-      }
-    }
-  )
-})
-
-test('weird characters', async function (t) {
   await t.test('should support `\\0` and `\\r` in expressions', function () {
     /** @type {Program | undefined} */
     let program
@@ -1858,11 +1790,124 @@ test('weird characters', async function (t) {
   })
 })
 
+// Note: these tests are also in `wooorm/markdown-rs` at `tests/mdx_expression_flow.rs`.
+// That project includes *all* extensions which means that it can use JSX.
+// Here we test something that does not exist in actual MDX but which is used
+// by the JSX extension.
+test('spread (hidden)', async function (t) {
+  await t.test('should support a spread', async function () {
+    assert.equal(
+      micromark('a {...b} c', {
+        extensions: [mdxExpression({acorn, spread: true})],
+        htmlExtensions: [html]
+      }),
+      '<p>a  c</p>'
+    )
+  })
+
+  await t.test('should crash if not a spread', async function () {
+    assert.throws(function () {
+      micromark('a {b} c', {
+        extensions: [mdxExpression({acorn, spread: true})]
+      })
+    }, /Unexpected `Property` in code: only spread elements are supported/)
+  })
+
+  await t.test('should crash on an incorrect spread', async function () {
+    assert.throws(function () {
+      micromark('a {...?} c', {
+        extensions: [mdxExpression({acorn, spread: true})]
+      })
+    }, /Could not parse expression with acorn/)
+  })
+
+  await t.test(
+    'should crash on an incorrect spread that looks like an assignment',
+    async function () {
+      assert.throws(function () {
+        micromark('a {b=c}={} d', {
+          extensions: [mdxExpression({acorn, spread: true})]
+        })
+      }, /Unexpected `ExpressionStatement` in code: expected an object spread/)
+    }
+  )
+
+  await t.test('should crash if a spread and other things', async function () {
+    assert.throws(function () {
+      micromark('a {...b,c} d', {
+        extensions: [mdxExpression({acorn, spread: true})]
+      })
+    }, /Unexpected extra content in spread: only a single spread is supported/)
+  })
+
+  await t.test('should crash if not an identifier', async function () {
+    assert.throws(function () {
+      micromark('a {b=c} d', {
+        extensions: [mdxExpression({acorn, spread: true})]
+      })
+    }, /Could not parse expression with acorn/)
+  })
+
+  // Note: `markdown-rs` has no `allowEmpty`.
+  await t.test(
+    'should crash on an empty spread (w/ `allowEmpty: false`)',
+    async function () {
+      assert.throws(function () {
+        micromark('a {} b', {
+          extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
+        })
+      }, /Unexpected empty expression/)
+    }
+  )
+
+  await t.test('should support an empty spread by default', async function () {
+    assert.equal(
+      micromark('a {} b', {
+        extensions: [mdxExpression({acorn, spread: true})],
+        htmlExtensions: [html]
+      }),
+      '<p>a  b</p>'
+    )
+  })
+
+  await t.test(
+    'should crash on a comment spread (w/ `allowEmpty: false`)',
+    async function () {
+      assert.throws(function () {
+        micromark('a {/* b */} c', {
+          extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
+        })
+      }, /Unexpected empty expression/)
+    }
+  )
+
+  await t.test('should support a comment spread by default', async function () {
+    assert.equal(
+      micromark('a {/* b */} c', {
+        extensions: [mdxExpression({acorn, spread: true})],
+        htmlExtensions: [html]
+      }),
+      '<p>a  c</p>'
+    )
+  })
+
+  await t.test(
+    'should crash if not a spread w/ `allowEmpty`',
+    async function () {
+      assert.throws(function () {
+        micromark('{a=b}', {
+          extensions: [mdxExpression({acorn, spread: true, allowEmpty: false})]
+        })
+      }, /Could not parse expression with acorn/)
+    }
+  )
+})
+
 /**
  * @param {Acorn | null | undefined} [acorn]
  *   Object with `acorn.parse` and `acorn.parseExpressionAt`.
  * @param {AcornOptions | null | undefined} [acornOptions]
- *   Configuration for acorn.
+ *   Configuration for acorn (optional).
  * @param {boolean | null | undefined} [addResult=false]
  *   Add `estree` to token (default: `false`).
  * @param {boolean | null | undefined} [spread=false]
@@ -1979,4 +2024,21 @@ function removeOffsetsFromTokens(tokens) {
     // @ts-expect-error: we add offsets.
     delete d.loc?.end.offset
   }
+}
+
+/**
+ * @this {CompileContext}
+ * @type {Handle}
+ */
+function start() {
+  this.buffer()
+}
+
+/**
+ * @this {CompileContext}
+ * @type {Handle}
+ */
+function end() {
+  this.resume()
+  this.setData('slurpOneLineEnding', true)
 }
