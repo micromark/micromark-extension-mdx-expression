@@ -1,3 +1,4 @@
+import type {Point as MicromarkPoint} from 'micromark-util-types'
 import type {Program} from 'estree'
 
 /**

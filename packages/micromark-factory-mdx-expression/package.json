@@ -22,6 +22,7 @@
   },
   "files": [
     "dev/",
+    "index.d.ts.map",
     "index.d.ts",
     "index.js"
   ],
