@@ -3,10 +3,9 @@
   "bugs": "https://github.com/micromark/micromark-extension-mdx-expression/issues",
   "description": "",
   "devDependencies": {
-    "@types/acorn": "^4.0.0",
     "@types/estree": "^1.0.0",
     "@types/node": "^22.0.0",
-    "acorn": "^8.0.0",
+    "acorn": "^8.11.0",
     "acorn-jsx": "^5.0.0",
     "c8": "^10.0.0",
     "micromark": "^4.0.0",
