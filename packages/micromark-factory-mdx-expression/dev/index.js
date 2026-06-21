@@ -97,6 +97,8 @@ export function factoryMdxExpression(
   let pointStart
   /** @type {Error} */
   let lastCrash
+  /** @type {number | undefined} */
+  let lineIndent
 
   return start
 
@@ -112,6 +114,24 @@ export function factoryMdxExpression(
    */
   function start(code) {
     assert(code === codes.leftCurlyBrace, 'expected `{`')
+
+    // When the expression starts at a line start, continuation lines are
+    // indented as far as the opening brace at most.
+    // When it starts after other things (such as in attributes or text),
+    // we cannot know the indent, see `eolAfter`.
+    const tail = self.events.at(-1)
+
+    if (!tail || tail[1].type === types.lineEnding) {
+      // { is the first thing on the line, no indent to strip
+      lineIndent = 0
+    } else if (tail[0] === 'exit' && tail[1].type === types.linePrefix) {
+      // { follows leading whitespace, strip exactly that much
+      lineIndent = tail[1].end.column - tail[1].start.column
+    } else {
+      // { is mid-line (attribute, text, etc), fall back to indentSize
+      lineIndent = undefined
+    }
+
     effects.enter(type)
     effects.enter(markerType)
     effects.consume(code)
@@ -254,6 +274,12 @@ export function factoryMdxExpression(
       throw error
     }
 
+    // When the expression started at a line start, eat as much indent as
+    // there was before the opening brace: that indent is decoration, the
+    // rest is content (such as whitespace in a template literal).
+    //
+    // When the expression started after other things, we cannot know the
+    // indent, so we eat up to `indentSize`.
     // Note: `markdown-rs` uses `4`, but we use `2`.
     //
     // Idea: investigate if we’d need to use more complex stripping.
@@ -269,12 +295,10 @@ export function factoryMdxExpression(
     // here we split it into `>␠|␠␠|␠␠␠d` (prefix, this indent here,
     // expression data).
     if (markdownSpace(code)) {
-      return factorySpace(
-        effects,
-        before,
-        types.linePrefix,
-        indentSize + 1
-      )(code)
+      const max = lineIndent === undefined ? indentSize : lineIndent
+
+      if (max === 0) return before(code)
+      return factorySpace(effects, before, types.linePrefix, max + 1)(code)
     }
 
     return before(code)

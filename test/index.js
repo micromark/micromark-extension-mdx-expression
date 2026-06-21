@@ -1748,7 +1748,7 @@ test('flow (gnostic)', async function (t) {
       const quasi = statement.expression.quasis[0]
       assert(quasi)
       const value = quasi.value.cooked
-      assert.equal(value, '\nalpha\nbravo\ncharlie\n delta\n')
+      assert.equal(value, '\nalpha\n bravo\n  charlie\n   delta\n')
 
       /**
        * @this {CompileContext}
@@ -1757,6 +1757,55 @@ test('flow (gnostic)', async function (t) {
       function expression(token) {
         program = token.estree
       }
+    }
+  )
+
+  await t.test(
+    'should keep the correct number of spaces at the root',
+    function () {
+      /** @type {Program | undefined} */
+      let program
+
+      micromark('{`\nbravo\n  charlie\n    delta\n`}', {
+        extensions: [
+          createExtensionFromFactoryOptions(
+            acorn,
+            {ecmaVersion: 'latest'},
+            true
+          )
+        ],
+        htmlExtensions: [{enter: {expression}}]
+      })
+
+      assert(program)
+      const statement = program.body[0]
+      assert(statement.type === 'ExpressionStatement')
+      assert(statement.expression.type === 'TemplateLiteral')
+      const quasi = statement.expression.quasis[0]
+      assert(quasi)
+      const value = quasi.value.cooked
+      assert.equal(value, '\nbravo\n  charlie\n    delta\n')
+
+      /**
+       * @this {CompileContext}
+       * @type {Handle}
+       */
+      function expression(token) {
+        program = token.estree
+      }
+    }
+  )
+
+  await t.test(
+    'should support a multiline non-string expression at the root',
+    async function () {
+      assert.equal(
+        micromark('{\n  1 + 1\n}', {
+          extensions: [mdxExpression({acorn})],
+          htmlExtensions: [html]
+        }),
+        ''
+      )
     }
   )
 
