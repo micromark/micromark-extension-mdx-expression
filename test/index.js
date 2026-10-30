@@ -14,6 +14,7 @@ import {Parser} from 'acorn'
 import acornJsx from 'acorn-jsx'
 import {visit} from 'estree-util-visit'
 import {micromark} from 'micromark'
+import {mdxjsEsm} from 'micromark-extension-mdxjs-esm'
 import {mdxExpression} from 'micromark-extension-mdx-expression'
 import {factoryMdxExpression} from 'micromark-factory-mdx-expression'
 import {markdownLineEnding} from 'micromark-util-character'
@@ -500,6 +501,36 @@ test('api', async function (t) {
       )
     }
   )
+
+  await t.test('should fix reused import specifier positions', function () {
+    /** @type {import('estree').Program | undefined} */
+    let estree
+
+    assert.equal(
+      micromark('\n\n\n\nimport {Foo} from "./test"', {
+        extensions: [mdxjsEsm({acorn, addResult: true})],
+        htmlExtensions: [
+          {
+            enter: {
+              mdxjsEsm(token) {
+                estree = token.estree
+              }
+            }
+          }
+        ]
+      }),
+      ''
+    )
+
+    assert.ok(estree, 'expected estree')
+    const declaration = estree.body[0]
+    assert.equal(declaration.type, 'ImportDeclaration')
+    assert.ok(declaration.type === 'ImportDeclaration')
+    const specifier = declaration.specifiers[0]
+    assert.equal(specifier.type, 'ImportSpecifier')
+    assert.ok(specifier.type === 'ImportSpecifier')
+    assert.deepEqual(specifier.local.range, [12, 15])
+  })
 })
 
 // Note: these tests are also in `wooorm/markdown-rs` at `tests/mdx_expression_text.rs`

@@ -37,6 +37,8 @@ export function eventsToAcorn(events, options) {
   let swallow = false
   /** @type {AcornNode | undefined} */
   let estree
+  /** @type {WeakSet<AcornNode | EstreeNode | Token>} */
+  const fixedPositions = new WeakSet()
   /** @type {AcornError | undefined} */
   let exception
   /** @type {AcornOptions} */
@@ -194,6 +196,15 @@ export function eventsToAcorn(events, options) {
    * @returns {undefined}
    */
   function fixPosition(nodeOrToken) {
+    // Acorn reuses the same node for some fields (for example `import {Foo}`
+    // has the same identifier for `imported` and `local`), and `visit` can
+    // therefore see it more than once. Fix its position only once.
+    if (fixedPositions.has(nodeOrToken)) {
+      return
+    }
+
+    fixedPositions.add(nodeOrToken)
+
     assert(
       'start' in nodeOrToken,
       'expected `start` in node or token from acorn'
